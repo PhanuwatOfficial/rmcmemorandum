@@ -14,6 +14,39 @@ app.use((req, res, next) => {
 })
 app.use(express.static("public"))
 
+// Logger System
+let logs = [] // เก็บ logs ชั่วคราว
+const MAX_LOGS = 1000 // เก็บ max 1000 logs
+
+function addLog(level, message, data = null) {
+  const timestamp = new Date().toISOString()
+  const logEntry = {
+    timestamp,
+    level,
+    message,
+    data
+  }
+  logs.push(logEntry)
+  
+  // เก็บ max 1000 logs
+  if (logs.length > MAX_LOGS) {
+    logs.shift()
+  }
+  
+  // บันทึก log ลงใน Firebase
+  firebase_set(`logs/${Date.now()}`, logEntry).catch(err => {
+    // ถ้า Firebase error ก็ไม่ต้อง crash
+  })
+  
+  // พิมพ์ออกมา
+  const prefix = `[${level.toUpperCase()}] ${timestamp}`
+  if (level === 'error') {
+    console.error(`${prefix}: ${message}`, data)
+  } else {
+    console.log(`${prefix}: ${message}`, data || '')
+  }
+}
+
 const config = {
  channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
  channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
@@ -37,7 +70,7 @@ async function firebase_set(path, data) {
     })
     return await response.json()
   } catch (err) {
-    console.error("Firebase set error:", err)
+    addLog('error', 'Firebase set error', { path, message: err.message })
     throw err
   }
 }
@@ -48,7 +81,7 @@ async function firebase_get(path) {
     const response = await fetch(url)
     return await response.json()
   } catch (err) {
-    console.error("Firebase get error:", err)
+    addLog('error', 'Firebase get error', { path, message: err.message })
     throw err
   }
 }
@@ -58,7 +91,7 @@ async function firebase_delete(path) {
     const url = `${FIREBASE_DB_URL}/${path}.json`
     await fetch(url, { method: "DELETE" })
   } catch (err) {
-    console.error("Firebase delete error:", err)
+    addLog('error', 'Firebase delete error', { path, message: err.message })
     throw err
   }
 }
@@ -85,23 +118,21 @@ app.post("/webhook", async (req, res) => {
     const hash = hmac.digest('base64')
     
     if (signature !== hash) {
-      console.warn('Signature validation failed')
-      console.warn('Expected:', hash)
-      console.warn('Got:', signature)
+      addLog('warn', 'Signature validation failed', { expected: hash, got: signature })
       return res.status(403).json({ error: 'Invalid signature' })
     }
     
-    console.log("Webhook received - Signature valid")
+    addLog('info', 'Webhook received - Signature valid')
     // parse JSON body
     const events = JSON.parse(bodyString).events
-    console.log("Events:", JSON.stringify(events, null, 2))
+    addLog('info', 'Events received', { count: events.length })
     
     await Promise.all(events.map(handleEvent))
     
-    console.log("Webhook processed successfully")
+    addLog('info', 'Webhook processed successfully')
     res.status(200).json({ ok: true })
   } catch (err) {
-    console.error("Webhook error:", err)
+    addLog('error', 'Webhook error', { message: err.message })
     res.status(200).json({ ok: true, error: err.message })
   }
 })
@@ -109,40 +140,40 @@ app.post("/webhook", async (req, res) => {
 // Handle events จาก LINE และเก็บ userId
 async function handleEvent(event) {
   try {
-    console.log("Handling event:", event.type)
+    addLog('info', 'Handling event', { type: event.type })
     
     // เมื่อมีคนกด follow
     if (event.type === 'follow') {
       const userId = event.source.userId
-      console.log("User followed:", userId)
+      addLog('info', 'User followed', { userId })
       try {
         await firebase_set(`followers/${userId}`, {
           userId: userId,
           followedAt: new Date().toISOString(),
           status: 'active'
         })
-        console.log("Follower saved successfully:", userId)
+        addLog('info', 'Follower saved successfully', { userId })
       } catch (fbErr) {
-        console.error("Firebase save error:", fbErr)
+        addLog('error', 'Firebase save error', { message: fbErr.message })
       }
     }
 
     // เมื่อมีคนกด unfollow
     if (event.type === 'unfollow') {
       const userId = event.source.userId
-      console.log("User unfollowed:", userId)
+      addLog('info', 'User unfollowed', { userId })
       try {
         await firebase_delete(`followers/${userId}`)
-        console.log("Follower removed successfully:", userId)
+        addLog('info', 'Follower removed successfully', { userId })
       } catch (fbErr) {
-        console.error("Firebase delete error:", fbErr)
+        addLog('error', 'Firebase delete error', { message: fbErr.message })
       }
     }
 
     // เมื่อมีคนส่งข้อความ (บันทึก userId เพิ่มเติม)
     if (event.type === 'message' && event.message.type === 'text') {
       const userId = event.source.userId
-      console.log("Message from:", userId, "text:", event.message.text)
+      addLog('info', 'Message from user', { userId, text: event.message.text })
       try {
         // เก็บ userId ถ้ายังไม่มี
         const exists = await firebase_get(`followers/${userId}`)
@@ -152,14 +183,14 @@ async function handleEvent(event) {
             firstMessageAt: new Date().toISOString(),
             status: 'active'
           })
-          console.log("New follower from message:", userId)
+          addLog('info', 'New follower from message', { userId })
         }
       } catch (fbErr) {
-        console.error("Firebase message save error:", fbErr)
+        addLog('error', 'Firebase message save error', { message: fbErr.message })
       }
     }
   } catch (err) {
-    console.error("Handle event error:", err)
+    addLog('error', 'Handle event error', { message: err.message })
   }
 }
 
@@ -169,7 +200,7 @@ app.post("/send", async (req,res)=>{
  const { text, userId } = req.body
  const targetUserId = userId // ใช้ userId จากอีกส่ง, ถ้าไม่มีจะ undefined
 
- console.log("message =", text, "to userId:", targetUserId)
+ addLog('info', 'Send message request', { text, userId: targetUserId })
 
  try{
 
@@ -178,17 +209,12 @@ app.post("/send", async (req,res)=>{
    text:text
   })
 
+  addLog('info', 'Message sent successfully', { userId: targetUserId })
   res.json({status:"sent"})
 
  }catch(err){
 
- console.log("LINE ERROR FULL:")
- console.log(err)
-
- if(err.response){
-   console.log("LINE RESPONSE:")
-   console.log(err.response.data)
- }
+ addLog('error', 'LINE send error', { userId: targetUserId, message: err.message })
 
  res.status(500).send("error")
 
@@ -204,10 +230,13 @@ app.post("/broadcast", async (req, res) => {
     return res.status(400).json({ error: "text is required" })
   }
 
+  addLog('info', 'Broadcast request', { text })
+
   try {
     const followers = await firebase_get("followers")
 
     if (!followers || typeof followers !== 'object') {
+      addLog('warn', 'Broadcast - no followers')
       return res.json({ status: "no followers", successCount: 0, errorCount: 0, totalFollowers: 0 })
     }
 
@@ -222,12 +251,12 @@ app.post("/broadcast", async (req, res) => {
         })
         successCount++
       } catch (err) {
-        console.error(`Error sending to ${userId}:`, err)
+        addLog('error', `Broadcast error to user`, { userId, message: err.message })
         errorCount++
       }
     }
 
-    console.log(`Broadcast complete: ${successCount} sent, ${errorCount} failed`)
+    addLog('info', `Broadcast complete`, { successCount, errorCount, totalFollowers: Object.keys(followers).length })
     res.json({ 
       status: "broadcast sent",
       successCount: successCount,
@@ -235,7 +264,7 @@ app.post("/broadcast", async (req, res) => {
       totalFollowers: Object.keys(followers).length
     })
   } catch (err) {
-    console.error("Broadcast error:", err)
+    addLog('error', 'Broadcast error', { message: err.message })
     res.status(500).json({ error: err.message })
   }
 })
@@ -246,20 +275,20 @@ app.get("/followers", async (req, res) => {
     const followers = await firebase_get("followers")
     
     if (!followers || typeof followers !== 'object') {
-      console.log("No followers found in database")
+      addLog('info', 'Get followers - empty')
       return res.json({ 
         followers: {},
         count: 0
       })
     }
     
-    console.log("Followers retrieved:", Object.keys(followers).length)
+    addLog('info', 'Get followers', { count: Object.keys(followers).length })
     res.json({ 
       followers: followers,
       count: Object.keys(followers).length
     })
   } catch (err) {
-    console.error("Get followers error:", err)
+    addLog('error', 'Get followers error', { message: err.message })
     res.status(500).json({ error: err.message })
   }
 })
@@ -268,7 +297,7 @@ app.get("/followers", async (req, res) => {
 app.post("/test-add-follower", async (req, res) => {
   try {
     const testUserId = "Ue78fdf247dea19fe8ef461f8645ef746"
-    console.log("Adding test follower:", testUserId)
+    addLog('info', 'Adding test follower', { userId: testUserId })
     
     const result = await firebase_set(`followers/${testUserId}`, {
       userId: testUserId,
@@ -276,10 +305,10 @@ app.post("/test-add-follower", async (req, res) => {
       status: 'active'
     })
     
-    console.log("Firebase response:", result)
+    addLog('info', 'Test follower added successfully', { userId: testUserId })
     res.json({ status: "Test follower added", userId: testUserId, firebaseResponse: result })
   } catch (err) {
-    console.error("Test add follower error:", err)
+    addLog('error', 'Test add follower error', { message: err.message })
     res.status(500).json({ error: err.message })
   }
 })
@@ -287,9 +316,8 @@ app.post("/test-add-follower", async (req, res) => {
 // Debug endpoint - ตรวจสอบ Firebase
 app.get("/debug", async (req, res) => {
   try {
-    console.log("Debug: Attempting to read from Firebase...")
+    addLog('info', 'Debug endpoint called')
     const followers = await firebase_get("followers")
-    console.log("Debug: Firebase response:", followers)
     
     res.json({
       status: "debug",
@@ -298,8 +326,46 @@ app.get("/debug", async (req, res) => {
       followersCount: followers && typeof followers === 'object' ? Object.keys(followers).length : 0
     })
   } catch (err) {
-    console.error("Debug error:", err)
+    addLog('error', 'Debug error', { message: err.message })
     res.status(500).json({ error: err.message, stack: err.stack })
+  }
+})
+
+// Get logs - แสดง logs ล่าสุด 100 รายการ
+app.get("/logs", (req, res) => {
+  res.json({
+    status: "ok",
+    logCount: logs.length,
+    logs: logs.slice(-100) // ส่ง 100 logs ล่าสุด
+  })
+})
+
+// Get all logs from Firebase
+app.get("/logs-history", async (req, res) => {
+  try {
+    addLog('info', 'Fetching logs history from Firebase')
+    const allLogs = await firebase_get("logs")
+    
+    res.json({
+      status: "ok",
+      logsFromFirebase: allLogs || {}
+    })
+  } catch (err) {
+    addLog('error', 'Get logs history error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Clear logs - ลบ logs ทั้งหมด
+app.post("/clear-logs", async (req, res) => {
+  try {
+    addLog('info', 'Clearing logs')
+    logs = []
+    await firebase_delete("logs")
+    res.json({ status: "Logs cleared" })
+  } catch (err) {
+    addLog('error', 'Clear logs error', { message: err.message })
+    res.status(500).json({ error: err.message })
   }
 })
 
@@ -313,17 +379,24 @@ app.get("/webhook-test", (req, res) => {
 })
 
 // View server logs
-app.get("/logs", (req, res) => {
+app.get("/info", (req, res) => {
   res.json({
     status: "Server running",
     timestamp: new Date().toISOString(),
     firebaseUrl: FIREBASE_DB_URL,
-    message: "Check Railway logs for detailed webhook events"
+    logsCount: logs.length,
+    endpoints: {
+      followers: "/followers",
+      logs: "/logs",
+      logsHistory: "/logs-history",
+      broadcast: "POST /broadcast",
+      send: "POST /send"
+    }
   })
 })
 
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT,()=>{
- console.log("server running")
+ addLog('info', 'Server started successfully', { port: PORT, nodeEnv: process.env.NODE_ENV })
 })

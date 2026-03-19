@@ -10,13 +10,19 @@
 <h1>LINE Bot Dashboard</h1>
 
 <style>
-  body { font-family: Arial; max-width: 800px; margin: 50px auto; }
+  body { font-family: Arial; max-width: 1000px; margin: 50px auto; }
   .section { border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 5px; }
   input, textarea { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-  button { background: #00b900; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+  button { background: #00b900; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-right: 5px; }
   button:hover { background: #009900; }
   .info { background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0; }
   .followers-list { max-height: 300px; overflow-y: auto; }
+  .logs-viewer { background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; line-height: 1.5; }
+  .log-entry { margin: 2px 0; padding: 2px; border-left: 3px solid #666; padding-left: 8px; }
+  .log-info { border-left-color: #0066cc; color: #6ab0ff; }
+  .log-warn { border-left-color: #ffaa00; color: #ffaa00; }
+  .log-error { border-left-color: #ff0000; color: #ff6b6b; }
+  #autoRefreshCheckbox { margin: 10px 0; }
 </style>
 
 <!-- Send to Single User -->
@@ -43,6 +49,20 @@
   <button onclick="testAddFollower()" style="background: #0066cc;">Test Add Follower</button>
   <div class="info" id="followerCount"></div>
   <div class="followers-list" id="followersList"></div>
+</div>
+
+<!-- Logs Viewer -->
+<div class="section">
+  <h2>📋 Live Logs</h2>
+  <button onclick="loadLogs()">Refresh Logs</button>
+  <button onclick="clearLogs()" style="background: #cc0000;">Clear Logs</button>
+  <div id="autoRefreshCheckbox">
+    <label>
+      <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()"> Auto-refresh (2s)
+    </label>
+  </div>
+  <div class="info" id="logsCount"></div>
+  <div class="logs-viewer" id="logsViewer" style="background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto;"></div>
 </div>
 
 <script>
@@ -173,6 +193,65 @@ async function testAddFollower() {
   } catch (err) {
     countEl.innerHTML = '❌ Error: ' + err.message
     console.error("testAddFollower error:", err)
+  }
+}
+
+// Logs management
+let autoRefreshInterval = null
+
+function toggleAutoRefresh() {
+  const checked = document.getElementById('autoRefresh').checked
+  if (checked) {
+    autoRefreshInterval = setInterval(loadLogs, 2000)
+    loadLogs()
+  } else {
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval)
+  }
+}
+
+async function loadLogs() {
+  const countEl = document.getElementById("logsCount")
+  const viewerEl = document.getElementById("logsViewer")
+  
+  try {
+    const res = await fetch("/logs")
+    const data = await res.json()
+    
+    countEl.innerHTML = `📊 Total Logs: ${data.logCount}`
+    
+    if (data.logs.length === 0) {
+      viewerEl.innerHTML = '<div class="log-entry">No logs yet</div>'
+      return
+    }
+    
+    let html = ''
+    data.logs.forEach(log => {
+      const className = `log-entry log-${log.level}`
+      const dataStr = log.data ? ` ${JSON.stringify(log.data)}` : ''
+      html += `<div class="${className}">[${log.level.toUpperCase()}] ${log.timestamp} - ${log.message}${dataStr}</div>`
+    })
+    viewerEl.innerHTML = html
+    viewerEl.scrollTop = viewerEl.scrollHeight
+  } catch (err) {
+    countEl.innerHTML = '❌ Error: ' + err.message
+    console.error("loadLogs error:", err)
+  }
+}
+
+async function clearLogs() {
+  if (!confirm('Are you sure you want to clear all logs?')) return
+  
+  const countEl = document.getElementById("logsCount")
+  countEl.innerHTML = '⏳ Clearing logs...'
+  
+  try {
+    const res = await fetch("/clear-logs", { method: "POST" })
+    const data = await res.json()
+    countEl.innerHTML = `✅ ${data.status}`
+    loadLogs()
+  } catch (err) {
+    countEl.innerHTML = '❌ Error: ' + err.message
+    console.error("clearLogs error:", err)
   }
 }
 
