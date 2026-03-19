@@ -55,48 +55,73 @@ async function firebase_delete(path) {
 
 // Webhook Route - รับ events จาก LINE
 app.post("/webhook", line.middleware(config), (req, res) => {
+  console.log("Webhook received")
+  console.log("Events:", JSON.stringify(req.body.events, null, 2))
+  
+  // ต้อง return 200 เสมอ ไม่ว่าจะเกิด error หรือไม่
   Promise
     .all(req.body.events.map(handleEvent))
-    .then((result) => res.json(result))
+    .then((result) => {
+      console.log("Webhook processed successfully")
+      res.status(200).json({ ok: true })
+    })
     .catch((err) => {
       console.error("Webhook error:", err)
-      res.status(500).end()
+      // ยังคง return 200 เพื่อ prevent LINE retry
+      res.status(200).json({ ok: true, error: err.message })
     })
 })
 
 // Handle events จาก LINE และเก็บ userId
 async function handleEvent(event) {
   try {
+    console.log("Handling event:", event.type)
+    
     // เมื่อมีคนกด follow
     if (event.type === 'follow') {
       const userId = event.source.userId
       console.log("User followed:", userId)
-      await firebase_set(`followers/${userId}`, {
-        userId: userId,
-        followedAt: new Date().toISOString(),
-        status: 'active'
-      })
+      try {
+        await firebase_set(`followers/${userId}`, {
+          userId: userId,
+          followedAt: new Date().toISOString(),
+          status: 'active'
+        })
+        console.log("Follower saved successfully:", userId)
+      } catch (fbErr) {
+        console.error("Firebase save error:", fbErr)
+      }
     }
 
     // เมื่อมีคนกด unfollow
     if (event.type === 'unfollow') {
       const userId = event.source.userId
       console.log("User unfollowed:", userId)
-      await firebase_delete(`followers/${userId}`)
+      try {
+        await firebase_delete(`followers/${userId}`)
+        console.log("Follower removed successfully:", userId)
+      } catch (fbErr) {
+        console.error("Firebase delete error:", fbErr)
+      }
     }
 
     // เมื่อมีคนส่งข้อความ (บันทึก userId เพิ่มเติม)
     if (event.type === 'message' && event.message.type === 'text') {
       const userId = event.source.userId
       console.log("Message from:", userId, "text:", event.message.text)
-      // เก็บ userId ถ้ายังไม่มี
-      const exists = await firebase_get(`followers/${userId}`)
-      if (!exists) {
-        await firebase_set(`followers/${userId}`, {
-          userId: userId,
-          firstMessageAt: new Date().toISOString(),
-          status: 'active'
-        })
+      try {
+        // เก็บ userId ถ้ายังไม่มี
+        const exists = await firebase_get(`followers/${userId}`)
+        if (!exists) {
+          await firebase_set(`followers/${userId}`, {
+            userId: userId,
+            firstMessageAt: new Date().toISOString(),
+            status: 'active'
+          })
+          console.log("New follower from message:", userId)
+        }
+      } catch (fbErr) {
+        console.error("Firebase message save error:", fbErr)
       }
     }
   } catch (err) {
@@ -250,6 +275,16 @@ app.get("/webhook-test", (req, res) => {
     webhookUrl: "/webhook",
     status: "Webhook setup complete",
     expectingEvents: ["follow", "unfollow", "message"]
+  })
+})
+
+// View server logs
+app.get("/logs", (req, res) => {
+  res.json({
+    status: "Server running",
+    timestamp: new Date().toISOString(),
+    firebaseUrl: FIREBASE_DB_URL,
+    message: "Check Railway logs for detailed webhook events"
   })
 })
 
