@@ -168,10 +168,19 @@ async function loadFollowers() {
     let html = '<ul style="list-style: none; padding: 0;">'
     for (let userId in data.followers) {
       const follower = data.followers[userId]
-      html += `<li style="background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 3px;">
-                <strong>ID:</strong> ${userId}<br>
-                <strong>Status:</strong> ${follower.status}
-               </li>`
+      const displayName = follower.displayName || 'Unknown'
+      const picture = follower.pictureUrl ? `<img src="${follower.pictureUrl}" style="width: 40px; height: 40px; border-radius: 20px; margin-right: 10px; vertical-align: middle;">` : ''
+      const statusMsg = follower.statusMessage ? `<br><small>📝 ${follower.statusMessage}</small>` : ''
+      
+      html += `<li style="background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 3px; display: flex; align-items: center;">
+                ${picture}
+                <div style="flex: 1;">
+                  <strong>${displayName}</strong><br>
+                  <small style="color: #666;">ID: ${userId}</small><br>
+                  <small style="color: #999;">Status: ${follower.status}</small>
+                  ${statusMsg}
+                </div>
+              </li>`
     }
     html += '</ul>'
     listEl.innerHTML = html

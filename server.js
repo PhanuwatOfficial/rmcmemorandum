@@ -147,12 +147,18 @@ async function handleEvent(event) {
       const userId = event.source.userId
       addLog('info', 'User followed', { userId })
       try {
+        // ดึง profile จาก LINE
+        const profile = await client.getProfile(userId)
+        
         await firebase_set(`followers/${userId}`, {
           userId: userId,
+          displayName: profile.displayName,
+          pictureUrl: profile.pictureUrl,
+          statusMessage: profile.statusMessage,
           followedAt: new Date().toISOString(),
           status: 'active'
         })
-        addLog('info', 'Follower saved successfully', { userId })
+        addLog('info', 'Follower saved successfully', { userId, displayName: profile.displayName })
       } catch (fbErr) {
         addLog('error', 'Firebase save error', { message: fbErr.message })
       }
@@ -178,12 +184,18 @@ async function handleEvent(event) {
         // เก็บ userId ถ้ายังไม่มี
         const exists = await firebase_get(`followers/${userId}`)
         if (!exists) {
+          // ดึง profile จาก LINE
+          const profile = await client.getProfile(userId)
+          
           await firebase_set(`followers/${userId}`, {
             userId: userId,
+            displayName: profile.displayName,
+            pictureUrl: profile.pictureUrl,
+            statusMessage: profile.statusMessage,
             firstMessageAt: new Date().toISOString(),
             status: 'active'
           })
-          addLog('info', 'New follower from message', { userId })
+          addLog('info', 'New follower from message', { userId, displayName: profile.displayName })
         }
       } catch (fbErr) {
         addLog('error', 'Firebase message save error', { message: fbErr.message })

@@ -1,0 +1,117 @@
+> line-test@1.0.0 start
+> node server.js
+server running
+Starting Container
+No followers found in database
+Handling event: unfollow
+Webhook received - Signature valid
+User unfollowed: Ue78fdf247dea19fe8ef461f8645ef746
+Events: [
+    "timestamp": 1773911416881,
+  {
+    "type": "unfollow",
+    "source": {
+    "webhookEventId": "01KM2NR8GENDGN49YE129GC7VR",
+      "type": "user",
+    "deliveryContext": {
+      "isRedelivery": false
+    },
+      "userId": "Ue78fdf247dea19fe8ef461f8645ef746"
+    },
+    "mode": "active"
+  }
+]
+Follower removed successfully: Ue78fdf247dea19fe8ef461f8645ef746
+Webhook processed successfully
+    "replyToken": "2401cd9566464f39bdade3d6086dd5b7",
+    "mode": "active"
+  }
+]
+Handling event: follow
+User followed: Ue78fdf247dea19fe8ef461f8645ef746
+Follower saved successfully: Ue78fdf247dea19fe8ef461f8645ef746
+Webhook processed successfully
+Webhook received - Signature valid
+Events: [
+  {
+    "type": "follow",
+    "follow": {
+      "isUnblocked": true
+    },
+    "webhookEventId": "01KM2NTWMY7M8Y9445VCP19JCB",
+    "deliveryContext": {
+      "isRedelivery": false
+    },
+    "timestamp": 1773911503069,
+    "source": {
+      "type": "user",
+      "userId": "Ue78fdf247dea19fe8ef461f8645ef746"
+    },
+Followers retrieved: 1
+Broadcast complete: 1 sent, 0 failed
+Webhook received - Signature valid
+Events: [
+  {
+    "type": "unfollow",
+    "webhookEventId": "01KM2PC40DQSCQF9Z5AAX17TW6",
+    "deliveryContext": {
+      "isRedelivery": false
+    },
+    "timestamp": 1773912067626,
+    "source": {
+      "type": "user",
+      "userId": "U6389af3cace45f66bc645cf93b2a32ac"
+    },
+    "mode": "active"
+  }
+]
+Handling event: unfollow
+User unfollowed: U6389af3cace45f66bc645cf93b2a32ac
+Follower removed successfully: U6389af3cace45f66bc645cf93b2a32ac
+Webhook processed successfully
+    "follow": {
+      "isUnblocked": true
+    },
+    "webhookEventId": "01KM2PF4PA0RT4FZ3SHA4SMFW9",
+    "deliveryContext": {
+Webhook received - Signature valid
+Events: [
+      "isRedelivery": false
+  {
+    "type": "follow",
+    },
+    "timestamp": 1773912166610,
+    "source": {
+      "type": "user",
+      "userId": "U6389af3cace45f66bc645cf93b2a32ac"
+    },
+    "replyToken": "9d1c5ab15c694b7a8b171c286f138450",
+    "mode": "active"
+  }
+]
+Handling event: follow
+User followed: U6389af3cace45f66bc645cf93b2a32ac
+Follower saved successfully: U6389af3cace45f66bc645cf93b2a32ac
+Webhook processed successfully
+Followers retrieved: 2
+Broadcast complete: 2 sent, 0 failed
+Webhook received - Signature valid
+    "webhookEventId": "01KM2PGXSRBN2J6RGRX7S8DC0W",
+Events: [
+  {
+    "deliveryContext": {
+      "isRedelivery": false
+    "type": "message",
+    "message": {
+    },
+      "type": "text",
+    "timestamp": 1773912225451,
+      "id": "605793261248053369",
+    "source": {
+      "quoteToken": "imI5JGiRm_C1mM8yitmBUqaDhicsmOLkV5FZHDcGFKgF8wapyuew5_kmuAZiBRLndcl7cBk02z3l7l6O2UwIGm3gZFsDba15_eUY9cHbSa64EcVV-XeOlBPAc91R9SewocdirmGFWtHyggYemPnXsA",
+      "type": "user",
+      "markAsReadToken": "p8upA_-A8HSZ0Gh0dSoIdUsYp6uBo3jftYzTWkK8MTIgt26qo_hvr40D6DMmHpgPYt-XfMgrq9lcDHkBSBIKgCM75vjwfW0YWUXPPqFALRwkRGyFo0u3n3Xf43vHfKAGZZzo5LaSVT7I5JX4OIl6huSdnDAL8p1JHZoyER7qoZ8VLtygczYvGVxtK4z_y6INDSbBBccvR9UNETGpL0ZOEw",
+      "userId": "U6389af3cace45f66bc645cf93b2a32ac"
+      "text": "เห้ยยยย"
+    },
+    },
