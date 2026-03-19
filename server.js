@@ -148,13 +148,20 @@ async function handleEvent(event) {
       addLog('info', 'User followed', { userId })
       try {
         // ดึง profile จาก LINE
-        const profile = await client.getProfile(userId)
+        let profile = null
+        try {
+          profile = await client.getProfile(userId)
+          addLog('info', 'Profile fetched', { userId, displayName: profile.displayName })
+        } catch (profileErr) {
+          addLog('warn', 'Could not fetch profile', { userId, error: profileErr.message })
+          profile = { displayName: 'Unknown', pictureUrl: null, statusMessage: null }
+        }
         
         await firebase_set(`followers/${userId}`, {
           userId: userId,
-          displayName: profile.displayName,
-          pictureUrl: profile.pictureUrl,
-          statusMessage: profile.statusMessage,
+          displayName: profile.displayName || 'Unknown',
+          pictureUrl: profile.pictureUrl || null,
+          statusMessage: profile.statusMessage || null,
           followedAt: new Date().toISOString(),
           status: 'active'
         })
@@ -185,13 +192,20 @@ async function handleEvent(event) {
         const exists = await firebase_get(`followers/${userId}`)
         if (!exists) {
           // ดึง profile จาก LINE
-          const profile = await client.getProfile(userId)
+          let profile = null
+          try {
+            profile = await client.getProfile(userId)
+            addLog('info', 'Profile fetched from message', { userId, displayName: profile.displayName })
+          } catch (profileErr) {
+            addLog('warn', 'Could not fetch profile from message', { userId, error: profileErr.message })
+            profile = { displayName: 'Unknown', pictureUrl: null, statusMessage: null }
+          }
           
           await firebase_set(`followers/${userId}`, {
             userId: userId,
-            displayName: profile.displayName,
-            pictureUrl: profile.pictureUrl,
-            statusMessage: profile.statusMessage,
+            displayName: profile.displayName || 'Unknown',
+            pictureUrl: profile.pictureUrl || null,
+            statusMessage: profile.statusMessage || null,
             firstMessageAt: new Date().toISOString(),
             status: 'active'
           })
@@ -301,6 +315,39 @@ app.get("/followers", async (req, res) => {
     })
   } catch (err) {
     addLog('error', 'Get followers error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Refresh profile for a specific user
+app.post("/refresh-profile/:userId", async (req, res) => {
+  const userId = req.params.userId
+  try {
+    addLog('info', 'Attempting to refresh profile', { userId })
+    
+    // ดึง profile จาก LINE
+    const profile = await client.getProfile(userId)
+    addLog('info', 'Profile fetched successfully', { userId, displayName: profile.displayName })
+    
+    // อัปเดต Firebase
+    const followerData = await firebase_get(`followers/${userId}`)
+    await firebase_set(`followers/${userId}`, {
+      ...followerData,
+      displayName: profile.displayName,
+      pictureUrl: profile.pictureUrl,
+      statusMessage: profile.statusMessage
+    })
+    
+    res.json({ 
+      status: "Profile refreshed", 
+      profile: {
+        displayName: profile.displayName,
+        pictureUrl: profile.pictureUrl,
+        statusMessage: profile.statusMessage
+      }
+    })
+  } catch (err) {
+    addLog('error', 'Refresh profile error', { userId, message: err.message })
     res.status(500).json({ error: err.message })
   }
 })

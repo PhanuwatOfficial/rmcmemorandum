@@ -169,17 +169,20 @@ async function loadFollowers() {
     for (let userId in data.followers) {
       const follower = data.followers[userId]
       const displayName = follower.displayName || 'Unknown'
-      const picture = follower.pictureUrl ? `<img src="${follower.pictureUrl}" style="width: 40px; height: 40px; border-radius: 20px; margin-right: 10px; vertical-align: middle;">` : ''
+      const picture = follower.pictureUrl ? `<img src="${follower.pictureUrl}" style="width: 40px; height: 40px; border-radius: 20px; margin-right: 10px; vertical-align: middle;">` : '<div style="width: 40px; height: 40px; border-radius: 20px; margin-right: 10px; background: #ccc; display: inline-block;"></div>'
       const statusMsg = follower.statusMessage ? `<br><small>📝 ${follower.statusMessage}</small>` : ''
       
-      html += `<li style="background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 3px; display: flex; align-items: center;">
-                ${picture}
-                <div style="flex: 1;">
-                  <strong>${displayName}</strong><br>
-                  <small style="color: #666;">ID: ${userId}</small><br>
-                  <small style="color: #999;">Status: ${follower.status}</small>
-                  ${statusMsg}
+      html += `<li style="background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 3px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; flex: 1;">
+                  ${picture}
+                  <div style="flex: 1;">
+                    <strong>${displayName}</strong><br>
+                    <small style="color: #666;">ID: ${userId}</small><br>
+                    <small style="color: #999;">Status: ${follower.status}</small>
+                    ${statusMsg}
+                  </div>
                 </div>
+                <button onclick="refreshProfile('${userId}')" style="background: #0066cc; padding: 5px 10px; font-size: 12px;">Refresh</button>
               </li>`
     }
     html += '</ul>'
@@ -187,6 +190,25 @@ async function loadFollowers() {
   } catch (err) {
     countEl.innerHTML = '❌ Error: ' + err.message
     console.error("loadFollowers error:", err)
+  }
+}
+
+async function refreshProfile(userId) {
+  const listEl = document.getElementById("followersList")
+  try {
+    const res = await fetch(`/refresh-profile/${userId}`, { method: "POST" })
+    const data = await res.json()
+    
+    if (!res.ok) {
+      alert('Error: ' + data.error)
+      return
+    }
+    
+    alert(`✅ Profile updated!\nName: ${data.profile.displayName}`)
+    loadFollowers()
+  } catch (err) {
+    alert('❌ Error: ' + err.message)
+    console.error("refreshProfile error:", err)
   }
 }
 
