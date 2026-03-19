@@ -1,6 +1,5 @@
 const express = require("express")
 const line = require("@line/bot-sdk")
-const fetch = require("node-fetch") // ถ้าใช้ Node <18 ต้อง npm install node-fetch@2
 
 const app = express()
 app.use(express.json())
