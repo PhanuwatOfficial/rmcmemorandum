@@ -146,10 +146,17 @@ async function broadcast() {
 async function loadFollowers() {
   const countEl = document.getElementById("followerCount")
   const listEl = document.getElementById("followersList")
-  countEl.innerHTML = '⏳ Loading...'
+  countEl.innerHTML = '⏳ Refreshing profiles...'
   listEl.innerHTML = ''
 
   try {
+    // Refresh all profiles ก่อน
+    addLog('info', 'Refreshing all profiles before loading...')
+    const refreshRes = await fetch("/refresh-all-profiles", { method: "POST" })
+    const refreshData = await refreshRes.json()
+    addLog('info', `Profiles refreshed: ${refreshData.refreshed}/${refreshData.total}`)
+    
+    // จากนั้น load followers
     const res = await fetch("/followers")
     const data = await res.json()
     
@@ -158,7 +165,7 @@ async function loadFollowers() {
       return
     }
     
-    countEl.innerHTML = `👥 Total Followers: ${data.count}`
+    countEl.innerHTML = `👥 Total Followers: ${data.count}${refreshData.refreshed > 0 ? ` (refreshed: ${refreshData.refreshed})` : ''}`
     
     if (data.count === 0) {
       listEl.innerHTML = '📭 No followers yet'
@@ -191,6 +198,12 @@ async function loadFollowers() {
     countEl.innerHTML = '❌ Error: ' + err.message
     console.error("loadFollowers error:", err)
   }
+}
+
+function addLog(level, message) {
+  // Helper function สำหรับ frontend logging (optional)
+  // ป็นการพิมพ์เฉพาะใน console แท่นั้น
+  console.log(`[${level.toUpperCase()}] ${message}`)
 }
 
 async function refreshProfile(userId) {

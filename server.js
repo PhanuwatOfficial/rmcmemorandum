@@ -352,6 +352,53 @@ app.post("/refresh-profile/:userId", async (req, res) => {
   }
 })
 
+// Refresh all profiles
+app.post("/refresh-all-profiles", async (req, res) => {
+  try {
+    addLog('info', 'Starting refresh all profiles')
+    
+    const followers = await firebase_get("followers")
+    if (!followers || typeof followers !== 'object') {
+      addLog('info', 'No followers to refresh')
+      return res.json({ status: "no followers", refreshed: 0 })
+    }
+    
+    let refreshed = 0
+    let failed = 0
+    
+    for (let userId in followers) {
+      try {
+        const profile = await client.getProfile(userId)
+        const followerData = followers[userId]
+        
+        await firebase_set(`followers/${userId}`, {
+          ...followerData,
+          displayName: profile.displayName,
+          pictureUrl: profile.pictureUrl,
+          statusMessage: profile.statusMessage
+        })
+        
+        refreshed++
+        addLog('info', 'Profile refreshed', { userId, displayName: profile.displayName })
+      } catch (err) {
+        failed++
+        addLog('warn', 'Failed to refresh profile', { userId, error: err.message })
+      }
+    }
+    
+    addLog('info', 'Refresh all profiles complete', { refreshed, failed })
+    res.json({ 
+      status: "Refresh complete",
+      refreshed: refreshed,
+      failed: failed,
+      total: Object.keys(followers).length
+    })
+  } catch (err) {
+    addLog('error', 'Refresh all profiles error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Test endpoint - เพิ่ม follower สำหรับทดสอบ
 app.post("/test-add-follower", async (req, res) => {
   try {
