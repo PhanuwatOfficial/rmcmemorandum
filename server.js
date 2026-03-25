@@ -596,17 +596,87 @@ async function handleEvent(event) {
 // Send ให้ USER เดียว (ถ้าส่ง userId ใน request)
 app.post("/send", async (req,res)=>{
 
- const { text, userId } = req.body
- const targetUserId = userId // ใช้ userId จากอีกส่ง, ถ้าไม่มีจะ undefined
+ const { userId, title, type, content } = req.body
+ const targetUserId = userId
 
- addLog('info', 'Send message request', { text, userId: targetUserId })
+ addLog('info', 'Send message request', { title, type, userId: targetUserId })
 
  try{
 
-  await client.pushMessage(targetUserId,{
-   type:"text",
-   text:text
-  })
+  const lineMessage = {
+    type: "flex",
+    altText: `New Memorandum: ${title}`,
+    contents: {
+      type: "bubble",
+      header: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          {
+            type: "text",
+            text: "📋 New Memorandum",
+            weight: "bold",
+            color: "#182034",
+            size: "xl"
+          }
+        ]
+      },
+      body: {
+        type: "box",
+        layout: "vertical",
+        spacing: "md",
+        contents: [
+          {
+            type: "text",
+            text: title,
+            weight: "bold",
+            size: "lg",
+            wrap: true,
+            color: "#182034"
+          },
+          {
+            type: "text",
+            text: `Type: ${type || 'Announcement'}`,
+            size: "sm",
+            color: "#1a2740",
+            weight: "bold",
+            margin: "md"
+          },
+          {
+            type: "separator",
+            margin: "md"
+          },
+          {
+            type: "text",
+            text: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+            size: "sm",
+            color: "#666666",
+            wrap: true,
+            margin: "md"
+          }
+        ]
+      },
+      footer: {
+        type: "box",
+        layout: "vertical",
+        spacing: "sm",
+        contents: [
+          {
+            type: "button",
+            action: {
+              type: "uri",
+              label: "📌 View Details",
+              uri: "https://rmcmemorandum.up.railway.app/"
+            },
+            style: "primary",
+            color: "#1a2740"
+          }
+        ]
+      }
+    }
+  }
+
+  await client.pushMessage(targetUserId, lineMessage)
 
   addLog('info', 'Message sent successfully', { userId: targetUserId })
   res.json({status:"sent"})
