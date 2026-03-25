@@ -298,6 +298,40 @@ app.post("/user/unlink-follower", verifyToken, async (req, res) => {
   }
 })
 
+// Change password
+app.post("/user/change-password", verifyToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body
+    
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current password and new password are required" })
+    }
+    
+    addLog('info', 'Change password attempt', { userId: req.userId })
+    
+    const user = await firebase_get(`users/${req.userId}`)
+    if (!user) {
+      return res.status(404).json({ error: "User not found" })
+    }
+    
+    // Verify current password
+    if (user.password !== currentPassword) {
+      addLog('warn', 'Change password failed - incorrect current password', { userId: req.userId })
+      return res.status(401).json({ error: "Current password is incorrect" })
+    }
+    
+    // Update password
+    user.password = newPassword
+    await firebase_set(`users/${req.userId}`, user)
+    
+    addLog('info', 'Password changed successfully', { userId: req.userId })
+    res.json({ status: "Password changed successfully" })
+  } catch (err) {
+    addLog('error', 'Change password error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Get user's linked followers
 app.get("/user/followers", verifyToken, async (req, res) => {
   try {
@@ -665,7 +699,7 @@ app.post("/send", async (req,res)=>{
             type: "button",
             action: {
               type: "uri",
-              label: "📌 View Details",
+              label: "View Details",
               uri: "https://rmcmemorandum.up.railway.app/"
             },
             style: "primary",

@@ -1460,8 +1460,47 @@
                     </div>
                 </div>
 
+                <div class="section-card" style="max-width: 680px;">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">lock</span>
+                            Change Password
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div style="display: grid; gap: 12px;">
+                            <div class="field">
+                                <label>Current Password</label>
+                                <input id="currentPassword" type="password" placeholder="Enter your current password">
+                            </div>
+                            <div class="field">
+                                <label>New Password</label>
+                                <input id="newPassword" type="password" placeholder="Enter your new password">
+                            </div>
+                            <div class="field">
+                                <label>Confirm New Password</label>
+                                <input id="confirmPassword" type="password" placeholder="Confirm your new password">
+                            </div>
+                            <div class="btn-row" style="margin-top: 16px;">
+                                <button class="btn btn-primary" onclick="changePassword()">
+                                    <span class="material-symbols-outlined">check_circle</span>
+                                    Update Password
+                                </button>
+                                <button class="btn btn-ghost" onclick="clearPasswordForm()">
+                                    <span class="material-symbols-outlined">clear</span>
+                                    Clear
+                                </button>
+                            </div>
+                            <div class="status-msg" id="statusChangePassword">
+                                <span class="material-symbols-outlined"></span>
+                                <span class="msg-text"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
+<!--เพิ่มส่วน update password (ให้แต่ละ user สามารถเปลี่ยน password ได้)-->
 
             <!-- ── DASHBOARD VIEW ─────────────────── -->
             <div id="view-dashboard" class="view">
@@ -2094,6 +2133,58 @@
             currentUser = null
             updateUIForLoggedOut()
             showView('login')
+        }
+
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value.trim()
+            const newPassword = document.getElementById('newPassword').value.trim()
+            const confirmPassword = document.getElementById('confirmPassword').value.trim()
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                setStatus('statusChangePassword', 'error', 'error', 'All fields are required.')
+                return
+            }
+
+            if (newPassword !== confirmPassword) {
+                setStatus('statusChangePassword', 'error', 'error', 'New passwords do not match.')
+                return
+            }
+
+            if (newPassword.length < 6) {
+                setStatus('statusChangePassword', 'error', 'error', 'New password must be at least 6 characters.')
+                return
+            }
+
+            setStatus('statusChangePassword', 'loading', 'hourglass_empty', 'Updating password...')
+            try {
+                const res = await fetch('/user/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                })
+                const data = await res.json()
+                if (!res.ok) {
+                    setStatus('statusChangePassword', 'error', 'error', data.error || 'Password change failed.')
+                    return
+                }
+
+                setStatus('statusChangePassword', 'success', 'check_circle', 'Password updated successfully!')
+                setTimeout(() => {
+                    clearPasswordForm()
+                }, 2000)
+            } catch (err) {
+                setStatus('statusChangePassword', 'error', 'error', err.message)
+            }
+        }
+
+        function clearPasswordForm() {
+            document.getElementById('currentPassword').value = ''
+            document.getElementById('newPassword').value = ''
+            document.getElementById('confirmPassword').value = ''
+            document.getElementById('statusChangePassword').classList.remove('show', 'success', 'error', 'loading')
         }
 
         async function loadUserData() {
