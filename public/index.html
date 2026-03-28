@@ -1334,8 +1334,8 @@
                 </button>
                 <div class="divider-v"></div>
                 <div class="user-info">
-                    <div class="name">LINE Admin</div>
-                    <div class="role">Bot Manager</div>
+                    <div class="name" id="topbarUserName">ชื่อผู้ใช้</div>
+                    <div class="role" id="topbarUserRole">ตำแหน่ง</div>
                 </div>
                 <div class="avatar">LA</div>
             </div>
@@ -1922,6 +1922,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <!--user ที่ทำการ link ไปแล้ว ไม่ต้องแสดงในรายการ available followers-->
                 </div>
             </div>
 
@@ -2097,6 +2099,12 @@
             document.getElementById('createSection').style.display = 'block'
             document.getElementById('userSection').style.display = 'block'
             document.getElementById('guestSection').style.display = 'none'
+            
+            // Update topbar user info
+            if (currentUser) {
+                document.getElementById('topbarUserName').textContent = `${currentUser.name} ${currentUser.surname}`
+                document.getElementById('topbarUserRole').textContent = currentUser.role || 'Bot Manager'
+            }
         }
 
         function updateUIForLoggedOut() {
@@ -2293,11 +2301,21 @@
                 const res = await fetch('/followers')
                 const data = await res.json()
 
+                // Get already linked followers
+                const linkedRes = await fetch('/admin/all-linked-followers', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const linkedData = await linkedRes.json()
+                const linkedFollowerIds = new Set(linkedData.linkedFollowers.map(link => link.followerId))
+
                 const select = document.getElementById('availableFollowers')
                 select.innerHTML = '<option value="">— Select a follower —</option>'
 
                 if (data.count > 0) {
                     for (let uid in data.followers) {
+                        // Skip if already linked
+                        if (linkedFollowerIds.has(uid)) continue
+
                         const f = data.followers[uid]
                         const name = f.displayName || 'Unknown'
                         const option = document.createElement('option')
@@ -2318,11 +2336,21 @@
                 })
                 const data = await res.json()
 
+                // Get already linked users
+                const linkedRes = await fetch('/admin/all-linked-followers', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const linkedData = await linkedRes.json()
+                const linkedUserIds = new Set(linkedData.linkedFollowers.map(link => link.userId))
+
                 const select = document.getElementById('linkToUser')
                 select.innerHTML = '<option value="">— Select a user —</option>'
 
                 if (data.users && data.users.length > 0) {
                     for (let user of data.users) {
+                        // Skip if already has linked followers
+                        if (linkedUserIds.has(user.userId)) continue
+
                         const displayName = `${user.name} ${user.surname} (${user.username})`
                         const option = document.createElement('option')
                         option.value = user.userId
@@ -2532,10 +2560,40 @@
         // ── Load Recipients for Compose ──────────
         async function loadComposeRecipients() {
             try {
-                const res = await fetch('/admin/all-linked-followers', {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                })
-                const data = await res.json()
+                let data
+                
+                // Admins see all linked followers across all users
+                if (currentUser.role === 'admin') {
+                    const res = await fetch('/admin/all-linked-followers', {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                    data = await res.json()
+                } else {
+                    // Regular users see only their own linked followers
+                    const res = await fetch('/user/followers', {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                    const userFollowerData = await res.json()
+                    // Transform into linkedFollowers format
+                    data = {
+                        linkedFollowers: []
+                    }
+                    if (userFollowerData.followerCount > 0) {
+                        for (let uid in userFollowerData.followers) {
+                            const follower = userFollowerData.followers[uid]
+                            data.linkedFollowers.push({
+                                userId: currentUser.userId,
+                                username: currentUser.username,
+                                name: currentUser.name,
+                                surname: currentUser.surname,
+                                followerId: uid,
+                                followerName: follower.displayName || 'Unknown',
+                                linkedAt: follower.linkedAt || new Date().toISOString()
+                            })
+                        }
+                    }
+                }
+
                 const container = document.getElementById('recipientsList')
 
                 if (!data.linkedFollowers || data.linkedFollowers.length === 0) {
@@ -2556,6 +2614,9 @@
                         <tbody>
                 `
                 for (let link of data.linkedFollowers) {
+                    // Skip if this is the current user (don't show themselves as a recipient) - only for admins viewing all
+                    if (currentUser.role === 'admin' && link.userId === currentUser.userId) continue
+
                     const userName = `${link.name} ${link.surname}`
                     const linkedDate = new Date(link.linkedAt).toLocaleDateString()
                     html += `
@@ -2913,7 +2974,17 @@
 
         // ── Dashboard Refresh ───────────────────────
         async function refreshDashboard() {
-            document.getElementById('stat-sent').textContent = sentCount
+            // Fetch sent memos count for current user
+            try {
+                const res = await fetch('/sent-memos', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    document.getElementById('stat-sent').textContent = data.count || 0
+                }
+            } catch (e) { }
+            
             loadLogs()
             // followers count
             try {

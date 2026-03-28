@@ -637,6 +637,19 @@ app.post("/send", async (req,res)=>{
 
  try{
 
+  // Get sender information if senderUserId is provided
+  let senderName = 'System'
+  if (senderUserId) {
+    try {
+      const sender = await firebase_get(`users/${senderUserId}`)
+      if (sender) {
+        senderName = `${sender.name || ''} ${sender.surname || ''}`.trim()
+      }
+    } catch (err) {
+      addLog('warn', 'Could not fetch sender info', { senderUserId, error: err.message })
+    }
+  }
+
   const lineMessage = {
     type: "flex",
     altText: `New Memorandum: ${title}`,
@@ -667,6 +680,14 @@ app.post("/send", async (req,res)=>{
             size: "lg",
             wrap: true,
             color: "#182034"
+          },
+          {
+            type: "text",
+            text: `From: ${senderName}`,
+            size: "sm",
+            color: "#c8a96e",
+            weight: "bold",
+            margin: "md"
           },
           {
             type: "text",
