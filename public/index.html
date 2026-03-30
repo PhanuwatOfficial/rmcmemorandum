@@ -88,7 +88,7 @@
 
         .sidebar-brand h1 {
             font-family: "Noto Sans Thai", sans-serif;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 700;
             color: #fff;
             letter-spacing: 0.02em;
@@ -1436,7 +1436,7 @@
 ════════════════════════════════════════════ -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <h1>Executive Suite</h1>
+            <h1>RMC E-Memo</h1>
             <p>LINE Memorandum Platform</p>
         </div>
 
@@ -1646,6 +1646,7 @@
                 </div>
             </div>
 
+
             <!-- ── MANAGE USER VIEW ───────────────── -->
             <div id="view-manage-user" class="view" style="display:none;">
                 <div class="page-header">
@@ -1726,6 +1727,8 @@
                 </div>
 
             </div>
+
+
 
             <!-- ── DASHBOARD VIEW ─────────────────── -->
             <div id="view-dashboard" class="view">
@@ -2215,6 +2218,49 @@
                     </div>
 
                     <!--user ที่ทำการ link ไปแล้ว ไม่ต้องแสดงในรายการ available followers-->
+                </div>
+
+                <!-- ── PENDING USER APPROVALS (ADMIN ONLY) ────────────────────── -->
+                <div id="adminPendingApprovals" class="section-card" style="max-width: 100%; display:none;">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">pending_actions</span>
+                            Pending User Registrations
+                            <span id="pendingUsersCountBadge"
+                                style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--red); color:#fff; border-radius:2px; padding:2px 8px; margin-left:4px; display:none;"></span>
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="loadPendingUsers()">
+                            <span class="material-symbols-outlined">refresh</span>
+                            Refresh
+                        </button>
+                    </div>
+
+                    <div id="pendingUsersStatus" class="status-msg" style="margin:16px 28px 0; display:none;">
+                        <span class="material-symbols-outlined"></span>
+                        <span class="msg-text"></span>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Name</th>
+                                    <th>Applied</th>
+                                    <th style="text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingUsersTbody">
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="empty-state"><span class="material-symbols-outlined">check_circle</span>
+                                            <p>No pending registrations.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -2742,13 +2788,18 @@
                 loadFollowers()
                 // Show admin section if user is admin
                 const adminSection = document.getElementById('adminOnlyFollowerMgmt')
+                const pendingSection = document.getElementById('adminPendingApprovals')
                 if (adminSection) {
                     adminSection.style.display = currentUser.role === 'admin' ? 'block' : 'none'
+                    if (pendingSection) {
+                        pendingSection.style.display = currentUser.role === 'admin' ? 'block' : 'none'
+                    }
                     if (currentUser.role === 'admin') {
                         loadAllUsers()
                         loadLinkedFollowers()
                         loadAvailableFollowersForLinking()
                         loadUsersForLinking()
+                        loadPendingUsers()
                     }
                 }
             }
@@ -2907,14 +2958,14 @@
                     setStatus('statusRegister', 'error', 'error', data.error || 'Registration failed.')
                     return
                 }
-                setStatus('statusRegister', 'success', 'check_circle', 'Account created! Redirecting to login...')
+                setStatus('statusRegister', 'success', 'check_circle', 'Account created! Waiting for admin approval...')
                 setTimeout(() => {
                     document.getElementById('regUsername').value = ''
                     document.getElementById('regName').value = ''
                     document.getElementById('regSurname').value = ''
                     document.getElementById('regPassword').value = ''
                     showView('login')
-                }, 1500)
+                }, 2500)
             } catch (err) {
                 setStatus('statusRegister', 'error', 'error', err.message)
             }
@@ -2938,7 +2989,12 @@
                 })
                 const data = await res.json()
                 if (!res.ok) {
-                    setStatus('statusLogin', 'error', 'error', data.error || 'Login failed.')
+                    // Show pending message if user is waiting for approval
+                    if (res.status === 403 && data.error && data.error.includes('pending')) {
+                        setStatus('statusLogin', 'warn', 'schedule', data.error)
+                    } else {
+                        setStatus('statusLogin', 'error', 'error', data.error || 'Login failed.')
+                    }
                     return
                 }
                 // Save token and user data
@@ -3031,6 +3087,130 @@
             document.getElementById('newPassword').value = ''
             document.getElementById('confirmPassword').value = ''
             document.getElementById('statusChangePassword').classList.remove('show', 'success', 'error', 'loading')
+        }
+
+        // ── Pending User Approvals (Admin Only) ────────────────────
+        async function loadPendingUsers() {
+            if (!currentUser || currentUser.role !== 'admin') return
+
+            const statusEl = document.getElementById('pendingUsersStatus')
+            const tbody = document.getElementById('pendingUsersTbody')
+            const badge = document.getElementById('pendingUsersCountBadge')
+
+            statusEl.className = 'status-msg loading show'
+            statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
+            statusEl.querySelector('.msg-text').textContent = 'Loading pending users...'
+
+            try {
+                const res = await fetch('/pending-users', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+
+                if (!res.ok) {
+                    statusEl.className = 'status-msg'
+                    return
+                }
+
+                const data = await res.json()
+                console.log('📋 Pending users response:', data)
+
+                statusEl.className = 'status-msg'
+
+                if (!data.pendingUsers || data.pendingUsers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><span class="material-symbols-outlined">check_circle</span><p>No pending registrations.</p></div></td></tr>`
+                    badge.style.display = 'none'
+                    return
+                }
+
+                badge.textContent = data.pendingUsers.length
+                badge.style.display = 'inline-block'
+
+                let rows = ''
+                for (let user of data.pendingUsers) {
+                    const date = new Date(user.createdAt)
+                    const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+                    const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+
+                    rows += `<tr>
+          <td style="font-weight:500;">${escHtml(user.username)}</td>
+          <td style="font-size:12px;color:var(--ink-muted);">${escHtml(user.name)} ${escHtml(user.surname)}</td>
+          <td style="font-size:12px;color:var(--ink-muted);">
+            <span>${dateStr}</span><br>
+            <span style="font-size:11px;">${timeStr}</span>
+          </td>
+          <td style="text-align: center; display: flex; gap: 8px; justify-content: center;">
+            <button class="btn btn-ghost btn-sm" onclick="approvePendingUser('${user.userId}')" title="Approve">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: var(--green);">check_circle</span>
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="rejectPendingUser('${user.userId}', '${escHtml(user.username)}')" title="Reject">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: var(--red);">cancel</span>
+            </button>
+          </td>
+        </tr>`
+                }
+                tbody.innerHTML = rows
+            } catch (e) {
+                console.error('❌ Error loading pending users:', e)
+                statusEl.className = 'status-msg error show'
+                statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                statusEl.querySelector('.msg-text').textContent = 'Failed to load pending users.'
+            }
+        }
+
+        async function approvePendingUser(userId) {
+            const confirmed = await showConfirmModal('Approve this pending registration?', 'Approve')
+            if (!confirmed) return
+
+            try {
+                const res = await fetch(`/approve-user/${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+
+                const data = await res.json()
+                if (!res.ok) {
+                    alert('Error: ' + (data.error || 'Failed to approve user'))
+                    return
+                }
+
+                addNotification(
+                    '✅ User Approved',
+                    'New user registration has been approved.',
+                    'success'
+                )
+                loadPendingUsers()
+            } catch (e) {
+                console.error('❌ Error approving user:', e)
+                alert('Error: ' + e.message)
+            }
+        }
+
+        async function rejectPendingUser(userId, username) {
+            const confirmed = await showConfirmModal(`Reject and delete ${username}'s registration?`, 'Reject')
+            if (!confirmed) return
+
+            try {
+                const res = await fetch(`/reject-user/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+
+                const data = await res.json()
+                if (!res.ok) {
+                    alert('Error: ' + (data.error || 'Failed to reject user'))
+                    return
+                }
+
+                addNotification(
+                    '❌ User Rejected',
+                    `Registration for ${username} has been rejected.`,
+                    'error'
+                )
+                loadPendingUsers()
+            } catch (e) {
+                console.error('❌ Error rejecting user:', e)
+                alert('Error: ' + e.message)
+            }
         }
 
         async function loadUserData() {

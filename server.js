@@ -147,13 +147,18 @@ app.post("/register", async (req, res) => {
     // สร้าง user object
     const userId = `user_${Date.now()}`
     
+    // Check if this is the first user - if so, make them admin
+    const allUsers = await firebase_get('users')
+    const isFirstUser = !allUsers || Object.keys(allUsers).length === 0
+    
     const userData = {
       userId,
       username,
       name,
       surname,
       password: password,
-      role: 'user',
+      role: isFirstUser ? 'admin' : 'user',
+      status: isFirstUser ? 'active' : 'pending',  // First user is active by default
       createdAt: new Date().toISOString(),
       linkedFollowers: {}
     }
@@ -191,6 +196,12 @@ app.post("/login", async (req, res) => {
     const userId = userRef.userId
     const user = await firebase_get(`users/${userId}`)
     
+    // Check if user is pending approval
+    if (user.status === 'pending') {
+      addLog('warn', 'Login blocked - user pending approval', { username })
+      return res.status(403).json({ error: "Your account is pending admin approval. Please wait for approval to access the system." })
+    }
+    
     // เช็คพาสเวิร์ด
     if (user.password !== password) {
       addLog('warn', 'Login failed - invalid password', { username })
@@ -215,6 +226,116 @@ app.post("/login", async (req, res) => {
     })
   } catch (err) {
     addLog('error', 'Login error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Get pending user registrations (admin only)
+app.get("/pending-users", verifyToken, async (req, res) => {
+  try {
+    const userId = sessions[req.headers.authorization?.split(' ')[1]]
+    const user = await firebase_get(`users/${userId}`)
+    
+    // Only admins can view pending users
+    if (user.role !== 'admin') {
+      return res.status(403).json({ error: "Unauthorized" })
+    }
+    
+    // Fetch all users and filter for pending status
+    const allUsers = await firebase_get('users')
+    const pendingUsers = []
+    
+    for (const uid in allUsers) {
+      const u = allUsers[uid]
+      if (u.status === 'pending') {
+        pendingUsers.push({
+          userId: u.userId,
+          username: u.username,
+          name: u.name,
+          surname: u.surname,
+          createdAt: u.createdAt
+        })
+      }
+    }
+    
+    addLog('info', 'Pending users fetched', { count: pendingUsers.length })
+    res.json({ pendingUsers })
+  } catch (err) {
+    addLog('error', 'Error fetching pending users', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Approve pending user (admin only)
+app.put("/approve-user/:userId", verifyToken, async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1]
+    const adminId = sessions[token]
+    const admin = await firebase_get(`users/${adminId}`)
+    
+    // Only admins can approve users
+    if (admin.role !== 'admin') {
+      return res.status(403).json({ error: "Unauthorized" })
+    }
+    
+    const targetUserId = req.params.userId
+    const targetUser = await firebase_get(`users/${targetUserId}`)
+    
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found" })
+    }
+    
+    if (targetUser.status !== 'pending') {
+      return res.status(400).json({ error: "User is not pending approval" })
+    }
+    
+    // Update status to active
+    targetUser.status = 'active'
+    targetUser.approvedAt = new Date().toISOString()
+    targetUser.approvedBy = adminId
+    
+    await firebase_set(`users/${targetUserId}`, targetUser)
+    addLog('info', 'User approved', { userId: targetUserId, username: targetUser.username, approvedBy: adminId })
+    
+    res.json({ status: "User approved successfully" })
+  } catch (err) {
+    addLog('error', 'Error approving user', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Reject and delete pending user (admin only)
+app.delete("/reject-user/:userId", verifyToken, async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1]
+    const adminId = sessions[token]
+    const admin = await firebase_get(`users/${adminId}`)
+    
+    // Only admins can reject users
+    if (admin.role !== 'admin') {
+      return res.status(403).json({ error: "Unauthorized" })
+    }
+    
+    const targetUserId = req.params.userId
+    const targetUser = await firebase_get(`users/${targetUserId}`)
+    
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found" })
+    }
+    
+    if (targetUser.status !== 'pending') {
+      return res.status(400).json({ error: "User is not pending approval" })
+    }
+    
+    // Delete user and username reference
+    await firebase_delete(`users/${targetUserId}`)
+    await firebase_delete(`users_by_username/${targetUser.username}`)
+    
+    addLog('warn', 'Pending user rejected and deleted', { userId: targetUserId, username: targetUser.username, rejectedBy: adminId })
+    
+    res.json({ status: "User rejected and deleted successfully" })
+  } catch (err) {
+    addLog('error', 'Error rejecting user', { message: err.message })
     res.status(500).json({ error: err.message })
   }
 })
