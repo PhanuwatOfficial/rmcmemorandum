@@ -21,7 +21,7 @@
         href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Mitr:wght@200;300;400;500;600;700&family=Noto+Sans+Thai:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Sarabun:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
         rel="stylesheet">
 
-        
+
     <style>
         :root {
             --ink: #0f1117;
@@ -308,7 +308,7 @@
         .content {
             padding: 48px 40px;
             /* max-width: 1200px; */
-            max-width: 95%;
+            max-width: 100%;
             width: 100%;
         }
 
@@ -848,6 +848,142 @@
             background: var(--accent);
             width: 0%;
             transition: width 0.4s;
+        }
+
+        /* ── Memo Detail Modal ────────────────────── */
+        .memo-detail-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 17, 23, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.15s ease;
+        }
+
+        .memo-detail-overlay.show {
+            display: flex;
+        }
+
+        .memo-detail-panel {
+            background: var(--paper);
+            border-radius: 4px;
+            box-shadow: var(--shadow-lg);
+            max-width: 680px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: slideUp 0.25s ease;
+            border: 1px solid var(--border);
+        }
+
+        .memo-detail-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .memo-detail-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--ink);
+            margin: 0;
+        }
+
+        .memo-detail-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--ink-muted);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .memo-detail-close:hover {
+            color: var(--ink);
+        }
+
+        .memo-detail-body {
+            padding: 24px;
+        }
+
+        .memo-detail-field {
+            margin-bottom: 20px;
+        }
+
+        .memo-detail-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--ink-faint);
+            margin-bottom: 6px;
+        }
+
+        .memo-detail-value {
+            font-size: 14px;
+            color: var(--ink);
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .memo-detail-value.bold {
+            font-weight: 600;
+        }
+
+        .memo-detail-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--ink);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .memo-detail-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 2px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .memo-detail-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         /* ── Notification Item ────────────────────── */
@@ -1390,17 +1526,22 @@
                 <div style="position: relative;">
                     <button class="icon-btn" title="Notifications" onclick="toggleNotificationPanel()">
                         <span class="material-symbols-outlined">notifications</span>
-                        <span id="notificationBadge" style="position: absolute; top: -4px; right: -4px; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; line-height: 1;">0</span>
+                        <span id="notificationBadge"
+                            style="position: absolute; top: -4px; right: -4px; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; line-height: 1;">0</span>
                     </button>
-                    <div id="notificationPanel" style="display: none; flex-direction: column; position: absolute; top: 100%; right: 0; width: 360px; max-height: 400px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; margin-top: 4px;">
-                        <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                    <div id="notificationPanel"
+                        style="display: none; flex-direction: column; position: absolute; top: 100%; right: 0; width: 360px; max-height: 400px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; margin-top: 4px;">
+                        <div
+                            style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
                             <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--ink);">แจ้งเตือน</h3>
-                            <button class="icon-btn" onclick="clearAllNotifications()" style="padding: 4px;" title="Clear all">
+                            <button class="icon-btn" onclick="clearAllNotifications()" style="padding: 4px;"
+                                title="Clear all">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">clear_all</span>
                             </button>
                         </div>
                         <div id="notificationList" style="max-height: 320px; overflow-y: auto;">
-                            <div style="padding: 20px; text-align: center; color: var(--ink-faint); font-size: 13px;">ไม่มีแจ้งเตือน</div>
+                            <div style="padding: 20px; text-align: center; color: var(--ink-faint); font-size: 13px;">
+                                ไม่มีแจ้งเตือน</div>
                         </div>
                     </div>
                 </div>
@@ -1430,11 +1571,13 @@
                     <div class="section-body">
                         <div class="field">
                             <label>Username</label>
-                            <input id="loginUsername" type="text" placeholder="Enter your username" onkeypress="if(event.key==='Enter') doLogin()">
+                            <input id="loginUsername" type="text" placeholder="Enter your username"
+                                onkeypress="if(event.key==='Enter') doLogin()">
                         </div>
                         <div class="field">
                             <label>Password</label>
-                            <input id="loginPassword" type="password" placeholder="Enter your password" onkeypress="if(event.key==='Enter') doLogin()">
+                            <input id="loginPassword" type="password" placeholder="Enter your password"
+                                onkeypress="if(event.key==='Enter') doLogin()">
                         </div>
                         <div class="btn-row">
                             <button class="btn btn-primary" onclick="doLogin()">
@@ -1659,9 +1802,6 @@
                 </div>
             </div>
 
-<!--แก้ไขเมื่อ refresh หน้าเว็บแล้วส่วนนี้ไม่แสดง
-
-น่าจะเป็นเพราะการ login ค้างไว้-->
 
             <!-- ── COMPOSE VIEW ───────────────────── -->
             <div id="view-compose" class="view" style="display:none;">
@@ -1686,20 +1826,32 @@
                         <div class="field">
                             <label>Type</label>
                             <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px;">
-                                <label style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s; white-space: nowrap; border: 2px solid transparent;">
-                                    <input type="radio" name="memo-type-radio" class="memo-type-checkbox" value="เพื่อโปรดทราบ" style="cursor: pointer; accent-color: var(--accent);" onchange="updateTypeCheckboxStyle()">
+                                <label
+                                    style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s; white-space: nowrap; border: 2px solid transparent;">
+                                    <input type="radio" name="memo-type-radio" class="memo-type-checkbox"
+                                        value="เพื่อโปรดทราบ" style="cursor: pointer; accent-color: var(--accent);"
+                                        onchange="updateTypeCheckboxStyle()">
                                     <span style="font-size: 13px; color: var(--ink);">เพื่อโปรดทราบ</span>
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s; white-space: nowrap; border: 2px solid transparent;">
-                                    <input type="radio" name="memo-type-radio" class="memo-type-checkbox" value="เพื่อโปรดดำเนินการ" style="cursor: pointer; accent-color: var(--accent);" onchange="updateTypeCheckboxStyle()">
+                                <label
+                                    style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s; white-space: nowrap; border: 2px solid transparent;">
+                                    <input type="radio" name="memo-type-radio" class="memo-type-checkbox"
+                                        value="เพื่อโปรดดำเนินการ" style="cursor: pointer; accent-color: var(--accent);"
+                                        onchange="updateTypeCheckboxStyle()">
                                     <span style="font-size: 13px; color: var(--ink);">เพื่อโปรดดำเนินการ</span>
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s; white-space: nowrap; border: 2px solid transparent;">
-                                    <input type="radio" name="memo-type-radio" class="memo-type-checkbox" value="เพื่อโปรดอนุมัติ" style="cursor: pointer; accent-color: var(--accent);" onchange="updateTypeCheckboxStyle()">
+                                <label
+                                    style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s; white-space: nowrap; border: 2px solid transparent;">
+                                    <input type="radio" name="memo-type-radio" class="memo-type-checkbox"
+                                        value="เพื่อโปรดอนุมัติ" style="cursor: pointer; accent-color: var(--accent);"
+                                        onchange="updateTypeCheckboxStyle()">
                                     <span style="font-size: 13px; color: var(--ink);">เพื่อโปรดอนุมัติ</span>
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s; white-space: nowrap; border: 2px solid transparent;">
-                                    <input type="radio" name="memo-type-radio" class="memo-type-checkbox" value="เพื่อโปรดพิจารณา" style="cursor: pointer; accent-color: var(--accent);" onchange="updateTypeCheckboxStyle()">
+                                <label
+                                    style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s; white-space: nowrap; border: 2px solid transparent;">
+                                    <input type="radio" name="memo-type-radio" class="memo-type-checkbox"
+                                        value="เพื่อโปรดพิจารณา" style="cursor: pointer; accent-color: var(--accent);"
+                                        onchange="updateTypeCheckboxStyle()">
                                     <span style="font-size: 13px; color: var(--ink);">เพื่อโปรดพิจารณา</span>
                                 </label>
                             </div>
@@ -1777,12 +1929,15 @@
                                     <th>Type</th>
                                     <th>Recipient</th>
                                     <th>Preview</th>
+                                    <th style="text-align: center;">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="sentMemosTbody">
                                 <tr>
-                                    <td colspan="5">
-                                        <div class="empty-state"><span class="material-symbols-outlined">send</span><p>No sent memos yet.</p></div>
+                                    <td colspan="6">
+                                        <div class="empty-state"><span class="material-symbols-outlined">send</span>
+                                            <p>No sent memos yet.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -1790,7 +1945,10 @@
                     </div>
                 </div>
             </div>
-
+<!--
+prompt:         
+ตอนนี้ memo จะแสดงเฉพาะตาราง
+ให้เพิ่มแสดงรายละเอียด (แสดงเป็นหน้าต่างแสดง memo เต็มๆ อาจจะเอาไว้ใน sent memos หรือเพิ่มเป็น tab view ใหม่)-->
             <!-- ── BROADCAST VIEW ─────────────────── -->
             <div id="view-broadcast" class="view" style="display:none;">
                 <div class="page-header">
@@ -2057,6 +2215,62 @@
         </div><!-- /content -->
     </div><!-- /main -->
 
+    <!-- Memo Detail Modal -->
+    <div id="memoDetailOverlay" class="memo-detail-overlay">
+        <div class="memo-detail-panel">
+            <div class="memo-detail-header">
+                <h3 class="memo-detail-title" id="memoDetailTitle">Memorandum Details</h3>
+                <button class="memo-detail-close" onclick="closeMemoDetail()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="memo-detail-body">
+                <div class="memo-detail-field">
+                    <div class="memo-detail-label">Title</div>
+                    <div class="memo-detail-value bold" id="memoDetailTitleValue">—</div>
+                </div>
+
+                <div class="memo-detail-field">
+                    <div class="memo-detail-label">Type</div>
+                    <div class="memo-detail-value" id="memoDetailTypeValue">—</div>
+                </div>
+
+                <div class="memo-detail-field">
+                    <div class="memo-detail-label">Sent To</div>
+                    <div class="memo-detail-value" id="memoDetailRecipient">—</div>
+                </div>
+
+                <div class="memo-detail-field">
+                    <div class="memo-detail-label">Sent Date</div>
+                    <div class="memo-detail-value" id="memoDetailDate">—</div>
+                </div>
+
+                <div class="memo-detail-field">
+                    <div class="memo-detail-label">Message Body</div>
+                    <div class="memo-detail-content" id="memoDetailContent">—</div>
+                </div>
+                <div class="status-msg" id="memoDetailStatus" style="margin-top: 16px; display: none;">
+                    <span class="material-symbols-outlined"></span>
+                    <span class="msg-text"></span>
+                </div>
+            </div>
+            <div class="memo-detail-footer">
+                <button class="btn btn-ghost" onclick="copyMemoContent()">
+                    <span class="material-symbols-outlined">content_copy</span>
+                    Copy Content
+                </button>
+                <button class="btn btn-ghost" onclick="printMemoDetail()">
+                    <span class="material-symbols-outlined">print</span>
+                    Print
+                </button>
+                <button class="btn btn-ghost" onclick="closeMemoDetail()">
+                    <span class="material-symbols-outlined">close</span>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ──────────────────────────────────────────────
         // Notification System
@@ -2067,7 +2281,7 @@
 
         async function loadNotificationsFromFirebase() {
             if (!authToken) return
-            
+
             try {
                 const res = await fetch('/notifications', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
@@ -2091,7 +2305,7 @@
                 notificationsLoaded = true
             }
         }
-        
+
         // Auto-refresh notifications every 30 seconds when logged in
         function startNotificationRefresh() {
             if (notificationRefreshInterval) clearInterval(notificationRefreshInterval)
@@ -2102,7 +2316,7 @@
             }, 30000) // Refresh every 30 seconds
             console.log('🔄 Notification auto-refresh started')
         }
-        
+
         function stopNotificationRefresh() {
             if (notificationRefreshInterval) {
                 clearInterval(notificationRefreshInterval)
@@ -2148,12 +2362,12 @@
         function updateNotificationUI() {
             const list = document.getElementById('notificationList')
             const badge = document.getElementById('notificationBadge')
-            
+
             // Ensure notifications array is valid
             if (!Array.isArray(notifications)) {
                 notifications = []
             }
-            
+
             const unreadCount = notifications.filter(n => !n.read).length
             console.log('🔔 Updating badge - Total:', notifications.length, 'Unread:', unreadCount)
 
@@ -2185,7 +2399,7 @@
                 const icon = notif.type === 'success' ? 'check_circle' : notif.type === 'error' ? 'error' : 'info'
                 const unreadClass = notif.read ? '' : 'unread'
                 const iconColor = notif.type === 'success' ? 'var(--green)' : notif.type === 'error' ? 'var(--red)' : 'var(--blue)'
-                
+
                 // Extract sender name from message if available
                 let messageDisplay = escHtml(notif.message).replace(/From: /, '<strong>ผู้ส่ง: </strong>')
                 messageDisplay = messageDisplay.replace(/จาก /, '<strong>จาก: </strong>')
@@ -2227,9 +2441,9 @@
         async function markNotificationAsRead(id) {
             const notif = notifications.find(n => String(n.id) === String(id))
             if (!notif || notif.read) return
-            
+
             console.log('📖 Marking notification as read:', id)
-            
+
             // Update in Firebase
             if (authToken) {
                 try {
@@ -2241,14 +2455,14 @@
                     console.error('❌ Error marking notification as read:', e)
                 }
             }
-            
+
             notif.read = true
             updateNotificationUI()
         }
 
         async function removeNotification(id) {
             console.log('🗑️ Removing notification:', id)
-            
+
             // Delete from Firebase
             if (authToken) {
                 try {
@@ -2260,14 +2474,14 @@
                     console.error('❌ Error deleting notification:', e)
                 }
             }
-            
+
             notifications = notifications.filter(n => String(n.id) !== String(id))
             updateNotificationUI()
         }
 
         async function clearAllNotifications() {
             console.log('🗑️🗑️ Clearing all notifications...')
-            
+
             // Delete all from Firebase
             if (authToken) {
                 try {
@@ -2279,7 +2493,7 @@
                     console.error('❌ Error clearing notifications:', e)
                 }
             }
-            
+
             notifications = []
             updateNotificationUI()
             document.getElementById('notificationPanel').style.display = 'none'
@@ -2287,7 +2501,7 @@
         }
 
         // Close notification panel when clicking outside
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const panel = document.getElementById('notificationPanel')
             const notifSection = panel?.parentElement
             if (panel && !notifSection?.contains(e.target)) {
@@ -2415,23 +2629,23 @@
             document.getElementById('createSection').style.display = 'block'
             document.getElementById('userSection').style.display = 'block'
             document.getElementById('guestSection').style.display = 'none'
-            
+
             // Update topbar user info
             if (currentUser) {
                 document.getElementById('topbarUserName').textContent = `${currentUser.name} ${currentUser.surname}`
                 document.getElementById('topbarUserRole').textContent = currentUser.role || 'Bot Manager'
                 updateAvatarDisplay()
-                
+
                 console.log('👤 User logged in:', currentUser.username)
-                
+
                 // Reset and reload notifications for logged-in user
                 notificationsLoaded = false
                 notifications = []
                 updateNotificationUI() // Ensure badge is cleared first
-                
+
                 // Load notifications from Firebase
                 loadNotificationsFromFirebase()
-                
+
                 // Start auto-refresh for notifications
                 startNotificationRefresh()
             }
@@ -2452,7 +2666,7 @@
                 if (res.ok) {
                     const data = await res.json()
                     const linkedFollowerIds = Object.keys(data.followers || {})
-                    
+
                     // Check if user has any linked followers
                     if (linkedFollowerIds.length > 0) {
                         // Fetch all followers data to get picture URLs
@@ -2460,11 +2674,11 @@
                         if (followerRes.ok) {
                             const followerData = await followerRes.json()
                             const allFollowers = followerData.followers || {}
-                            
+
                             // Get the first linked follower's picture URL
                             const firstFollowerId = linkedFollowerIds[0]
                             const firstFollower = allFollowers[firstFollowerId]
-                            
+
                             if (firstFollower && firstFollower.pictureUrl) {
                                 // Display image if available
                                 const avatar = document.getElementById('topbarAvatar')
@@ -2480,7 +2694,7 @@
             } catch (e) {
                 // If error, fall back to initials
             }
-            
+
             // Fall back to initials if no linked followers or no picture
             const initials = getInitials(currentUser.name, currentUser.surname)
             const avatar = document.getElementById('topbarAvatar')
@@ -2494,7 +2708,7 @@
             document.getElementById('createSection').style.display = 'none'
             document.getElementById('userSection').style.display = 'none'
             document.getElementById('guestSection').style.display = 'block'
-            
+
             // Reset topbar user info
             document.getElementById('topbarUserName').textContent = 'ชื่อผู้ใช้'
             document.getElementById('topbarUserRole').textContent = 'ตำแหน่ง'
@@ -2964,13 +3178,14 @@
         async function loadComposeRecipients() {
             try {
                 let data
-                
+
                 // Admins see all linked followers across all users
                 if (currentUser.role === 'admin') {
                     const res = await fetch('/admin/all-linked-followers', {
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     })
                     data = await res.json()
+                    console.log('👑 Admin loaded linkedFollowers:', data.linkedFollowers)
                 } else {
                     // Regular users see only their own linked followers
                     const res = await fetch('/user/followers', {
@@ -2995,6 +3210,7 @@
                             })
                         }
                     }
+                    console.log('👤 Regular user loaded linkedFollowers:', data.linkedFollowers)
                 }
 
                 const container = document.getElementById('recipientsList')
@@ -3025,7 +3241,7 @@
                     html += `
                         <tr style="border-bottom: 1px solid var(--border); transition: background 0.15s;" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">
                             <td style="padding: 12px; text-align: center;">
-                                <input type="checkbox" value="${escHtml(link.followerId)}" class="recipient-checkbox" style="cursor: pointer; accent-color: var(--accent);">
+                                <input type="checkbox" value="${escHtml(link.followerId)}" data-user-id="${escHtml(link.userId)}" class="recipient-checkbox" style="cursor: pointer; accent-color: var(--accent);">
                             </td>
                             <td style="padding: 12px; font-size: 13px; color: var(--ink);"><strong>${escHtml(userName)}</strong></td>
                             <td style="padding: 12px; font-size: 13px; color: var(--ink);">${escHtml(link.followerName)}</td>
@@ -3038,6 +3254,14 @@
                     </table>
                 `
                 container.innerHTML = html
+
+                // Debug: Verify all checkboxes have data-user-id attribute
+                const checkboxes = container.querySelectorAll('.recipient-checkbox')
+                console.log(`✅ Generated ${checkboxes.length} checkboxes`)
+                checkboxes.forEach((cb, idx) => {
+                    const dataUserId = cb.getAttribute('data-user-id')
+                    console.log(`  [${idx}] followerId: ${cb.value}, data-user-id: ${dataUserId}`)
+                })
             } catch (e) {
                 console.error('Error loading compose recipients:', e.message)
                 document.getElementById('recipientsList').innerHTML = '<div style="text-align: center; color: var(--red); padding: 20px;">Error loading recipients</div>'
@@ -3092,17 +3316,22 @@
 
             // Build a map of recipient IDs to their display names from the table
             const recipientNameMap = {}
+            const recipientUserIdMap = {}
             const recipientRows = document.querySelectorAll('#recipientsList table tbody tr')
             recipientRows.forEach(row => {
                 const checkbox = row.querySelector('.recipient-checkbox')
                 if (checkbox) {
                     // Get user name (name + surname) from column index 1, not follower name
                     const userName = row.querySelectorAll('td')[1]?.textContent.trim() || 'Unknown'
-                    recipientNameMap[checkbox.value] = userName
+                    const followerId = checkbox.value
+                    const linkedUserId = checkbox.getAttribute('data-user-id')
+                    console.log('🔍 Checkbox found:', { followerId, linkedUserId, hasAttribute: !!linkedUserId })
+                    recipientNameMap[followerId] = userName
+                    recipientUserIdMap[followerId] = linkedUserId
                 }
             })
-            
-            console.log('📤 Sending memo:', { title, type, recipients, senderId: currentUser?.userId, recipientNameMap })
+
+            console.log('📤 Sending memo:', { title, type, recipients, senderId: currentUser?.userId, recipientNameMap, recipientUserIdMap })
             setStatus('statusSingleSend', 'loading', 'hourglass_empty', `Dispatching to ${recipients.length} ${recipients.length === 1 ? 'recipient' : 'recipients'}...`)
             try {
                 // Send to each recipient
@@ -3112,14 +3341,19 @@
 
                 for (let recipientId of recipients) {
                     try {
+                        const linkedUserId = recipientUserIdMap[recipientId]
                         const sendData = {
                             userId: recipientId,
+                            recipientUserId: linkedUserId,
                             title: title,
                             type: type,
                             content: text,
                             senderUserId: currentUser?.userId
                         }
                         console.log('📨 Request body:', sendData)
+                        console.log('   ├─ recipientId (followerId):', recipientId)
+                        console.log('   ├─ linkedUserId (systemUserId):', linkedUserId)
+                        console.log('   └─ from recipientUserIdMap:', recipientUserIdMap[recipientId])
                         const res = await fetch('/send', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -3146,6 +3380,8 @@
                         `ส่ง "${title}" ไปยัง ${recipientDisplay}`,
                         'success'
                     )
+                    // Reload notifications to show updated list
+                    loadNotificationsFromFirebase()
                     clearCompose()
                     sentCount++
                 } else if (successCount > 0) {
@@ -3212,7 +3448,7 @@
             const badge = document.getElementById('sentMemosCountBadge')
             const statusEl = document.getElementById('sentMemosStatus')
 
-            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading sent memos...</p></div></td></tr>`
+            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading sent memos...</p></div></td></tr>`
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
             statusEl.querySelector('.msg-text').textContent = 'Fetching sent memorandums...'
@@ -3237,7 +3473,7 @@
                 statusEl.className = 'status-msg'
 
                 if (data.count === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="material-symbols-outlined">send</span><p>No sent memos yet.</p></div></td></tr>`
+                    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined">send</span><p>No sent memos yet.</p></div></td></tr>`
                     return
                 }
 
@@ -3247,7 +3483,8 @@
                     const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
                     const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
                     const preview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
-                    
+                    const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
+
                     rows += `<tr>
           <td style="font-size:12px;">
             <span style="color:var(--ink-muted);">
@@ -3262,10 +3499,15 @@
             <span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span>
           </td>
           <td style="font-size:12px;color:var(--ink-muted);">
-            ${escHtml(memo.recipientId.substring(0, 20))}
+            ${escHtml(memo.recipientName || memo.recipientId)}
           </td>
           <td style="font-size:12px;color:var(--ink-faint);max-width:200px;">
             <span title="${escHtml(memo.content)}">${escHtml(preview)}</span>
+          </td>
+          <td style="text-align: center;">
+            <button class="btn btn-ghost btn-sm" onclick="openMemoDetail(${memoJson})">
+              <span class="material-symbols-outlined" style="font-size: 16px;">info</span>
+            </button>
           </td>
         </tr>`
                 }
@@ -3351,12 +3593,12 @@
             try {
                 const res = await fetch(`/refresh-profile/${userId}`, { method: 'POST' })
                 const data = await res.json()
-                if (!res.ok) { 
+                if (!res.ok) {
                     await showAlertModal('Error: ' + data.error, 'Profile Refresh Failed')
-                    return 
+                    return
                 }
                 loadFollowers()
-            } catch (e) { 
+            } catch (e) {
                 await showAlertModal('Error: ' + e.message, 'Profile Refresh Failed')
             }
         }
@@ -3408,13 +3650,13 @@
             try {
                 const res = await fetch('/clear-logs', { method: 'POST' })
                 const data = await res.json()
-                if (!res.ok) { 
+                if (!res.ok) {
                     await showAlertModal('Error: ' + data.error, 'Clear Logs Failed')
-                    return 
+                    return
                 }
                 loadLogs()
                 await showAlertModal(`✓ Logs cleared and backed up\n${data.backupCount} entries saved`, 'Success')
-            } catch (e) { 
+            } catch (e) {
                 await showAlertModal('Error: ' + e.message, 'Clear Logs Failed')
             }
         }
@@ -3430,7 +3672,7 @@
                 if (res.ok) {
                     const data = await res.json()
                     const currentCount = data.count || 0
-                    
+
                     // Check if there are new memos since last check
                     if (currentCount > lastReceivedMemosCount && data.memos && data.memos.length > 0) {
                         // Notify about new received memos
@@ -3453,6 +3695,101 @@
             }
         }
 
+        // ── Memo Detail Modal ────────────────────
+        let currentMemoDetail = null
+
+        function openMemoDetail(memo) {
+            currentMemoDetail = memo
+            document.getElementById('memoDetailTitle').textContent = memo.title
+            document.getElementById('memoDetailTitleValue').textContent = memo.title
+            document.getElementById('memoDetailTypeValue').textContent = memo.type || 'Memorandum'
+            document.getElementById('memoDetailRecipient').textContent = memo.recipientName || memo.recipientId
+            
+            const sentDate = new Date(memo.sentAt)
+            const dateStr = sentDate.toLocaleDateString('th-TH', { 
+                weekday: 'short',
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            })
+            const timeStr = sentDate.toLocaleTimeString('th-TH', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            })
+            document.getElementById('memoDetailDate').textContent = `${dateStr} ${timeStr}`
+            document.getElementById('memoDetailContent').textContent = memo.content
+            
+            document.getElementById('memoDetailOverlay').classList.add('show')
+        }
+//แก้ไข memoDetailRecipient ให้แสดงเป็น Fullname (name+surname) แทนการแสดง userId
+        function closeMemoDetail() {
+            document.getElementById('memoDetailOverlay').classList.remove('show')
+            currentMemoDetail = null
+        }
+
+        function copyMemoContent() {
+            if (!currentMemoDetail) return
+            // const text = `${currentMemoDetail.title}\n\n${currentMemoDetail.type}\n\n${currentMemoDetail.content}`
+            const text = `${currentMemoDetail.content}`
+            navigator.clipboard.writeText(text).then(() => {
+                setStatus('memoDetailStatus', 'success', 'check_circle', 'Content copied to clipboard!')
+                setTimeout(() => {
+                    const statusEl = document.getElementById('memoDetailStatus')
+                    if (statusEl) statusEl.style.display = 'none'
+                }, 2000)
+            }).catch(err => {
+                console.error('Copy failed:', err)
+                setStatus('memoDetailStatus', 'error', 'error', 'Failed to copy')
+            })
+        }
+
+        function printMemoDetail() {
+            if (!currentMemoDetail) return
+            
+            const printWindow = window.open('', '_blank')
+            const date = new Date(currentMemoDetail.sentAt).toLocaleDateString('th-TH')
+            const time = new Date(currentMemoDetail.sentAt).toLocaleTimeString('th-TH')
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${currentMemoDetail.title}</title>
+                    <style>
+                        body { font-family: 'Times New Roman', serif; line-height: 1.6; margin: 40px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+                        .meta { color: #666; font-size: 12px; margin-top: 20px; }
+                        .content { white-space: pre-wrap; word-wrap: break-word; margin: 20px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="title">${escHtml(currentMemoDetail.title)}</div>
+                        <div class="meta">${escHtml(currentMemoDetail.type)}</div>
+                    </div>
+                    <div class="content">${escHtml(currentMemoDetail.content)}</div>
+                    <div class="meta">
+                        <p>Sent to: ${escHtml(currentMemoDetail.recipientId)}</p>
+                        <p>Date: ${date} ${time}</p>
+                    </div>
+                </body>
+                </html>
+            `)
+            printWindow.document.close()
+            setTimeout(() => printWindow.print(), 250)
+        }
+
+        // Close memo detail when clicking outside
+        document.addEventListener('click', function(e) {
+            const overlay = document.getElementById('memoDetailOverlay')
+            if (overlay && e.target === overlay) {
+                closeMemoDetail()
+            }
+        })
+
         async function refreshDashboard() {
             // Fetch sent memos count for current user
             try {
@@ -3464,10 +3801,10 @@
                     document.getElementById('stat-sent').textContent = data.count || 0
                 }
             } catch (e) { }
-            
+
             // Check for received memos
             checkReceivedMemos()
-            
+
             loadLogs()
             // followers count
             try {
@@ -3493,14 +3830,14 @@
                 const modalMessage = document.getElementById('modalMessage')
                 const confirmBtn = document.getElementById('modalConfirmBtn')
                 const cancelBtn = document.getElementById('modalCancelBtn')
-                
+
                 modalTitle.textContent = title
                 modalMessage.textContent = message
                 confirmBtn.textContent = 'Confirm'
                 cancelBtn.textContent = 'Cancel'
                 confirmBtn.style.display = 'inline-block'
                 cancelBtn.style.display = 'inline-block'
-                
+
                 modal.style.display = 'flex'
             })
         }
@@ -3513,13 +3850,13 @@
                 const modalMessage = document.getElementById('modalMessage')
                 const confirmBtn = document.getElementById('modalConfirmBtn')
                 const cancelBtn = document.getElementById('modalCancelBtn')
-                
+
                 modalTitle.textContent = title
                 modalMessage.textContent = message
                 confirmBtn.textContent = 'ตกลง'
                 cancelBtn.style.display = 'none'
                 confirmBtn.style.display = 'inline-block'
-                
+
                 modal.style.display = 'flex'
             })
         }
@@ -3527,7 +3864,7 @@
         function closeCustomModal(result) {
             const modal = document.getElementById('customModal')
             modal.style.display = 'none'
-            
+
             if (modalResolver) {
                 modalResolver(result)
                 modalResolver = null
@@ -3539,21 +3876,103 @@
             refreshDashboard()
         }
 
+        /*
+    "followers": {
+    "U6389af3cace45f66bc645cf93b2a32ac": {
+      "displayName": "AEY🐱🐻",
+      "followedAt": "2026-03-19T09:22:47.455Z",
+      "pictureUrl": "https://sprofile.line-scdn.net/0hh7gZ87_ZNxhKIyaPQE9JJjpzNHJpUm4KYEx8f3gibilyFHhObhV6LHknPC93FnlOMRd5KyogbC9oVDszDiExGwtfF00RcnAVAhcOKhEmEHIgFxsZGRkjJiJ6CWELYAUKYBomeAlQN2EPQRYtOyQkDjZfFnJ0aQ07MnRbTk8RWZslIUBNZ0RwfH0layrz",
+      "status": "active",
+      "userId": "U6389af3cace45f66bc645cf93b2a32ac"
+    },
+    "Ue78fdf247dea19fe8ef461f8645ef746": {
+      "displayName": "N",
+      "followedAt": "2026-03-25T02:48:08.105Z",
+      "pictureUrl": "https://sprofile.line-scdn.net/0hZ0koOqSlBR9GFhWzrIZ7YDZGBnVlZ1wNanUafCAeUn8rc0MZOnROfidBCS17ckpJYiAZLXEXXiZKBXJ5WED5K0EmWC56LkBLbHJI_Q",
+      "status": "active",
+      "userId": "Ue78fdf247dea19fe8ef461f8645ef746"
+    }
+  },
+    "users": {
+    "user_1774408705336": {
+      "createdAt": "2026-03-25T03:18:25.340Z",
+      "linkedFollowers": {
+        "Ue78fdf247dea19fe8ef461f8645ef746": {
+          "displayName": "N",
+          "linkedAt": "2026-03-25T03:19:10.137Z"
+        }
+      },
+      "name": "Phanuwat",
+      "password": "230199",
+      "role": "admin",
+      "surname": "Limphutthanuphab",
+      "userId": "user_1774408705336",
+      "username": "Phanuwat"
+    },
+    "user_1774409766090": {
+      "createdAt": "2026-03-25T03:36:06.090Z",
+      "linkedFollowers": {
+        "U6389af3cace45f66bc645cf93b2a32ac": {
+          "displayName": "AEY🐱🐻",
+          "linkedAt": "2026-03-25T04:17:35.305Z"
+        }
+      },
+      "name": "Kawintida",
+      "password": "230199",
+      "role": "admin",
+      "surname": "Taisawat",
+      "userId": "user_1774409766090",
+      "username": "Kawintida"
+    },
+    "user_1774412170496": {
+      "createdAt": "2026-03-25T04:16:10.496Z",
+      "name": "test2",
+      "password": "230199",
+      "role": "user",
+      "surname": "test2",
+      "userId": "user_1774412170496",
+      "username": "test2"
+    }
+  },
+  "users_by_username": {
+    "Phanuwat": {
+      "userId": "user_1774408705336"
+    },
+    "Kawintida": {
+      "userId": "user_1774409766090"
+    },
+    "test2": {
+      "userId": "user_1774412170496"
+    }
+  }
+        
+        */
+
     </script>
 
     <!-- Custom Modal -->
-    <div id="customModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; align-items: center; justify-content: center;">
+    <div id="customModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; align-items: center; justify-content: center;">
         <div style="position: absolute; inset: 0; background: rgba(15, 17, 23, 0.5); backdrop-filter: blur(4px);"></div>
-        <div style="position: relative; background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 420px; width: 90%; max-height: 80vh; overflow: auto; border: 1px solid var(--border);">
+        <div
+            style="position: relative; background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 420px; width: 90%; max-height: 80vh; overflow: auto; border: 1px solid var(--border);">
             <div style="padding: 24px; border-bottom: 1px solid var(--border);">
-                <h2 id="modalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;">Confirmation</h2>
+                <h2 id="modalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;">
+                    Confirmation</h2>
             </div>
             <div style="padding: 24px;">
-                <p id="modalMessage" style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0;">Are you sure?</p>
+                <p id="modalMessage" style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0;">Are you
+                    sure?</p>
             </div>
-            <div style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 12px; justify-content: flex-end;">
-                <button id="modalCancelBtn" onclick="closeCustomModal(false)" style="padding: 10px 24px; border: 1px solid var(--border); background: var(--paper); color: var(--ink); border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; outline: none;" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='var(--paper)'">Cancle</button>
-                <button id="modalConfirmBtn" onclick="closeCustomModal(true)" style="padding: 10px 24px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; outline: none;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Confirm</button>
+            <div
+                style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 12px; justify-content: flex-end;">
+                <button id="modalCancelBtn" onclick="closeCustomModal(false)"
+                    style="padding: 10px 24px; border: 1px solid var(--border); background: var(--paper); color: var(--ink); border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; outline: none;"
+                    onmouseover="this.style.background='var(--surface)'"
+                    onmouseout="this.style.background='var(--paper)'">Cancle</button>
+                <button id="modalConfirmBtn" onclick="closeCustomModal(true)"
+                    style="padding: 10px 24px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; outline: none;"
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Confirm</button>
             </div>
         </div>
     </div>

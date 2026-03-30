@@ -630,10 +630,13 @@ async function handleEvent(event) {
 // Send ให้ USER เดียว (ถ้าส่ง userId ใน request)
 app.post("/send", async (req,res)=>{
 
- const { userId, title, type, content, senderUserId } = req.body
+ const { userId, recipientUserId, title, type, content, senderUserId } = req.body
  const targetUserId = userId
+ // recipientUserId is the system user ID who manages this follower
+ // userId is the LINE follower ID
 
- addLog('info', 'Send message request', { title, type, userId: targetUserId })
+ addLog('info', 'Send message request', { title, type, userId: targetUserId, recipientUserId: recipientUserId, hasRecipientUserId: !!recipientUserId })
+ console.log('🔍 /send endpoint received:', { userId, recipientUserId, senderUserId, title })
 
  try{
 
@@ -753,6 +756,9 @@ app.post("/send", async (req,res)=>{
     addLog('info', 'Memo stored in sent_memos', { senderId: senderUserId, memoId })
     
     // Create notification for recipient
+    // If recipientUserId is provided, create notification for the system user who owns the follower
+    // Otherwise create for the targetUserId (for backward compatibility)
+    const notificationTargetId = recipientUserId || targetUserId
     try {
       const sender = await firebase_get(`users/${senderUserId}`)
       const senderFullName = sender ? `${sender.name} ${sender.surname}`.trim() : 'ผู้ส่ง'
@@ -766,13 +772,14 @@ app.post("/send", async (req,res)=>{
         timestamp: new Date().toISOString(),
         memoId: memoId,
         senderId: senderUserId,
-        recipientId: targetUserId
+        recipientId: notificationTargetId,
+        followerId: targetUserId
       }
       
-      await firebase_set(`notifications/${targetUserId}/${notification.id}`, notification)
-      addLog('info', 'Notification created for recipient', { recipientId: targetUserId, memoId })
+      await firebase_set(`notifications/${notificationTargetId}/${notification.id}`, notification)
+      addLog('info', 'Notification created for recipient', { recipientUserId: notificationTargetId, memoId, followerId: targetUserId })
     } catch (err) {
-      addLog('warn', 'Failed to create notification for recipient', { recipientId: targetUserId, error: err.message })
+      addLog('warn', 'Failed to create notification for recipient', { recipientUserId: notificationTargetId, error: err.message })
     }
   } else {
     addLog('warn', 'No senderUserId provided - memo not stored in sent_memos', { targetUserId, memoId })
@@ -857,6 +864,30 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
     // Convert to array and sort by sentAt descending (newest first)
     const memosArray = Object.values(sentMemos)
     memosArray.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))
+    
+    // Enrich each memo with recipient name (user who linked the follower)
+    for (let memo of memosArray) {
+      try {
+        // Find the user who linked this follower
+        if (memo.recipientId) {
+          const allUsers = await firebase_get('users')
+          if (allUsers) {
+            for (let uid in allUsers) {
+              const user = allUsers[uid]
+              if (user.linkedFollowers && user.linkedFollowers[memo.recipientId]) {
+                // Found the user who linked this follower
+                memo.recipientName = `${user.name} ${user.surname}`
+                break
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.log('ℹ️  Could not find user who linked follower:', memo.recipientId)
+      }
+    }
+
+    
     
     console.log('✅ Returning', memosArray.length, 'memos for user:', userId)
     addLog('info', 'Sent memos retrieved successfully', { userId, count: memosArray.length })

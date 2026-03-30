@@ -185,3 +185,15 @@ Dashboard ต้องเปลี่ยนตาม role เช่น:
 
 
 */
+
+/*
+หน้า memo
+1.date
+2.ผู้ส่ง/ผู้สร้าง (ชื่อ-นามสกุล ผู้ใช้ที่กำลัง login) "input readonly"
+
+
+card
+1.user ที่ active ในระบบ
+2.followers ใน line
+3.user ที่รอ approve เพื่อเข้าใช้ระบบ
+*/
