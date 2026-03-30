@@ -1083,6 +1083,60 @@
             padding: 6px;
         }
 
+        /* ── Bottom Navigation Bar (Mobile) ────────── */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: var(--accent);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 99;
+            padding: 0;
+            margin: 0;
+        }
+
+        .mobile-bottom-nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            height: 100%;
+            width: 100%;
+        }
+
+        .mobile-bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            flex: 1;
+            height: 100%;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.6);
+            transition: color 0.15s, background 0.15s;
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .mobile-bottom-nav-item:active,
+        .mobile-bottom-nav-item.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .mobile-bottom-nav-item .material-symbols-outlined {
+            font-size: 20px;
+            font-variation-settings: 'wght' 400;
+        }
+
         /* ── Responsive Design ────────────────────── */
         /* Tablet (768px and below) */
         @media (max-width: 768px) {
@@ -1154,6 +1208,7 @@
             }
 
             .sidebar {
+                display: none;
                 width: 100%;
                 min-height: auto;
                 max-height: 0;
@@ -1169,6 +1224,7 @@
             }
 
             .sidebar.show {
+                display: block;
                 max-height: 100vh;
                 overflow-y: auto;
             }
@@ -1182,14 +1238,17 @@
             }
 
             .mobile-menu-toggle {
-                display: flex;
-                align-items: center;
-                margin-right: 10px;
+                display: none;
+            }
+
+            .mobile-bottom-nav {
+                display: block;
             }
 
             .main {
                 margin-left: 0;
                 margin-top: 0;
+                padding-bottom: 56px;
             }
 
             .topbar {
@@ -2357,6 +2416,32 @@
         </div><!-- /content -->
     </div><!-- /main -->
 
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <div class="mobile-bottom-nav-content">
+            <button class="mobile-bottom-nav-item" data-view="dashboard" onclick="showView('dashboard'); activateMobileNavItem(this)">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="mobile-bottom-nav-item" data-view="compose" onclick="showView('compose'); activateMobileNavItem(this)">
+                <span class="material-symbols-outlined">edit_note</span>
+                <span>Compose</span>
+            </button>
+            <button class="mobile-bottom-nav-item" data-view="sent-memos" onclick="showView('sent-memos'); loadSentMemos(); activateMobileNavItem(this)">
+                <span class="material-symbols-outlined">send</span>
+                <span>Sent</span>
+            </button>
+            <button class="mobile-bottom-nav-item" data-view="received-memos" onclick="showView('received-memos'); loadReceivedMemos(); activateMobileNavItem(this)">
+                <span class="material-symbols-outlined">inbox</span>
+                <span>Received</span>
+            </button>
+            <button class="mobile-bottom-nav-item" data-view="followers" onclick="showView('followers'); activateMobileNavItem(this)">
+                <span class="material-symbols-outlined">group</span>
+                <span>Users</span>
+            </button>
+        </div>
+    </nav>
+
     <!-- Memo Detail Modal -->
     <div id="memoDetailOverlay" class="memo-detail-overlay">
         <div class="memo-detail-panel">
@@ -2815,6 +2900,13 @@
             )
             if (activeLink) activeLink.classList.add('active')
 
+            // Update mobile bottom nav active item
+            document.querySelectorAll('.mobile-bottom-nav-item').forEach(item => {
+                item.classList.remove('active')
+            })
+            const mobileNavItem = document.querySelector(`.mobile-bottom-nav-item[data-view="${name}"]`)
+            if (mobileNavItem) mobileNavItem.classList.add('active')
+
             // Trigger view-specific setup
             if (name === 'manage-user') loadUserData()
             if (name === 'dashboard' && currentUser) refreshDashboard()
@@ -2845,6 +2937,14 @@
                 }
             }
             if (name === 'logs' && currentUser) loadLogs()
+        }
+
+        // ── Activate Mobile Bottom Nav Item ─────────
+        function activateMobileNavItem(element) {
+            document.querySelectorAll('.mobile-bottom-nav-item').forEach(item => {
+                item.classList.remove('active')
+            })
+            element.classList.add('active')
         }
 
         // ──────────────────────────────────────────────
@@ -2888,6 +2988,11 @@
             document.getElementById('createSection').style.display = 'block'
             document.getElementById('userSection').style.display = 'block'
             document.getElementById('guestSection').style.display = 'none'
+            document.getElementById('mobileBottomNav').style.display = 'block'
+
+            // Activate first bottom nav item (dashboard)
+            const dashboardNavItem = document.querySelector('.mobile-bottom-nav-item[data-view="dashboard"]')
+            if (dashboardNavItem) dashboardNavItem.classList.add('active')
 
             // Update topbar user info
             if (currentUser) {
@@ -2967,6 +3072,7 @@
             document.getElementById('createSection').style.display = 'none'
             document.getElementById('userSection').style.display = 'none'
             document.getElementById('guestSection').style.display = 'block'
+            document.getElementById('mobileBottomNav').style.display = 'none'
 
             // Reset topbar user info
             document.getElementById('topbarUserName').textContent = 'ชื่อผู้ใช้'
