@@ -4,6 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a2740">
+    <meta name="description" content="Executive Memorandum Platform - Send and manage formal memos via LINE with admin approval workflow">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%231a2740' width='192' height='192' rx='45'/%3E%3Ctext x='96' y='96' font-family='sans-serif' font-size='96' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'%3EM%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect fill='%231a2740' width='180' height='180' rx='40'/%3E%3Ctext x='90' y='90' font-family='sans-serif' font-size='90' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'%3EM%3C/text%3E%3C/svg%3E">
     <title>Executive Memorandum Suite</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -4603,6 +4608,17 @@
             </div>
         </div>
     </div>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('✅ Service Worker registered:', reg))
+                    .catch(err => console.log('❌ Service Worker registration failed:', err))
+            })
+        }
+    </script>
 
 </body>
 
