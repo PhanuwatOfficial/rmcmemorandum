@@ -899,6 +899,63 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
   }
 })
 
+// Get received memos for current user (memos sent to this user's linked followers)
+app.get("/received-memos", verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId
+    console.log('🔍 Fetching received memos for user:', userId)
+    addLog('info', 'Fetching received memos', { userId })
+    
+    // Get current user to access linked followers
+    const currentUser = await firebase_get(`users/${userId}`)
+    if (!currentUser || !currentUser.linkedFollowers) {
+      return res.json({ memos: [], count: 0 })
+    }
+    
+    const linkedFollowerIds = Object.keys(currentUser.linkedFollowers)
+    console.log('👥 Linked followers:', linkedFollowerIds)
+    
+    // Get all users' sent memos to find ones sent to this user's followers
+    const allUsers = await firebase_get('users')
+    if (!allUsers || typeof allUsers !== 'object') {
+      return res.json({ memos: [], count: 0 })
+    }
+    
+    const receivedMemos = []
+    
+    // Search through all users' sent_memos
+    for (let senderId in allUsers) {
+      const senderMemos = await firebase_get(`sent_memos/${senderId}`)
+      if (!senderMemos || typeof senderMemos !== 'object') continue
+      
+      // Check each memo - if it was sent to one of this user's followers, include it
+      for (let memoId in senderMemos) {
+        const memo = senderMemos[memoId]
+        if (linkedFollowerIds.includes(memo.recipientId)) {
+          // Enrich with sender info
+          const sender = allUsers[senderId]
+          if (sender) {
+            memo.senderName = `${sender.name} ${sender.surname}`
+            memo.senderUserId = senderId
+          }
+          receivedMemos.push(memo)
+        }
+      }
+    }
+    
+    // Sort by sentAt descending (newest first)
+    receivedMemos.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))
+    
+    console.log('✅ Returning', receivedMemos.length, 'received memos for user:', userId)
+    addLog('info', 'Received memos retrieved successfully', { userId, count: receivedMemos.length })
+    res.json({ memos: receivedMemos, count: receivedMemos.length })
+  } catch (err) {
+    console.error('❌ Error fetching received memos:', err)
+    addLog('error', 'Get received memos error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // ── Notification Endpoints ──────────────────────────────
 // Get all notifications for a user
 app.get("/notifications", verifyToken, async (req, res) => {

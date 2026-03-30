@@ -1464,6 +1464,10 @@
                     <span class="material-symbols-outlined">send</span>
                     Sent Memos
                 </a>
+                <a class="nav-item" onclick="showView('received-memos'); loadReceivedMemos()">
+                    <span class="material-symbols-outlined">inbox</span>
+                    Received Memos
+                </a>
                 <a class="nav-item" onclick="showView('broadcast')">
                     <span class="material-symbols-outlined">campaign</span>
                     Broadcast
@@ -1945,10 +1949,61 @@
                     </div>
                 </div>
             </div>
-<!--
-prompt:         
-ตอนนี้ memo จะแสดงเฉพาะตาราง
-ให้เพิ่มแสดงรายละเอียด (แสดงเป็นหน้าต่างแสดง memo เต็มๆ อาจจะเอาไว้ใน sent memos หรือเพิ่มเป็น tab view ใหม่)-->
+
+            <!-- ── RECEIVED MEMOS VIEW ────────────────────── -->
+            <div id="view-received-memos" class="view" style="display:none;">
+                <div class="page-header">
+                    <h2>Received Memos</h2>
+                    <p>View all memorandums sent to your followers.</p>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">inbox</span>
+                            Incoming Memos
+                            <span id="receivedMemosCountBadge"
+                                style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
+                        </div>
+                        <div style="display:flex;gap:10px;">
+                            <button class="btn btn-ghost btn-sm" onclick="loadReceivedMemos()">
+                                <span class="material-symbols-outlined">refresh</span>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="receivedMemosStatus" class="status-msg" style="margin:16px 28px 0; display:none;">
+                        <span class="material-symbols-outlined"></span>
+                        <span class="msg-text"></span>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>From</th>
+                                    <th>Preview</th>
+                                    <th style="text-align: center;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="receivedMemosTbody">
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="empty-state"><span class="material-symbols-outlined">inbox</span>
+                                            <p>No received memos yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- ── BROADCAST VIEW ─────────────────── -->
             <div id="view-broadcast" class="view" style="display:none;">
                 <div class="page-header">
@@ -2236,12 +2291,12 @@ prompt:
                 </div>
 
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label">Sent To</div>
+                    <div class="memo-detail-label" id="memoDetailRecipientLabel">Sent To</div>
                     <div class="memo-detail-value" id="memoDetailRecipient">—</div>
                 </div>
 
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label">Sent Date</div>
+                    <div class="memo-detail-label">Date</div>
                     <div class="memo-detail-value" id="memoDetailDate">—</div>
                 </div>
 
@@ -2325,14 +2380,53 @@ prompt:
             }
         }
 
-        async function addNotification(title, message, type = 'info') {
+        async function addNotification(title, message, type = 'info', memoId = null) {
             const notification = {
                 id: Date.now(),
                 title: title,
                 message: message,
                 type: type,
                 read: false,
-                timestamp: new Date()
+                timestamp: new Date(),
+                memoId: memoId  // Store memoId for navigation
+            }
+
+            // Save to Firebase
+            if (authToken) {
+                try {
+                    const res = await fetch('/notifications', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({ title, message, type })
+                    })
+                    if (res.ok) {
+                        const data = await res.json()
+                        notification.id = data.notification.id
+                    }
+                } catch (e) {
+                    console.error('Error saving notification:', e)
+                }
+            }
+
+            notifications.unshift(notification)
+            updateNotificationUI()
+        }
+
+        // Helper function to add notification with full memo object and type
+        async function addNotificationWithMemo(title, message, type = 'info', memo = null, memoType = null) {
+            const notification = {
+                id: Date.now(),
+                title: title,
+                message: message,
+                type: type,
+                read: false,
+                timestamp: new Date(),
+                memoId: memo?.id,
+                memoObject: memo,  // Store full memo object for detail view
+                memoType: memoType  // Store memo type (sent, received)
             }
 
             // Save to Firebase
@@ -2399,19 +2493,34 @@ prompt:
                 const icon = notif.type === 'success' ? 'check_circle' : notif.type === 'error' ? 'error' : 'info'
                 const unreadClass = notif.read ? '' : 'unread'
                 const iconColor = notif.type === 'success' ? 'var(--green)' : notif.type === 'error' ? 'var(--red)' : 'var(--blue)'
+                
+                // Determine memo type styling
+                const memoTypeBorder = notif.memoType === 'received' ? '#2d8659' : notif.memoType === 'sent' ? '#1a5aa8' : 'transparent'
+                const memoTypeIcon = notif.memoType === 'received' ? 'mail' : notif.memoType === 'sent' ? 'send' : ''
+                const memoTypeLabel = notif.memoType === 'received' ? 'รับ' : notif.memoType === 'sent' ? 'ส่ง' : ''
 
                 // Extract sender name from message if available
                 let messageDisplay = escHtml(notif.message).replace(/From: /, '<strong>ผู้ส่ง: </strong>')
                 messageDisplay = messageDisplay.replace(/จาก /, '<strong>จาก: </strong>')
+                
+                // Determine click handler - if we have memoObject, use it; otherwise use memoId
+                let clickHandler = 'markNotificationAsRead()'
+                if (notif.memoObject) {
+                    const memoJson = escHtml(JSON.stringify(notif.memoObject)).replace(/"/g, '&quot;')
+                    clickHandler = `openMemoDetail(${memoJson})`
+                } else if (notif.memoId) {
+                    clickHandler = `viewNotificationMemo('${notif.memoId}')`
+                }
 
                 html += `
-                    <div class="notification-item ${unreadClass}" onclick="markNotificationAsRead('${notif.id}')">
+                    <div class="notification-item ${unreadClass}" onclick="${clickHandler}; markNotificationAsRead('${notif.id}')" style="cursor: pointer; border-left: 4px solid ${memoTypeBorder};">
                         <div style="display: flex; gap: 10px;">
                             <span class="material-symbols-outlined" style="font-size: 18px; color: ${iconColor}; flex-shrink: 0;">${icon}</span>
                             <div style="flex: 1; min-width: 0;">
                                 <div class="notification-item-title">${escHtml(notif.title)}</div>
                                 <div class="notification-item-message">${messageDisplay}</div>
                                 <div class="notification-item-time">${displayTime}</div>
+                                ${memoTypeLabel ? `<div style="font-size: 10px; color: var(--ink-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size: 12px;">${memoTypeIcon}</span>${memoTypeLabel}</div>` : ''}
                             </div>
                         </div>
                         <button class="notification-item-close" onclick="event.stopPropagation(); removeNotification('${notif.id}')">
@@ -2500,6 +2609,63 @@ prompt:
             console.log('✅ All notifications cleared')
         }
 
+        // ── View Memo from Notification ─────────────
+        async function viewNotificationMemo(memoId) {
+            console.log('� Opening memo from notification:', memoId)
+            
+            document.getElementById('notificationPanel').style.display = 'none'
+            
+            // Wait a bit for view to render, then load and open memo
+            setTimeout(async () => {
+                try {
+                    // Try to find in sent memos first
+                    let targetMemo = null
+                    
+                    const sentRes = await fetch('/sent-memos', {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                    const sentData = await sentRes.json()
+                    
+                    if (sentData.memos) {
+                        targetMemo = sentData.memos.find(m => m.memoId === memoId)
+                        if (targetMemo) {
+                            console.log('✅ Found memo in sent memos:', targetMemo)
+                            showView('sent-memos')
+                            openMemoDetail(targetMemo)
+                            return
+                        }
+                    }
+                    
+                    // Try to find in received memos
+                    const receivedRes = await fetch('/received-memos', {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                    const receivedData = await receivedRes.json()
+                    
+                    if (receivedData.memos) {
+                        targetMemo = receivedData.memos.find(m => m.memoId === memoId)
+                        if (targetMemo) {
+                            console.log('✅ Found memo in received memos:', targetMemo)
+                            showView('received-memos')
+                            // Load the table first
+                            await loadReceivedMemos()
+                            openMemoDetail(targetMemo)
+                            return
+                        }
+                    }
+                    
+                    // Memo not found anywhere
+                    console.warn('⚠️ Memo not found with ID:', memoId)
+                    showView('sent-memos')
+                    await showAlertModal('Memo no longer available', 'Not Found')
+                } catch (e) {
+                    console.error('❌ Error opening memo:', e)
+                    showView('sent-memos')
+                    await showAlertModal('Failed to open memo: ' + e.message, 'Error')
+                }
+            }, 100)
+        }
+
         // Close notification panel when clicking outside
         document.addEventListener('click', function (e) {
             const panel = document.getElementById('notificationPanel')
@@ -2546,7 +2712,7 @@ prompt:
         // ──────────────────────────────────────────────
         // View Management (Must be declared before auth)
         // ──────────────────────────────────────────────
-        const views = ['login', 'register', 'manage-user', 'dashboard', 'compose', 'sent-memos', 'broadcast', 'followers', 'logs']
+        const views = ['login', 'register', 'manage-user', 'dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs']
         function showView(name) {
             views.forEach(v => {
                 const el = document.getElementById('view-' + v)
@@ -2558,7 +2724,7 @@ prompt:
                 el.classList.remove('active')
             })
             const activeLink = Array.from(document.querySelectorAll('.nav-item')).find(el =>
-                el.textContent.toLowerCase().includes(name === 'manage-user' ? 'account' : name === 'sent-memos' ? 'sent' : name)
+                el.textContent.toLowerCase().includes(name === 'manage-user' ? 'account' : name === 'sent-memos' ? 'sent' : name === 'received-memos' ? 'received' : name)
             )
             if (activeLink) activeLink.classList.add('active')
 
@@ -2571,6 +2737,7 @@ prompt:
                 updateTypeCheckboxStyle()
             }
             if (name === 'sent-memos' && currentUser) loadSentMemos()
+            if (name === 'received-memos' && currentUser) loadReceivedMemos()
             if (name === 'followers' && currentUser) {
                 loadFollowers()
                 // Show admin section if user is admin
@@ -3185,6 +3352,19 @@ prompt:
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     })
                     data = await res.json()
+                    
+                    // Fetch LINE profile pictures for each follower
+                    const followersRes = await fetch('/followers')
+                    const followersData = await followersRes.json()
+                    const followerProfiles = followersData.followers || {}
+                    
+                    // Enrich linkedFollowers with picture URLs
+                    for (let link of data.linkedFollowers) {
+                        if (followerProfiles[link.followerId]) {
+                            link.pictureUrl = followerProfiles[link.followerId].pictureUrl
+                        }
+                    }
+                    
                     console.log('👑 Admin loaded linkedFollowers:', data.linkedFollowers)
                 } else {
                     // Regular users see only their own linked followers
@@ -3206,6 +3386,7 @@ prompt:
                                 surname: currentUser.surname,
                                 followerId: uid,
                                 followerName: follower.displayName || 'Unknown',
+                                pictureUrl: follower.pictureUrl,
                                 linkedAt: follower.linkedAt || new Date().toISOString()
                             })
                         }
@@ -3225,6 +3406,7 @@ prompt:
                         <thead>
                             <tr style="border-bottom: 1px solid var(--border);">
                                 <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Select</th>
+                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Profile</th>
                                 <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">User</th>
                                 <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Follower</th>
                                 <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Linked Date</th>
@@ -3238,10 +3420,17 @@ prompt:
 
                     const userName = `${link.name} ${link.surname}`
                     const linkedDate = new Date(link.linkedAt).toLocaleDateString()
+                    const avatar = link.pictureUrl 
+                        ? `<img src="${escHtml(link.pictureUrl)}" alt="${escHtml(link.followerName)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border);">` 
+                        : `<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center;">${link.followerName.charAt(0).toUpperCase()}</div>`
+                    
                     html += `
                         <tr style="border-bottom: 1px solid var(--border); transition: background 0.15s;" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">
                             <td style="padding: 12px; text-align: center;">
                                 <input type="checkbox" value="${escHtml(link.followerId)}" data-user-id="${escHtml(link.userId)}" class="recipient-checkbox" style="cursor: pointer; accent-color: var(--accent);">
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                ${avatar}
                             </td>
                             <td style="padding: 12px; font-size: 13px; color: var(--ink);"><strong>${escHtml(userName)}</strong></td>
                             <td style="padding: 12px; font-size: 13px; color: var(--ink);">${escHtml(link.followerName)}</td>
@@ -3321,8 +3510,8 @@ prompt:
             recipientRows.forEach(row => {
                 const checkbox = row.querySelector('.recipient-checkbox')
                 if (checkbox) {
-                    // Get user name (name + surname) from column index 1, not follower name
-                    const userName = row.querySelectorAll('td')[1]?.textContent.trim() || 'Unknown'
+                    // Get user name (name + surname) from column index 2 (Select|Profile|User|Follower|Linked Date)
+                    const userName = row.querySelectorAll('td')[2]?.textContent.trim() || 'Unknown'
                     const followerId = checkbox.value
                     const linkedUserId = checkbox.getAttribute('data-user-id')
                     console.log('🔍 Checkbox found:', { followerId, linkedUserId, hasAttribute: !!linkedUserId })
@@ -3373,12 +3562,17 @@ prompt:
 
                 if (failCount === 0) {
                     setStatus('statusSingleSend', 'success', 'check_circle', `Memorandum sent to ${successCount} ${successCount === 1 ? 'recipient' : 'recipients'} successfully!`)
-                    // Add notification with recipient names
+                    // Add notification with recipient names and memoId for navigation
                     const recipientDisplay = successfulRecipientNames.join(', ')
-                    addNotification(
+                    // Get the memoId from the first successful send response if available
+                    // For now, we'll use a temporary ID - could be improved by collecting memoId from responses
+                    const tempMemoId = `memo_${Date.now()}`
+                    addNotificationWithMemo(
                         'ส่ง Memo สำเร็จ',
                         `ส่ง "${title}" ไปยัง ${recipientDisplay}`,
-                        'success'
+                        'success',
+                        { title: title, recipients: recipientDisplay },  // Basic memo info
+                        'sent'  // Mark as sent memo
                     )
                     // Reload notifications to show updated list
                     loadNotificationsFromFirebase()
@@ -3387,10 +3581,12 @@ prompt:
                 } else if (successCount > 0) {
                     setStatus('statusSingleSend', 'warn', 'warning', `Sent to ${successCount} recipients, failed for ${failCount}`)
                     const recipientDisplay = successfulRecipientNames.join(', ')
-                    addNotification(
+                    addNotificationWithMemo(
                         'ส่ง Memo บางส่วนสำเร็จ',
                         `ส่งไปยัง ${recipientDisplay} (ล้มเหลว ${failCount})`,
-                        'info'
+                        'warn',
+                        { title: title, recipients: recipientDisplay },
+                        'sent'
                     )
                 } else {
                     setStatus('statusSingleSend', 'error', 'error', 'Failed to send to all recipients')
@@ -3518,8 +3714,84 @@ prompt:
                 statusEl.querySelector('.msg-text').textContent = e.message
             }
         }
+ 
+        // ── Load Received Memos ────────────────────────
+        async function loadReceivedMemos() {
+            const tbody = document.getElementById('receivedMemosTbody')
+            const badge = document.getElementById('receivedMemosCountBadge')
+            const statusEl = document.getElementById('receivedMemosStatus')
 
-        // ── Load Followers ──────────────────────────
+            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading received memos...</p></div></td></tr>`
+            statusEl.className = 'status-msg loading show'
+            statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
+            statusEl.querySelector('.msg-text').textContent = 'Fetching received memorandums...'
+
+            try {
+                console.log('📥 Fetching received memos with token:', authToken?.substring(0, 20) + '...')
+                const res = await fetch('/received-memos', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                console.log('📬 Received memos response:', data)
+
+                if (!res.ok) {
+                    statusEl.className = 'status-msg error show'
+                    statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                    statusEl.querySelector('.msg-text').textContent = data.error || 'Failed to load received memos.'
+                    console.error('❌ Error loading received memos (HTTP ' + res.status + '):', data)
+                    return
+                }
+
+                badge.textContent = `${data.count} received`
+                statusEl.className = 'status-msg'
+
+                if (data.count === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined">inbox</span><p>No received memos yet.</p></div></td></tr>`
+                    return
+                }
+
+                let rows = ''
+                for (let memo of data.memos) {
+                    const date = new Date(memo.sentAt)
+                    const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+                    const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                    const preview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
+                    const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
+
+                    rows += `<tr>
+          <td style="font-size:12px;">
+            <span style="color:var(--ink-muted);">
+              ${dateStr}<br>
+              <span style="font-size:11px;">${timeStr}</span>
+            </span>
+          </td>
+          <td>
+            <div style="font-weight:500;">${escHtml(memo.title)}</div>
+          </td>
+          <td>
+            <span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span>
+          </td>
+          <td style="font-size:12px;color:var(--ink-muted);">
+            ${escHtml(memo.senderName || 'Unknown')}
+          </td>
+          <td style="font-size:12px;color:var(--ink-faint);max-width:200px;">
+            <span title="${escHtml(memo.content)}">${escHtml(preview)}</span>
+          </td>
+          <td style="text-align: center;">
+            <button class="btn btn-ghost btn-sm" onclick="openMemoDetail(${memoJson})">
+              <span class="material-symbols-outlined" style="font-size: 16px;">info</span>
+            </button>
+          </td>
+        </tr>`
+                }
+                tbody.innerHTML = rows
+            } catch (e) {
+                statusEl.className = 'status-msg error show'
+                statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                statusEl.querySelector('.msg-text').textContent = e.message
+            }
+        }
+//ส่วน openMemoDetail ตอนนี้ received จะใช้ร่วมกับ sent ซึ่งส่วนแสดง sent to จะต้องเปลี่ยนเป็น from และแสดงชื่อผู้ที่ส่งมาแทน 
 
         async function loadFollowers() {
             const tbody = document.getElementById('followersTbody')
@@ -3680,10 +3952,12 @@ prompt:
                         for (let memo of newMemos) {
                             if (memo.unread) {
                                 const senderName = memo.senderName || 'ผู้ส่ง'
-                                addNotification(
+                                addNotificationWithMemo(
                                     'ได้รับ Memo ใหม่',
                                     `"${memo.title}" จาก ${senderName}`,
-                                    'info'
+                                    'info',
+                                    memo,
+                                    'received'
                                 )
                             }
                         }
@@ -3703,7 +3977,26 @@ prompt:
             document.getElementById('memoDetailTitle').textContent = memo.title
             document.getElementById('memoDetailTitleValue').textContent = memo.title
             document.getElementById('memoDetailTypeValue').textContent = memo.type || 'Memorandum'
-            document.getElementById('memoDetailRecipient').textContent = memo.recipientName || memo.recipientId
+            
+            // Determine if memo is sent or received
+            const isReceived = memo.senderName || memo.senderUserId
+            const recipientLabel = document.getElementById('memoDetailRecipientLabel')
+            
+            if (recipientLabel) {
+                // Update label based on memo type
+                if (isReceived) {
+                    recipientLabel.textContent = 'From'
+                    document.getElementById('memoDetailRecipient').textContent = memo.senderName || 'Unknown'
+                } else {
+                    recipientLabel.textContent = 'To'
+                    document.getElementById('memoDetailRecipient').textContent = memo.recipientName || memo.recipientId
+                }
+            } else {
+                // Fallback if label element doesn't exist
+                document.getElementById('memoDetailRecipient').textContent = isReceived ? 
+                    (memo.senderName || 'Unknown') : 
+                    (memo.recipientName || memo.recipientId)
+            }
             
             const sentDate = new Date(memo.sentAt)
             const dateStr = sentDate.toLocaleDateString('th-TH', { 
@@ -3722,7 +4015,7 @@ prompt:
             
             document.getElementById('memoDetailOverlay').classList.add('show')
         }
-//แก้ไข memoDetailRecipient ให้แสดงเป็น Fullname (name+surname) แทนการแสดง userId
+       
         function closeMemoDetail() {
             document.getElementById('memoDetailOverlay').classList.remove('show')
             currentMemoDetail = null
@@ -3751,6 +4044,13 @@ prompt:
             const date = new Date(currentMemoDetail.sentAt).toLocaleDateString('th-TH')
             const time = new Date(currentMemoDetail.sentAt).toLocaleTimeString('th-TH')
             
+            // Determine if memo is sent or received
+            const isReceived = currentMemoDetail.senderName || currentMemoDetail.senderUserId
+            const personLabel = isReceived ? 'From' : 'Sent to'
+            const personName = isReceived ? 
+                (currentMemoDetail.senderName || 'Unknown') : 
+                (currentMemoDetail.recipientName || currentMemoDetail.recipientId)
+            
             printWindow.document.write(`
                 <!DOCTYPE html>
                 <html>
@@ -3772,7 +4072,7 @@ prompt:
                     </div>
                     <div class="content">${escHtml(currentMemoDetail.content)}</div>
                     <div class="meta">
-                        <p>Sent to: ${escHtml(currentMemoDetail.recipientId)}</p>
+                        <p>${personLabel}: ${escHtml(personName)}</p>
                         <p>Date: ${date} ${time}</p>
                     </div>
                 </body>

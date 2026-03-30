@@ -196,4 +196,8 @@ card
 1.user ที่ active ในระบบ
 2.followers ใน line
 3.user ที่รอ approve เพื่อเข้าใช้ระบบ
+
+เมื่อ regis ให้เป็นสถานะ pending 
+แล้วให้ admin approve เพื่อเข้าใช้ระบบ
 */
+
