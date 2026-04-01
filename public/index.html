@@ -2363,7 +2363,29 @@
                     <p>Manage and review all active LINE followers.</p>
                 </div>
 
-
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card accent-card">
+                        <div class="stat-label">System Users</div>
+                        <div class="stat-value" id="stat-total-users">—</div>
+                        <div class="stat-sub">Total users in system</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">LINE Followers</div>
+                        <div class="stat-value" id="stat-total-followers">—</div>
+                        <div class="stat-sub">Active LINE followers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Linked Users</div>
+                        <div class="stat-value" id="stat-linked-users">—</div>
+                        <div class="stat-sub">Users with linked followers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pending Approvals</div>
+                        <div class="stat-value" id="stat-pending-users">—</div>
+                        <div class="stat-sub">Users awaiting approval</div>
+                    </div>
+                </div>
 
                 <!-- Admin-Only: Linked Followers Management -->
                 <div id="adminOnlyFollowerMgmt" style="display: none;">
@@ -2542,6 +2564,120 @@
                         </div>
                     </div>
 
+                    <!-- Department-Subdepartment Linking -->
+                    <div class="section-card" style="max-width: 680px;">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="material-symbols-outlined">account_tree</span>
+                                Department Structure
+                            </div>
+                            <button class="btn btn-ghost btn-sm" onclick="loadDepartmentStructure()">
+                                <span class="material-symbols-outlined">refresh</span>
+                                Refresh
+                            </button>
+                        </div>
+                        <div class="section-body">
+                            <div style="margin-bottom: 20px;">
+                                <label style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; display: block;">Link Sub-Departments to Departments</label>
+                                <div style="display: grid; gap: 8px; grid-template-columns: 1fr 1fr auto;">
+                                    <select id="linkDepartment" style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
+                                        <option value="">— Select Department —</option>
+                                    </select>
+                                    <select id="linkSubDepartment" style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
+                                        <option value="">— Select Sub-Department —</option>
+                                    </select>
+                                    <button class="btn btn-primary" onclick="linkDepartmentToSubDepartment()" style="padding: 8px 16px; font-size: 13px;">
+                                        <span class="material-symbols-outlined">link</span>
+                                        Link
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+                                <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 16px;">Department Hierarchy</h4>
+                                <div id="departmentHierarchyContainer" style="background: linear-gradient(135deg, rgba(26, 39, 64, 0.02) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; max-height: 700px; overflow-y: auto;">
+                                    <div style="padding: 24px; text-align: center; color: var(--ink-muted); font-size: 13px;">Loading department structure...</div>
+                                </div>
+                            </div>
+
+                            <div class="status-msg" id="statusDepartmentStructure" style="margin-top: 16px;">
+                                <span class="material-symbols-outlined"></span>
+                                <span class="msg-text"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <style>
+                        .department-item {
+                            margin-bottom: 12px;
+                        }
+                        
+                        .department-name {
+                            font-weight: 600;
+                            color: var(--accent);
+                            font-size: 14px;
+                            padding: 8px 0;
+                            display: flex;
+                            align-items: center;
+                        }
+
+                        .subdepartment-list {
+                            margin-left: 20px;
+                            border-left: 2px solid var(--accent-2);
+                            padding-left: 12px;
+                            margin-top: 8px;
+                        }
+
+                        .subdepartment-item {
+                            display: flex;
+                            align-items: center;
+                            padding: 6px 0;
+                            color: var(--ink);
+                            font-size: 13px;
+                            position: relative;
+                        }
+
+                        .subdepartment-item:before {
+                            content: '→';
+                            color: var(--accent-2);
+                            font-weight: 700;
+                            margin-right: 8px;
+                            font-size: 14px;
+                        }
+
+                        .subdepartment-name {
+                            flex: 1;
+                            padding: 4px 8px;
+                            background: var(--paper);
+                            border-radius: 3px;
+                            border: 1px solid var(--border);
+                        }
+
+                        .unlink-btn-small {
+                            padding: 2px 6px;
+                            font-size: 11px;
+                            color: var(--red);
+                            background: transparent;
+                            border: 1px solid var(--red);
+                            border-radius: 2px;
+                            cursor: pointer;
+                            margin-left: 6px;
+                            transition: all 0.2s;
+                        }
+
+                        .unlink-btn-small:hover {
+                            background: var(--red);
+                            color: #fff;
+                        }
+
+                        .empty-hierarchy {
+                            text-align: center;
+                            padding: 32px 16px;
+                            color: var(--ink-faint);
+                            font-size: 13px;
+                        }
+                    </style>
+
                     <div class="section-card" style="max-width: 680px;">
                         <div class="section-header">
                             <div class="section-title">
@@ -2633,6 +2769,9 @@
 
             </div>
 
+<!--หน้า Follower Registry ให้เพิ่ม card
+จำนวนผู้ใช้ทั้งหมดในระบบ, จำนวน followers (line) , จำนวนผู้ใช้ที่ link แล้ว
+ดูตัวอย่าง card จากหน้า dashboard-->
 
 
             <!-- ── LOGS VIEW ──────────────────────── -->
@@ -3205,6 +3344,7 @@
             if (name === 'sent-memos' && currentUser) loadSentMemos()
             if (name === 'received-memos' && currentUser) loadReceivedMemos()
             if (name === 'followers' && currentUser) {
+                loadFollowerRegistryStats()
                 loadFollowers()
                 // Show admin section if user is admin
                 const adminSection = document.getElementById('adminOnlyFollowerMgmt')
@@ -3221,6 +3361,7 @@
                         loadUsersForLinking()
                         loadPendingUsers()
                         loadDepartmentsList()
+                        loadDepartmentStructure()
                     }
                 }
             }
@@ -4142,6 +4283,171 @@
                     loadDepartmentsList()
                 }, 1000)
             } catch (err) {
+                alert('Error: ' + err.message)
+            }
+        }
+
+        // Load department structure with linked subdepartments
+        async function loadDepartmentStructure() {
+            try {
+                setStatus('statusDepartmentStructure', 'loading', 'hourglass_empty', 'Loading structure...')
+                
+                const res = await fetch('/departments', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+
+                // Populate select dropdowns
+                const deptSelect = document.getElementById('linkDepartment')
+                const subDeptSelect = document.getElementById('linkSubDepartment')
+                
+                deptSelect.innerHTML = '<option value="">— Select Department —</option>'
+                subDeptSelect.innerHTML = '<option value="">— Select Sub-Department —</option>'
+                
+                if (data.departments && data.departments.length > 0) {
+                    data.departments.forEach(d => {
+                        const option = document.createElement('option')
+                        option.value = d.id
+                        option.textContent = d.name
+                        deptSelect.appendChild(option)
+                    })
+                }
+                
+                if (data.departments2 && data.departments2.length > 0) {
+                    data.departments2.forEach(d => {
+                        const option = document.createElement('option')
+                        option.value = d.id
+                        option.textContent = d.name
+                        subDeptSelect.appendChild(option)
+                    })
+                }
+
+                // Get department hierarchy/links
+                const hierarchyRes = await fetch('/admin/department-links', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const hierarchyData = await hierarchyRes.json()
+
+                // Display hierarchy
+                const container = document.getElementById('departmentHierarchyContainer')
+                
+                if (!hierarchyData.links || hierarchyData.links.length === 0) {
+                    container.innerHTML = '<div class="empty-hierarchy"><span class="material-symbols-outlined" style="font-size: 32px; margin-bottom: 8px; display: block;">account_tree</span>No department links yet. Create a link above to get started.</div>'
+                } else {
+                    // Group subdepartments by department
+                    const grouped = {}
+                    hierarchyData.links.forEach(link => {
+                        if (!grouped[link.departmentId]) {
+                            grouped[link.departmentId] = {
+                                departmentName: link.departmentName,
+                                subDepartments: []
+                            }
+                        }
+                        grouped[link.departmentId].subDepartments.push({
+                            id: link.subDepartmentId,
+                            name: link.subDepartmentName,
+                            linkId: link.id
+                        })
+                    })
+
+                    let html = ''
+                    for (const [deptId, group] of Object.entries(grouped)) {
+                        html += `
+                            <div class="department-item">
+                                <div class="department-name">
+                                    <span class="material-symbols-outlined" style="margin-right: 8px; color: var(--accent-2);">folder</span>
+                                    ${escHtml(group.departmentName)}
+                                </div>
+                                <div class="subdepartment-list">
+                                    ${group.subDepartments.map(sub => `
+                                        <div class="subdepartment-item">
+                                            <span class="subdepartment-name">${escHtml(sub.name)}</span>
+                                            <button class="unlink-btn-small" onclick="unlinkDepartmentFromSubDepartment('${sub.linkId}')" title="Unlink">Unlink</button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `
+                    }
+                    container.innerHTML = html
+                }
+
+                setStatus('statusDepartmentStructure', 'success', 'check_circle', 'Structure loaded successfully')
+                setTimeout(() => {
+                    document.getElementById('statusDepartmentStructure').classList.remove('show', 'success')
+                }, 3000)
+            } catch (err) {
+                console.error('Error loading department structure:', err)
+                setStatus('statusDepartmentStructure', 'error', 'error', 'Failed to load structure: ' + err.message)
+            }
+        }
+
+        // Link a subdepartment to a department
+        async function linkDepartmentToSubDepartment() {
+            const deptId = document.getElementById('linkDepartment').value.trim()
+            const subDeptId = document.getElementById('linkSubDepartment').value.trim()
+
+            if (!deptId) {
+                setStatus('statusDepartmentStructure', 'error', 'error', 'Please select a department')
+                return
+            }
+            if (!subDeptId) {
+                setStatus('statusDepartmentStructure', 'error', 'error', 'Please select a sub-department')
+                return
+            }
+
+            setStatus('statusDepartmentStructure', 'loading', 'hourglass_empty', 'Creating link...')
+            try {
+                const res = await fetch('/admin/department-links/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ departmentId: deptId, subDepartmentId: subDeptId })
+                })
+                
+                const data = await res.json()
+                
+                if (!res.ok) {
+                    setStatus('statusDepartmentStructure', 'error', 'error', data.error || 'Failed to create link')
+                    return
+                }
+
+                document.getElementById('linkDepartment').value = ''
+                document.getElementById('linkSubDepartment').value = ''
+                setStatus('statusDepartmentStructure', 'success', 'check_circle', 'Link created successfully')
+                setTimeout(() => {
+                    loadDepartmentStructure()
+                }, 1000)
+            } catch (err) {
+                console.error('Error creating link:', err)
+                setStatus('statusDepartmentStructure', 'error', 'error', 'Error: ' + err.message)
+            }
+        }
+
+        // Unlink a subdepartment from a department
+        async function unlinkDepartmentFromSubDepartment(linkId) {
+            const confirmed = await showConfirmModal('Remove this link?', 'Unlink')
+            if (!confirmed) return
+
+            try {
+                const res = await fetch(`/admin/department-links/${linkId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                if (!res.ok) {
+                    alert('Error: ' + (data.error || 'Failed to unlink'))
+                    return
+                }
+
+                setStatus('statusDepartmentStructure', 'success', 'check_circle', 'Link removed successfully')
+                setTimeout(() => {
+                    loadDepartmentStructure()
+                }, 800)
+            } catch (err) {
+                console.error('Error unlinking:', err)
                 alert('Error: ' + err.message)
             }
         }
@@ -5068,6 +5374,53 @@
             }
         }
         //ส่วน openMemoDetail ตอนนี้ received จะใช้ร่วมกับ sent ซึ่งส่วนแสดง sent to จะต้องเปลี่ยนเป็น from และแสดงชื่อผู้ที่ส่งมาแทน 
+
+        // ── Load Follower Registry Stats ─────────────
+        async function loadFollowerRegistryStats() {
+            try {
+                // Fetch total users
+                const usersRes = await fetch('/admin/users', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const usersData = await usersRes.json()
+                const totalUsers = (usersData.users || []).length
+
+                // Fetch total followers
+                const followersRes = await fetch('/followers')
+                const followersData = await followersRes.json()
+                const totalFollowers = followersData.count || 0
+
+                // Fetch pending users
+                const pendingRes = await fetch('/pending-users', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const pendingData = await pendingRes.json()
+                const pendingUsers = (pendingData.pendingUsers || []).length
+
+                // Fetch linked followers
+                const linkedRes = await fetch('/admin/all-linked-followers', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const linkedData = await linkedRes.json()
+                const linkedFollowers = linkedData.linkedFollowers || []
+                
+                // Count unique users with linked followers
+                const usersWithLinked = new Set(linkedFollowers.map(link => link.userId)).size
+
+                // Update stats
+                document.getElementById('stat-total-users').textContent = totalUsers
+                document.getElementById('stat-total-followers').textContent = totalFollowers
+                document.getElementById('stat-linked-users').textContent = usersWithLinked
+                document.getElementById('stat-pending-users').textContent = pendingUsers
+            } catch (err) {
+                console.error('Error loading follower registry stats:', err)
+                // Set to 0 on error
+                document.getElementById('stat-total-users').textContent = '0'
+                document.getElementById('stat-total-followers').textContent = '0'
+                document.getElementById('stat-linked-users').textContent = '0'
+                document.getElementById('stat-pending-users').textContent = '0'
+            }
+        }
 
         async function loadFollowers() {
             const tbody = document.getElementById('followersTbody')

@@ -891,6 +891,118 @@ app.delete("/admin/departments/:deptId", verifyToken, async (req, res) => {
   }
 })
 
+// Get all department-subdepartment links
+app.get("/admin/department-links", verifyToken, async (req, res) => {
+  try {
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+
+    const links = await firebase_get('departmentLinks')
+    const departments = await firebase_get('departments')
+    const departments2 = await firebase_get('departments2')
+
+    // Build the response with department and subdepartment names
+    let formattedLinks = []
+    if (links && typeof links === 'object') {
+      for (const [linkId, link] of Object.entries(links)) {
+        const dept = departments && departments[link.departmentId]
+        const subDept = departments2 && departments2[link.subDepartmentId]
+        
+        if (dept && subDept) {
+          formattedLinks.push({
+            id: linkId,
+            departmentId: link.departmentId,
+            departmentName: dept.name,
+            subDepartmentId: link.subDepartmentId,
+            subDepartmentName: subDept.name,
+            createdAt: link.createdAt
+          })
+        }
+      }
+    }
+
+    res.json({ links: formattedLinks })
+  } catch (err) {
+    addLog('error', 'Get department links error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Create a new department-subdepartment link
+app.post("/admin/department-links/add", verifyToken, async (req, res) => {
+  try {
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+
+    const { departmentId, subDepartmentId } = req.body
+
+    if (!departmentId || !subDepartmentId) {
+      return res.status(400).json({ error: "Department ID and Sub-Department ID are required" })
+    }
+
+    // Check if both departments exist
+    const dept = await firebase_get(`departments/${departmentId}`)
+    const subDept = await firebase_get(`departments2/${subDepartmentId}`)
+
+    if (!dept) {
+      return res.status(404).json({ error: "Department not found" })
+    }
+    if (!subDept) {
+      return res.status(404).json({ error: "Sub-Department not found" })
+    }
+
+    // Check if link already exists
+    const existingLinks = await firebase_get('departmentLinks')
+    if (existingLinks && typeof existingLinks === 'object') {
+      for (const link of Object.values(existingLinks)) {
+        if (link.departmentId === departmentId && link.subDepartmentId === subDepartmentId) {
+          return res.status(400).json({ error: "This link already exists" })
+        }
+      }
+    }
+
+    // Create new link
+    const linkId = `link_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const newLink = {
+      departmentId,
+      subDepartmentId,
+      createdAt: new Date().toISOString()
+    }
+
+    await firebase_set(`departmentLinks/${linkId}`, newLink)
+    addLog('info', 'Department link created', { adminId: req.userId, linkId, departmentId, subDepartmentId })
+    
+    res.json({ status: "Link created successfully", linkId, link: newLink })
+  } catch (err) {
+    addLog('error', 'Create department link error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Delete a department-subdepartment link
+app.delete("/admin/department-links/:linkId", verifyToken, async (req, res) => {
+  try {
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+
+    const linkId = req.params.linkId
+
+    await firebase_delete(`departmentLinks/${linkId}`)
+    addLog('info', 'Department link deleted', { adminId: req.userId, linkId })
+    
+    res.json({ status: "Link deleted successfully" })
+  } catch (err) {
+    addLog('error', 'Delete department link error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Webhook Route - รับ events จาก LINE
 app.post("/webhook", async (req, res) => {
   try {
