@@ -205,5 +205,9 @@ card
 1.เลขที่เอกสาร
 2.ให้หน้าอนุมัติ memo ก่อนส่งไปหาฝ่ายอื่น
 3.วันที่-เวลา ให้ยึดตามเวลาที่สร้าง memo ไม่ต้องให้เลือก input type date
+4.permission 
+- เข้าถึง tab user management 
+- เข้าถึง system log
+- approve/reject memo ก่อนส่งไปฝ่ายอื่น
 */
 

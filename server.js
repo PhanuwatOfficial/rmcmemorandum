@@ -63,13 +63,26 @@ const FIREBASE_DB_URL = "https://line-6191d-default-rtdb.asia-southeast1.firebas
 async function firebase_set(path, data) {
   try {
     const url = `${FIREBASE_DB_URL}/${path}.json`
+    console.log('🔓 Firebase SET - URL:', url)
+    console.log('🔓 Firebase SET - Data:', JSON.stringify(data))
+    
     const response = await fetch(url, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     })
-    return await response.json()
+    
+    console.log('🔓 Firebase SET - Response status:', response.status, response.statusText)
+    const result = await response.json()
+    console.log('🔓 Firebase SET - Result:', result)
+    
+    if (!response.ok) {
+      throw new Error(`Firebase set failed: ${response.status} ${response.statusText}`)
+    }
+    
+    return result
   } catch (err) {
+    console.error('❌ Firebase set error:', err)
     addLog('error', 'Firebase set error', { path, message: err.message })
     throw err
   }
@@ -129,7 +142,7 @@ function verifyToken(req, res, next) {
 // Register
 app.post("/register", async (req, res) => {
   try {
-    const { username, name, surname, password } = req.body
+    const { username, name, surname, password, department, department2 } = req.body
     
     if (!username || !name || !surname || !password) {
       return res.status(400).json({ error: "Missing required fields" })
@@ -157,6 +170,8 @@ app.post("/register", async (req, res) => {
       name,
       surname,
       password: password,
+      department: department || '',
+      department2: department2 || '',
       role: isFirstUser ? 'admin' : 'user',
       status: isFirstUser ? 'active' : 'pending',  // First user is active by default
       createdAt: new Date().toISOString(),
@@ -453,6 +468,31 @@ app.post("/user/change-password", verifyToken, async (req, res) => {
   }
 })
 
+// Update user's departments
+app.post("/user/update-departments", verifyToken, async (req, res) => {
+  try {
+    const { department, department2 } = req.body
+    
+    addLog('info', 'Update departments attempt', { userId: req.userId, department, department2 })
+    
+    const user = await firebase_get(`users/${req.userId}`)
+    if (!user) {
+      return res.status(404).json({ error: "User not found" })
+    }
+    
+    // Update departments
+    user.department = department || ''
+    user.department2 = department2 || ''
+    await firebase_set(`users/${req.userId}`, user)
+    
+    addLog('info', 'Departments updated successfully', { userId: req.userId, department, department2 })
+    res.json({ status: "Departments updated successfully" })
+  } catch (err) {
+    addLog('error', 'Update departments error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Get user's linked followers
 app.get("/user/followers", verifyToken, async (req, res) => {
   try {
@@ -472,14 +512,25 @@ app.get("/user/followers", verifyToken, async (req, res) => {
   }
 })
 
-// Get all users (admin only)
+// Get departments for autocomplete (accessible to all authenticated users)
+app.get("/departments", async (req, res) => {
+  try {
+    const departments = await firebase_get('departments')
+    const departments2 = await firebase_get('departments2')
+    
+    res.json({
+      departments: (departments && typeof departments === 'object') ? Object.values(departments) : [],
+      departments2: (departments2 && typeof departments2 === 'object') ? Object.values(departments2) : []
+    })
+  } catch (err) {
+    addLog('error', 'Get departments error', { message: err.message })
+    res.json({ departments: [], departments2: [] })
+  }
+})
+
+// Get all users (admin and regular users)
 app.get("/admin/users", verifyToken, async (req, res) => {
   try {
-    const currentUser = await firebase_get(`users/${req.userId}`)
-    if (!currentUser || currentUser.role !== 'admin') {
-      return res.status(403).json({ error: "Admin access required" })
-    }
-    
     const allUsersData = await firebase_get('users')
     if (!allUsersData) {
       return res.json({ users: [] })
@@ -620,6 +671,155 @@ app.post("/admin/unlink-follower-from-user", verifyToken, async (req, res) => {
     res.json({ status: "Follower unlinked successfully" })
   } catch (err) {
     addLog('error', 'Admin unlink follower error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Admin: Add department (ฝ่าย)
+app.post("/admin/departments/add", verifyToken, async (req, res) => {
+  try {
+    const { name, code } = req.body
+    
+    console.log('\n🔍 === /admin/departments/add REQUEST ===')
+    console.log('📥 Request body:', { name, code, userId: req.userId })
+    
+    if (!name) {
+      console.log('❌ Department name missing')
+      return res.status(400).json({ error: "Department name required" })
+    }
+    
+    // Check if user is admin
+    console.log('🔐 Checking admin status for user:', req.userId)
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    console.log('👤 Current user:', { userId: req.userId, role: currentUser?.role })
+    
+    if (!currentUser) {
+      console.log('❌ User not found')
+      return res.status(404).json({ error: "User not found" })
+    }
+    
+    if (currentUser.role !== 'admin') {
+      console.log('❌ User is not admin. Role:', currentUser.role)
+      return res.status(403).json({ error: "Admin access required" })
+    }
+    
+    console.log('✅ User is admin. Proceeding...')
+    
+    const deptId = `dept_${Date.now()}`
+    const departmentData = {
+      id: deptId,
+      name,
+      code: code || '',
+      createdAt: new Date().toISOString(),
+      createdBy: req.userId
+    }
+    
+    console.log('💾 Attempting to save to Firebase...')
+    console.log('📝 Path: departments/' + deptId)
+    console.log('📝 Data:', departmentData)
+    
+    await firebase_set(`departments/${deptId}`, departmentData)
+    
+    console.log('✅ Successfully saved to Firebase!')
+    addLog('info', 'Department added successfully', { adminId: req.userId, deptId, name })
+    
+    console.log('📤 Sending success response')
+    res.json({ status: "Department added successfully", department: departmentData })
+    console.log('🔍 === /admin/departments/add COMPLETED ===\n')
+    
+  } catch (err) {
+    console.error('❌ === ERROR IN /admin/departments/add ===')
+    console.error('Error details:', err)
+    console.error('Stack:', err.stack)
+    console.error('🔍 === ERROR COMPLETED ===\n')
+    
+    addLog('error', 'Add department error', { message: err.message, stack: err.stack })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Admin: Add sub-department (แผนก)
+app.post("/admin/departments2/add", verifyToken, async (req, res) => {
+  try {
+    const { name, code } = req.body
+    
+    console.log('\n🔍 === /admin/departments2/add REQUEST ===')
+    console.log('📥 Request body:', { name, code, userId: req.userId })
+    
+    if (!name) {
+      console.log('❌ Sub-department name missing')
+      return res.status(400).json({ error: "Sub-department name required" })
+    }
+    
+    // Check if user is admin
+    console.log('🔐 Checking admin status for user:', req.userId)
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    console.log('👤 Current user:', { userId: req.userId, role: currentUser?.role })
+    
+    if (!currentUser) {
+      console.log('❌ User not found')
+      return res.status(404).json({ error: "User not found" })
+    }
+    
+    if (currentUser.role !== 'admin') {
+      console.log('❌ User is not admin. Role:', currentUser.role)
+      return res.status(403).json({ error: "Admin access required" })
+    }
+    
+    console.log('✅ User is admin. Proceeding...')
+    
+    const deptId = `dept2_${Date.now()}`
+    const departmentData = {
+      id: deptId,
+      name,
+      code: code || '',
+      createdAt: new Date().toISOString(),
+      createdBy: req.userId
+    }
+    
+    console.log('💾 Attempting to save to Firebase...')
+    console.log('📝 Path: departments2/' + deptId)
+    console.log('📝 Data:', departmentData)
+    
+    await firebase_set(`departments2/${deptId}`, departmentData)
+    
+    console.log('✅ Successfully saved to Firebase!')
+    addLog('info', 'Sub-department added successfully', { adminId: req.userId, deptId, name })
+    
+    console.log('📤 Sending success response')
+    res.json({ status: "Sub-department added successfully", department: departmentData })
+    console.log('🔍 === /admin/departments2/add COMPLETED ===\n')
+    
+  } catch (err) {
+    console.error('❌ === ERROR IN /admin/departments2/add ===')
+    console.error('Error details:', err)
+    console.error('Stack:', err.stack)
+    console.error('🔍 === ERROR COMPLETED ===\n')
+    
+    addLog('error', 'Add sub-department error', { message: err.message, stack: err.stack })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Admin: Delete department
+app.delete("/admin/departments/:deptId", verifyToken, async (req, res) => {
+  try {
+    const deptId = req.params.deptId
+    
+    // Check if user is admin
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+    
+    const isSubDept = deptId.startsWith('dept2_')
+    const path = isSubDept ? `departments2/${deptId}` : `departments/${deptId}`
+    
+    await firebase_delete(path)
+    addLog('info', 'Department deleted', { adminId: req.userId, deptId })
+    res.json({ status: "Department deleted successfully" })
+  } catch (err) {
+    addLog('error', 'Delete department error', { message: err.message })
     res.status(500).json({ error: err.message })
   }
 })
@@ -884,6 +1084,19 @@ app.post("/send", async (req,res)=>{
       const sender = await firebase_get(`users/${senderUserId}`)
       const senderFullName = sender ? `${sender.name} ${sender.surname}`.trim() : 'ผู้ส่ง'
       
+      // Create full memo object for notification display (same format as link user)
+      const memoObject = {
+        memoId: memoId,
+        title: title,
+        type: type,
+        content: content,
+        senderUserId: senderUserId,
+        senderName: senderFullName,
+        senderUsername: sender?.username || 'System',
+        recipientUserId: notificationTargetId,
+        sentAt: new Date().toISOString()
+      }
+      
       const notification = {
         id: Date.now().toString(),
         title: 'ได้รับ Memo ใหม่',
@@ -892,6 +1105,8 @@ app.post("/send", async (req,res)=>{
         read: false,
         timestamp: new Date().toISOString(),
         memoId: memoId,
+        memoObject: memoObject,
+        memoType: 'received',
         senderId: senderUserId,
         recipientId: notificationTargetId,
         followerId: targetUserId
@@ -1029,38 +1244,43 @@ app.get("/received-memos", verifyToken, async (req, res) => {
     
     // Get current user to access linked followers
     const currentUser = await firebase_get(`users/${userId}`)
-    if (!currentUser || !currentUser.linkedFollowers) {
-      return res.json({ memos: [], count: 0 })
-    }
     
-    const linkedFollowerIds = Object.keys(currentUser.linkedFollowers)
+    const linkedFollowerIds = currentUser?.linkedFollowers ? Object.keys(currentUser.linkedFollowers) : []
     console.log('👥 Linked followers:', linkedFollowerIds)
     
     // Get all users' sent memos to find ones sent to this user's followers
     const allUsers = await firebase_get('users')
-    if (!allUsers || typeof allUsers !== 'object') {
-      return res.json({ memos: [], count: 0 })
-    }
     
     const receivedMemos = []
     
-    // Search through all users' sent_memos
-    for (let senderId in allUsers) {
-      const senderMemos = await firebase_get(`sent_memos/${senderId}`)
-      if (!senderMemos || typeof senderMemos !== 'object') continue
-      
-      // Check each memo - if it was sent to one of this user's followers, include it
-      for (let memoId in senderMemos) {
-        const memo = senderMemos[memoId]
-        if (linkedFollowerIds.includes(memo.recipientId)) {
-          // Enrich with sender info
-          const sender = allUsers[senderId]
-          if (sender) {
-            memo.senderName = `${sender.name} ${sender.surname}`
-            memo.senderUserId = senderId
+    // 1. Search through all users' sent_memos for memos sent to this user's followers
+    if (allUsers && typeof allUsers === 'object' && linkedFollowerIds.length > 0) {
+      for (let senderId in allUsers) {
+        const senderMemos = await firebase_get(`sent_memos/${senderId}`)
+        if (!senderMemos || typeof senderMemos !== 'object') continue
+        
+        // Check each memo - if it was sent to one of this user's followers, include it
+        for (let memoId in senderMemos) {
+          const memo = senderMemos[memoId]
+          if (linkedFollowerIds.includes(memo.recipientId)) {
+            // Enrich with sender info
+            const sender = allUsers[senderId]
+            if (sender) {
+              memo.senderName = `${sender.name} ${sender.surname}`
+              memo.senderUserId = senderId
+            }
+            receivedMemos.push(memo)
           }
-          receivedMemos.push(memo)
         }
+      }
+    }
+    
+    // 2. Get memos sent directly to this system user (from received_memos collection)
+    const directReceivedMemos = await firebase_get(`received_memos/${userId}`)
+    if (directReceivedMemos && typeof directReceivedMemos === 'object') {
+      for (let memoId in directReceivedMemos) {
+        const memo = directReceivedMemos[memoId]
+        receivedMemos.push(memo)
       }
     }
     
@@ -1129,6 +1349,92 @@ app.post("/notifications", verifyToken, async (req, res) => {
     res.json({ status: 'Notification saved', notification })
   } catch (err) {
     addLog('error', 'Create notification error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Send notification to a specific user (admin only)
+app.post("/notifications/send/:targetUserId", verifyToken, async (req, res) => {
+  try {
+    const { title, message, type, memoObject, memoType } = req.body
+    const targetUserId = req.params.targetUserId
+    const senderUserId = req.userId
+    
+    if (!title || !message) {
+      return res.status(400).json({ error: 'Title and message required' })
+    }
+    
+    const notificationId = Date.now().toString()
+    const notification = {
+      id: notificationId,
+      title: title,
+      message: message,
+      type: type || 'info',
+      read: false,
+      timestamp: new Date().toISOString(),
+      sentBy: senderUserId,
+      memoObject: memoObject || null,
+      memoType: memoType || null
+    }
+    
+    await firebase_set(`notifications/${targetUserId}/${notificationId}`, notification)
+    addLog('info', 'Notification sent to user', { targetUserId, senderUserId, notificationId })
+    
+    res.json({ status: 'Notification sent', notification })
+  } catch (err) {
+    addLog('error', 'Send notification error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Send memo to a system user (for users without linked followers)
+app.post("/send-system-memo", verifyToken, async (req, res) => {
+  try {
+    const { targetUserId, title, type, content } = req.body
+    const senderUserId = req.userId
+    
+    if (!targetUserId || !title || !type || !content) {
+      return res.status(400).json({ error: 'targetUserId, title, type, and content required' })
+    }
+    
+    // Get sender info
+    const sender = await firebase_get(`users/${senderUserId}`)
+    if (!sender) {
+      return res.status(404).json({ error: 'Sender not found' })
+    }
+    
+    // Get recipient info
+    const recipient = await firebase_get(`users/${targetUserId}`)
+    if (!recipient) {
+      return res.status(404).json({ error: 'Recipient not found' })
+    }
+    
+    // Create memo ID
+    const memoId = `memo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    // Create memo data
+    const memoData = {
+      memoId,
+      title,
+      type,
+      content,
+      senderUserId,
+      senderName: `${sender.name} ${sender.surname}`,
+      senderUsername: sender.username,
+      recipientUserId: targetUserId,
+      sentAt: new Date().toISOString()
+    }
+    
+    // Store in sender's sent_memos
+    await firebase_set(`sent_memos/${senderUserId}/${memoId}`, memoData)
+    
+    // Store in recipient's received_memos
+    await firebase_set(`received_memos/${targetUserId}/${memoId}`, memoData)
+    
+    addLog('info', 'System memo sent successfully', { senderUserId, targetUserId, memoId })
+    res.json({ status: 'Memo sent successfully', memoId })
+  } catch (err) {
+    addLog('error', 'Send system memo error', { message: err.message })
     res.status(500).json({ error: err.message })
   }
 })

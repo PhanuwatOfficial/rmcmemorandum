@@ -466,6 +466,76 @@
             line-height: 1.6;
         }
 
+        /* ── Custom Autocomplete ─────────────────── */
+        .custom-autocomplete-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-autocomplete-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-family: "Noto Sans Thai", sans-serif;
+            font-size: 13px;
+            color: var(--ink);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .custom-autocomplete-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(26, 39, 64, 0.08);
+        }
+
+        .custom-autocomplete-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: var(--paper);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-height: 240px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .custom-autocomplete-item {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background-color 0.15s;
+            font-size: 13px;
+            color: var(--ink);
+        }
+
+        .custom-autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .custom-autocomplete-item:hover {
+            background-color: var(--accent-2);
+            background-color: rgba(200, 169, 110, 0.1);
+        }
+
+        .custom-autocomplete-item.selected {
+            background-color: var(--accent-2);
+            background-color: rgba(200, 169, 110, 0.2);
+            border-left: 3px solid var(--accent-2);
+            padding-left: 11px;
+        }
+
+        .custom-autocomplete-no-results {
+            padding: 16px 14px;
+            text-align: center;
+            color: var(--ink-muted);
+            font-size: 13px;
+        }
+
         /* ── Memo Type Selector ──────────────────── */
         .memo-type-container {
             display: flex;
@@ -1765,6 +1835,24 @@
                             <label>Password</label>
                             <input id="regPassword" type="password" placeholder="Create a password">
                         </div>
+                        <div class="field">
+                            <label>Confirm Password</label>
+                            <input id="regConfirmPassword" type="password" placeholder="Confirm your password">
+                        </div>
+                        <div class="field">
+                            <label>Department (ฝ่าย)</label>
+                            <div class="custom-autocomplete-wrapper">
+                                <input id="regDepartment" type="text" placeholder="Select department..." class="custom-autocomplete-input" autocomplete="off">
+                                <div id="regDepartmentDropdown" class="custom-autocomplete-dropdown" style="display: none;"></div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Sub-Department (แผนก)</label>
+                            <div class="custom-autocomplete-wrapper">
+                                <input id="regDepartment2" type="text" placeholder="Select sub-department..." class="custom-autocomplete-input" autocomplete="off">
+                                <div id="regDepartment2Dropdown" class="custom-autocomplete-dropdown" style="display: none;"></div>
+                            </div>
+                        </div>
                         <div class="btn-row">
                             <button class="btn btn-primary" onclick="doRegister()">
                                 <span class="material-symbols-outlined">person_add</span>
@@ -1783,6 +1871,13 @@
                     </div>
                 </div>
             </div>
+
+            <!--
+            1.เพิ่ม confirm password
+            2.เพิ่ม department (ฝ่าย) เป็น populate autocomplete
+            3.เพิ่ม department2 (แผนก) เป็น populate autocomplete
+            autocomplete department , department2 ให้ผู้ใช้ userrole = admin สามารถเพิ่ม/แก้ไขได้จากหน้า manage user
+            -->
 
 
             <!-- ── MANAGE USER VIEW ───────────────── -->
@@ -1825,7 +1920,7 @@
                     </div>
                 </div>
 
-                    <div class="section-card" style="max-width: 680px;">
+                <div class="section-card" style="max-width: 680px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">lock</span>
@@ -2070,7 +2165,6 @@
                                 </label>
                             </div>
                         </div>
-                        <!--แก้ไขให้ ส่วน input กัย label แสดงผลตรงกัน ตอนนี้ input radio แสดงผลไม่ตรงกับ label เยื้องๆ-->
 
                         <div class="field">
                             <label>Recipients</label>
@@ -2394,6 +2488,54 @@
                         </div>
                     </div>
 
+                    <!-- Department Management (Admin Only) -->
+                    <div class="section-card" style="max-width: 680px;">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="material-symbols-outlined">domain</span>
+                                Department Management
+                            </div>
+                            <button class="btn btn-ghost btn-sm" onclick="loadDepartmentsList()">
+                                <span class="material-symbols-outlined">refresh</span>
+                                Refresh
+                            </button>
+                        </div>
+                        <div class="section-body">
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">Departments (ฝ่าย)</h4>
+                                <div id="departmentsListContainer" style="margin-bottom: 12px;">
+                                    <div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">Loading...</div>
+                                </div>
+                                <div style="display: grid; gap: 8px; grid-template-columns: 1fr auto;">
+                                    <input id="newDepartmentName" type="text" placeholder="Enter new department..." style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
+                                    <button class="btn btn-primary" onclick="addNewDepartment()" style="padding: 8px 16px; font-size: 13px;">
+                                        <span class="material-symbols-outlined">add</span>
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+                                <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">Sub-Departments (แผนก)</h4>
+                                <div id="departments2ListContainer" style="margin-bottom: 12px;">
+                                    <div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">Loading...</div>
+                                </div>
+                                <div style="display: grid; gap: 8px; grid-template-columns: 1fr auto;">
+                                    <input id="newDepartment2Name" type="text" placeholder="Enter new sub-department..." style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
+                                    <button class="btn btn-primary" onclick="addNewDepartment2()" style="padding: 8px 16px; font-size: 13px;">
+                                        <span class="material-symbols-outlined">add</span>
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="status-msg" id="statusDepartmentManagement" style="margin-top: 16px;">
+                                <span class="material-symbols-outlined"></span>
+                                <span class="msg-text"></span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="section-card" style="max-width: 680px;">
                         <div class="section-header">
                             <div class="section-title">
@@ -2427,6 +2569,11 @@
                         </div>
                     </div>
 
+    <!--
+    prompt:ในหน้า All Linked Followers เมื่อ unlink แล้ว ให้ผู้ใช้ที่ทำการ unlineออกจากรายการ linked followers และกลับไปแสดงใน available followers ทันที (realtime)
+    
+    
+    -->
                     <div class="section-card">
                         <div class="section-header">
                             <div class="section-title">
@@ -2787,18 +2934,17 @@
                 const unreadClass = notif.read ? '' : 'unread'
                 const iconColor = notif.type === 'success' ? 'var(--green)' : notif.type === 'error' ? 'var(--red)' : 'var(--blue)'
 
-                // Determine memo type styling
-                const memoTypeBorder = notif.memoType === 'received' ? '#2d8659' : notif.memoType === 'sent' ? '#1a5aa8' : 'transparent'
-                const memoTypeIcon = notif.memoType === 'received' ? 'mail' : notif.memoType === 'sent' ? 'send' : ''
-                const memoTypeLabel = notif.memoType === 'received' ? 'รับ' : notif.memoType === 'sent' ? 'ส่ง' : ''
-
                 // Extract sender name from message if available
                 let messageDisplay = escHtml(notif.message).replace(/From: /, '<strong>ผู้ส่ง: </strong>')
                 messageDisplay = messageDisplay.replace(/จาก /, '<strong>จาก: </strong>')
 
                 // Determine click handler - if we have memoObject, use it; otherwise use memoId
                 let clickHandler = 'markNotificationAsRead()'
-                if (notif.memoObject) {
+                if (notif.memoObject && notif.memoType === 'received') {
+                    // For received memos from system users, navigate to received-memos and show detail
+                    const memoJson = escHtml(JSON.stringify(notif.memoObject)).replace(/"/g, '&quot;')
+                    clickHandler = `showViewAndMemoDetail('received-memos', ${memoJson})`
+                } else if (notif.memoObject) {
                     const memoJson = escHtml(JSON.stringify(notif.memoObject)).replace(/"/g, '&quot;')
                     clickHandler = `openMemoDetail(${memoJson})`
                 } else if (notif.memoId) {
@@ -2806,14 +2952,13 @@
                 }
 
                 html += `
-                    <div class="notification-item ${unreadClass}" onclick="${clickHandler}; markNotificationAsRead('${notif.id}')" style="cursor: pointer; border-left: 4px solid ${memoTypeBorder};">
+                    <div class="notification-item ${unreadClass}" onclick="${clickHandler}; markNotificationAsRead('${notif.id}')" style="cursor: pointer;">
                         <div style="display: flex; gap: 10px;">
                             <span class="material-symbols-outlined" style="font-size: 18px; color: ${iconColor}; flex-shrink: 0;">${icon}</span>
                             <div style="flex: 1; min-width: 0;">
                                 <div class="notification-item-title">${escHtml(notif.title)}</div>
                                 <div class="notification-item-message">${messageDisplay}</div>
                                 <div class="notification-item-time">${displayTime}</div>
-                                ${memoTypeLabel ? `<div style="font-size: 10px; color: var(--ink-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size: 12px;">${memoTypeIcon}</span>${memoTypeLabel}</div>` : ''}
                             </div>
                         </div>
                         <button class="notification-item-close" onclick="event.stopPropagation(); removeNotification('${notif.id}')">
@@ -3036,7 +3181,14 @@
             if (mobileNavItem) mobileNavItem.classList.add('active')
 
             // Trigger view-specific setup
-            if (name === 'manage-user') loadUserData()
+            if (name === 'register') {
+                loadRegistrationDepartments()
+            }
+            if (name === 'manage-user') {
+                loadUserData()
+                loadUserDepartmentsList()
+                reloadUserDepartments()
+            }
             if (name === 'dashboard' && currentUser) refreshDashboard()
             if (name === 'compose' && currentUser) {
                 loadLinkedFollowersForCompose()
@@ -3061,6 +3213,7 @@
                         loadAvailableFollowersForLinking()
                         loadUsersForLinking()
                         loadPendingUsers()
+                        loadDepartmentsList()
                     }
                 }
             }
@@ -3213,14 +3366,112 @@
             avatar.textContent = ''
         }
 
+        // Store departments data globally for autocomplete
+        let registrationDepartments = []
+        let registrationDepartments2 = []
+
+        async function loadRegistrationDepartments() {
+            try {
+                console.log('📚 Loading departments for registration form...')
+                const res = await fetch('/departments')
+                const data = await res.json()
+                console.log('📥 Departments response:', data)
+                
+                if (data.departments && Array.isArray(data.departments)) {
+                    registrationDepartments = data.departments
+                    console.log('✅ Departments found:', registrationDepartments.length)
+                    initCustomAutocomplete('regDepartment', 'regDepartmentDropdown', registrationDepartments)
+                }
+                
+                if (data.departments2 && Array.isArray(data.departments2)) {
+                    registrationDepartments2 = data.departments2
+                    console.log('✅ Sub-departments found:', registrationDepartments2.length)
+                    initCustomAutocomplete('regDepartment2', 'regDepartment2Dropdown', registrationDepartments2)
+                }
+            } catch (err) {
+                console.error('❌ Error loading registration departments:', err)
+            }
+        }
+
+        function initCustomAutocomplete(inputId, dropdownId, items) {
+            const input = document.getElementById(inputId)
+            const dropdown = document.getElementById(dropdownId)
+
+            if (!input || !dropdown) return
+
+            // Show dropdown on focus
+            input.addEventListener('focus', () => {
+                updateAutocompleteDropdown(inputId, dropdownId, items)
+                dropdown.style.display = 'block'
+            })
+
+            // Filter on input
+            input.addEventListener('input', (e) => {
+                updateAutocompleteDropdown(inputId, dropdownId, items)
+                if (dropdown.childElementCount > 0) {
+                    dropdown.style.display = 'block'
+                }
+            })
+
+            // Hide dropdown on blur
+            input.addEventListener('blur', () => {
+                setTimeout(() => {
+                    dropdown.style.display = 'none'
+                }, 200)
+            })
+        }
+
+        function updateAutocompleteDropdown(inputId, dropdownId, items) {
+            const input = document.getElementById(inputId)
+            const dropdown = document.getElementById(dropdownId)
+            const query = input.value.toLowerCase().trim()
+
+            // Filter items
+            const filtered = items.filter(item => 
+                item.name.toLowerCase().includes(query)
+            )
+
+            // Render dropdown
+            dropdown.innerHTML = ''
+            if (filtered.length === 0) {
+                if (query.length > 0) {
+                    dropdown.innerHTML = '<div class="custom-autocomplete-no-results">No results found</div>'
+                }
+            } else {
+                filtered.forEach(item => {
+                    const div = document.createElement('div')
+                    div.className = 'custom-autocomplete-item'
+                    div.textContent = item.name
+                    div.onclick = () => {
+                        input.value = item.name
+                        dropdown.style.display = 'none'
+                    }
+                    dropdown.appendChild(div)
+                })
+            }
+        }
+
         async function doRegister() {
             const username = document.getElementById('regUsername').value.trim()
             const name = document.getElementById('regName').value.trim()
             const surname = document.getElementById('regSurname').value.trim()
             const password = document.getElementById('regPassword').value.trim()
+            const confirmPassword = document.getElementById('regConfirmPassword').value.trim()
+            const department = document.getElementById('regDepartment').value.trim()
+            const department2 = document.getElementById('regDepartment2').value.trim()
 
-            if (!username || !name || !surname || !password) {
+            if (!username || !name || !surname || !password || !confirmPassword) {
                 setStatus('statusRegister', 'error', 'error', 'All fields are required.')
+                return
+            }
+
+            if (password !== confirmPassword) {
+                setStatus('statusRegister', 'error', 'error', 'Passwords do not match.')
+                return
+            }
+
+            if (password.length < 6) {
+                setStatus('statusRegister', 'error', 'error', 'Password must be at least 6 characters.')
                 return
             }
 
@@ -3229,7 +3480,7 @@
                 const res = await fetch('/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, name, surname, password })
+                    body: JSON.stringify({ username, name, surname, password, department, department2 })
                 })
                 const data = await res.json()
                 if (!res.ok) {
@@ -3242,6 +3493,9 @@
                     document.getElementById('regName').value = ''
                     document.getElementById('regSurname').value = ''
                     document.getElementById('regPassword').value = ''
+                    document.getElementById('regConfirmPassword').value = ''
+                    document.getElementById('regDepartment').value = ''
+                    document.getElementById('regDepartment2').value = ''
                     showView('login')
                 }, 2500)
             } catch (err) {
@@ -3367,6 +3621,71 @@
             document.getElementById('newPassword').value = ''
             document.getElementById('confirmPassword').value = ''
             document.getElementById('statusChangePassword').classList.remove('show', 'success', 'error', 'loading')
+        }
+
+        // Load departments list for user management
+        async function loadUserDepartmentsList() {
+            try {
+                const res = await fetch('/departments', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                if (data.departments) {
+                    const deptList = document.getElementById('userDepartmentsList')
+                    deptList.innerHTML = data.departments.map(d => `<option value="${d.name}">`).join('')
+                }
+                if (data.departments2) {
+                    const dept2List = document.getElementById('userDepartment2List')
+                    dept2List.innerHTML = data.departments2.map(d => `<option value="${d.name}">`).join('')
+                }
+            } catch (err) {
+                console.log('Could not load departments')
+            }
+        }
+
+        // Load current user's departments
+        function reloadUserDepartments() {
+            if (currentUser) {
+                document.getElementById('userDepartment').value = currentUser.department || ''
+                document.getElementById('userDepartment2').value = currentUser.department2 || ''
+            }
+        }
+
+        // Update user's departments
+        async function updateUserDepartments() {
+            const department = document.getElementById('userDepartment').value.trim()
+            const department2 = document.getElementById('userDepartment2').value.trim()
+
+            setStatus('statusUpdateDepartments', 'loading', 'hourglass_empty', 'Updating departments...')
+            try {
+                const res = await fetch('/user/update-departments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ department, department2 })
+                })
+                const data = await res.json()
+                if (!res.ok) {
+                    setStatus('statusUpdateDepartments', 'error', 'error', data.error || 'Update failed.')
+                    return
+                }
+
+                setStatus('statusUpdateDepartments', 'success', 'check_circle', 'Departments updated successfully!')
+                
+                // Update current user object
+                if (currentUser) {
+                    currentUser.department = department
+                    currentUser.department2 = department2
+                }
+                
+                setTimeout(() => {
+                    document.getElementById('statusUpdateDepartments').classList.remove('show', 'success', 'error', 'loading')
+                }, 2000)
+            } catch (err) {
+                setStatus('statusUpdateDepartments', 'error', 'error', err.message)
+            }
         }
 
         // ── Pending User Approvals (Admin Only) ────────────────────
@@ -3643,6 +3962,183 @@
             }
         }
 
+        // ── Department Management Functions ──────────────────────────
+        async function loadDepartmentsList() {
+            try {
+                setStatus('statusDepartmentManagement', 'loading', 'hourglass_empty', 'Loading departments...')
+                
+                const res = await fetch('/departments', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+
+                // Display departments
+                const deptContainer = document.getElementById('departmentsListContainer')
+                if (!data.departments || data.departments.length === 0) {
+                    deptContainer.innerHTML = '<div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">No departments added yet</div>'
+                } else {
+                    deptContainer.innerHTML = data.departments.map(d => `
+                        <div style="display: flex; gap: 8px; align-items: center; padding: 8px; background: var(--surface); border-radius: var(--radius); font-size: 13px;">
+                            <span style="flex: 1;">${escHtml(d.name)}</span>
+                            <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteDepartment('${d.id}')">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                            </button>
+                        </div>
+                    `).join('')
+                }
+
+                // Display sub-departments
+                const dept2Container = document.getElementById('departments2ListContainer')
+                if (!data.departments2 || data.departments2.length === 0) {
+                    dept2Container.innerHTML = '<div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">No sub-departments added yet</div>'
+                } else {
+                    dept2Container.innerHTML = data.departments2.map(d => `
+                        <div style="display: flex; gap: 8px; align-items: center; padding: 8px; background: var(--surface); border-radius: var(--radius); font-size: 13px;">
+                            <span style="flex: 1;">${escHtml(d.name)}</span>
+                            <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteDepartment2('${d.id}')">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                            </button>
+                        </div>
+                    `).join('')
+                }
+
+                setStatus('statusDepartmentManagement', 'success', 'check_circle', 'Departments loaded successfully')
+                setTimeout(() => {
+                    document.getElementById('statusDepartmentManagement').classList.remove('show', 'success')
+                }, 3000)
+            } catch (err) {
+                setStatus('statusDepartmentManagement', 'error', 'error', 'Failed to load departments: ' + err.message)
+            }
+        }
+
+        async function addNewDepartment() {
+            const name = document.getElementById('newDepartmentName').value.trim()
+            if (!name) {
+                setStatus('statusDepartmentManagement', 'error', 'error', 'Please enter a department name')
+                return
+            }
+
+            setStatus('statusDepartmentManagement', 'loading', 'hourglass_empty', 'Adding department...')
+            try {
+                console.log('📤 Sending department request:', { name, authToken: authToken ? 'token exists' : 'no token' })
+                
+                const res = await fetch('/admin/departments/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ name })
+                })
+                
+                console.log('📥 Response status:', res.status, res.statusText)
+                const data = await res.json()
+                console.log('📥 Response data:', data)
+                
+                if (!res.ok) {
+                    setStatus('statusDepartmentManagement', 'error', 'error', data.error || 'Failed to add department')
+                    return
+                }
+
+                document.getElementById('newDepartmentName').value = ''
+                setStatus('statusDepartmentManagement', 'success', 'check_circle', 'Department added successfully')
+                setTimeout(() => {
+                    loadDepartmentsList()
+                }, 1000)
+            } catch (err) {
+                console.error('❌ Error adding department:', err)
+                setStatus('statusDepartmentManagement', 'error', 'error', 'Error: ' + err.message)
+            }
+        }
+
+        async function addNewDepartment2() {
+            const name = document.getElementById('newDepartment2Name').value.trim()
+            if (!name) {
+                setStatus('statusDepartmentManagement', 'error', 'error', 'Please enter a sub-department name')
+                return
+            }
+
+            setStatus('statusDepartmentManagement', 'loading', 'hourglass_empty', 'Adding sub-department...')
+            try {
+                console.log('📤 Sending sub-department request:', { name, authToken: authToken ? 'token exists' : 'no token' })
+                
+                const res = await fetch('/admin/departments2/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ name })
+                })
+                
+                console.log('📥 Response status:', res.status, res.statusText)
+                const data = await res.json()
+                console.log('📥 Response data:', data)
+                
+                if (!res.ok) {
+                    setStatus('statusDepartmentManagement', 'error', 'error', data.error || 'Failed to add sub-department')
+                    return
+                }
+
+                document.getElementById('newDepartment2Name').value = ''
+                setStatus('statusDepartmentManagement', 'success', 'check_circle', 'Sub-department added successfully')
+                setTimeout(() => {
+                    loadDepartmentsList()
+                }, 1000)
+            } catch (err) {
+                console.error('❌ Error adding sub-department:', err)
+                setStatus('statusDepartmentManagement', 'error', 'error', 'Error: ' + err.message)
+            }
+        }
+
+        async function deleteDepartment(deptId) {
+            const confirmed = await showConfirmModal('Delete this department?', 'Delete')
+            if (!confirmed) return
+
+            try {
+                const res = await fetch(`/admin/departments/${deptId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                if (!res.ok) {
+                    alert('Error: ' + (data.error || 'Failed to delete'))
+                    return
+                }
+
+                setStatus('statusDepartmentManagement', 'success', 'check_circle', 'Department deleted successfully')
+                setTimeout(() => {
+                    loadDepartmentsList()
+                }, 1000)
+            } catch (err) {
+                alert('Error: ' + err.message)
+            }
+        }
+
+        async function deleteDepartment2(deptId) {
+            const confirmed = await showConfirmModal('Delete this sub-department?', 'Delete')
+            if (!confirmed) return
+
+            try {
+                const res = await fetch(`/admin/departments/${deptId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                if (!res.ok) {
+                    alert('Error: ' + (data.error || 'Failed to delete'))
+                    return
+                }
+
+                setStatus('statusDepartmentManagement', 'success', 'check_circle', 'Sub-department deleted successfully')
+                setTimeout(() => {
+                    loadDepartmentsList()
+                }, 1000)
+            } catch (err) {
+                alert('Error: ' + err.message)
+            }
+        }
+
         async function loadLinkedFollowers() {
             try {
                 const res = await fetch('/admin/all-linked-followers', {
@@ -3781,6 +4277,7 @@
                 document.getElementById('availableFollowers').value = ''
                 await loadLinkedFollowers()
                 await loadAvailableFollowersForLinking()
+                await loadUsersForLinking()
             } catch (err) {
                 setStatus('statusLinkFollower', 'error', 'error', err.message)
             }
@@ -3805,6 +4302,7 @@
                 }
                 await loadLinkedFollowers()
                 await loadAvailableFollowersForLinking()
+                await loadUsersForLinking()
             } catch (err) {
                 await showAlertModal('Error: ' + err.message, 'Error')
             }
@@ -3829,6 +4327,7 @@
                 }
                 await loadLinkedFollowers()
                 await loadAvailableFollowersForLinking()
+                await loadUsersForLinking()
             } catch (err) {
                 await showAlertModal('Error: ' + err.message, 'Error')
             }
@@ -3947,14 +4446,16 @@
         // ── Load Recipients for Compose ──────────
         async function loadComposeRecipients() {
             try {
-                let data
+                let linkedFollowers = []
+                let usersWithoutFollowers = []
 
-                // Admins see all linked followers across all users
+                // Fetch linked followers
                 if (currentUser.role === 'admin') {
                     const res = await fetch('/admin/all-linked-followers', {
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     })
-                    data = await res.json()
+                    const data = await res.json()
+                    linkedFollowers = data.linkedFollowers || []
 
                     // Fetch LINE profile pictures for each follower
                     const followersRes = await fetch('/followers')
@@ -3962,27 +4463,37 @@
                     const followerProfiles = followersData.followers || {}
 
                     // Enrich linkedFollowers with picture URLs
-                    for (let link of data.linkedFollowers) {
+                    for (let link of linkedFollowers) {
                         if (followerProfiles[link.followerId]) {
                             link.pictureUrl = followerProfiles[link.followerId].pictureUrl
                         }
                     }
 
-                    console.log('👑 Admin loaded linkedFollowers:', data.linkedFollowers)
+                    // Fetch all users and identify those without linked followers
+                    const usersRes = await fetch('/admin/users', {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                    const usersData = await usersRes.json()
+                    const allUsers = usersData.users || []
+
+                    // Get set of user IDs that have linked followers
+                    const usersWithLinkedSet = new Set(linkedFollowers.map(link => link.userId))
+
+                    // Find users without linked followers
+                    usersWithoutFollowers = allUsers.filter(user => !usersWithLinkedSet.has(user.userId) && user.userId !== currentUser.userId)
+
+                    console.log('👑 Admin loaded linkedFollowers:', linkedFollowers.length, 'usersWithout:', usersWithoutFollowers.length)
                 } else {
-                    // Regular users see only their own linked followers
+                    // Regular users see their own linked followers + all other users as notification recipients
                     const res = await fetch('/user/followers', {
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     })
                     const userFollowerData = await res.json()
-                    // Transform into linkedFollowers format
-                    data = {
-                        linkedFollowers: []
-                    }
+                    
                     if (userFollowerData.followerCount > 0) {
                         for (let uid in userFollowerData.followers) {
                             const follower = userFollowerData.followers[uid]
-                            data.linkedFollowers.push({
+                            linkedFollowers.push({
                                 userId: currentUser.userId,
                                 username: currentUser.username,
                                 name: currentUser.name,
@@ -3994,12 +4505,29 @@
                             })
                         }
                     }
-                    console.log('👤 Regular user loaded linkedFollowers:', data.linkedFollowers)
+                    
+                    // Fetch all users to show as notification recipients
+                    try {
+                        const usersRes = await fetch('/admin/users', {
+                            headers: { 'Authorization': `Bearer ${authToken}` }
+                        })
+                        if (usersRes.ok) {
+                            const usersData = await usersRes.json()
+                            const allUsers = usersData.users || []
+                            
+                            // Show all users except current user as notification recipients
+                            usersWithoutFollowers = allUsers.filter(user => user.userId !== currentUser.userId)
+                        }
+                    } catch (err) {
+                        console.warn('Could not fetch other users for notification recipients:', err.message)
+                    }
+                    
+                    console.log('👤 Regular user loaded linkedFollowers:', linkedFollowers.length, 'usersWithout:', usersWithoutFollowers.length)
                 }
 
                 const container = document.getElementById('recipientsList')
 
-                if (!data.linkedFollowers || data.linkedFollowers.length === 0) {
+                if (linkedFollowers.length === 0 && usersWithoutFollowers.length === 0) {
                     container.innerHTML = '<div style="text-align: center; color: var(--ink-faint); padding: 20px;">No recipients available</div>'
                     return
                 }
@@ -4010,15 +4538,16 @@
                             <tr style="border-bottom: 1px solid var(--border);">
                                 <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Select</th>
                                 <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Profile</th>
-                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">User</th>
-                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Follower</th>
-                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Linked Date</th>
+                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Recipient</th>
+                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Type</th>
+                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Date</th>
                             </tr>
                         </thead>
                         <tbody>
                 `
-                for (let link of data.linkedFollowers) {
-                    // Skip if this is the current user (don't show themselves as a recipient) - only for admins viewing all
+
+                // Add linked followers (LINE recipients)
+                for (let link of linkedFollowers) {
                     if (currentUser.role === 'admin' && link.userId === currentUser.userId) continue
 
                     const userName = `${link.name} ${link.surname}`
@@ -4030,30 +4559,48 @@
                     html += `
                         <tr style="border-bottom: 1px solid var(--border); transition: background 0.15s;" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">
                             <td style="padding: 12px; text-align: center;">
-                                <input type="checkbox" value="${escHtml(link.followerId)}" data-user-id="${escHtml(link.userId)}" class="recipient-checkbox" style="cursor: pointer; accent-color: var(--accent);">
+                                <input type="checkbox" value="${escHtml(link.followerId)}" data-user-id="${escHtml(link.userId)}" data-recipient-type="line_follower" class="recipient-checkbox" style="cursor: pointer; accent-color: var(--accent);">
                             </td>
                             <td style="padding: 12px; text-align: center;">
                                 ${avatar}
                             </td>
-                            <td style="padding: 12px; font-size: 13px; color: var(--ink);"><strong>${escHtml(userName)}</strong></td>
-                            <td style="padding: 12px; font-size: 13px; color: var(--ink);">${escHtml(link.followerName)}</td>
+                            <td style="padding: 12px; font-size: 13px; color: var(--ink);"><strong>${escHtml(userName)}</strong> → ${escHtml(link.followerName)}</td>
+                            <td style="padding: 12px; font-size: 12px; color: var(--accent); font-weight: 600;"><span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">chat</span> LINE</td>
                             <td style="padding: 12px; font-size: 12px; color: var(--ink-muted);"><small>${linkedDate}</small></td>
                         </tr>
                     `
                 }
+
+                // Add users without linked followers (Notification recipients)
+                for (let user of usersWithoutFollowers) {
+                    const userName = `${user.name} ${user.surname}`
+                    const createdDate = new Date(user.createdAt).toLocaleDateString()
+                    const initials = `${user.name.charAt(0)}${user.surname.charAt(0)}`.toUpperCase()
+
+                    html += `
+                        <tr style="border-bottom: 1px solid var(--border); background: rgba(255,193,7,0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(255,193,7,0.15)'" onmouseout="this.style.background='rgba(255,193,7,0.05)'">
+                            <td style="padding: 12px; text-align: center;">
+                                <input type="checkbox" value="${escHtml(user.userId)}" data-user-id="${escHtml(user.userId)}" data-recipient-type="system_user" class="recipient-checkbox" style="cursor: pointer; accent-color: var(--accent);">
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: #ffc107; color: #333; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border);">${initials}</div>
+                            </td>
+                            <td style="padding: 12px; font-size: 13px; color: var(--ink);"><strong>${escHtml(userName)}</strong></td>
+                            <td style="padding: 12px; font-size: 12px; color: #ffc107; font-weight: 600;"><span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">notifications</span> Notification</td>
+                            <td style="padding: 12px; font-size: 12px; color: var(--ink-muted);"><small>${createdDate}</small></td>
+                        </tr>
+                    `
+                }
+
                 html += `
                         </tbody>
                     </table>
                 `
                 container.innerHTML = html
 
-                // Debug: Verify all checkboxes have data-user-id attribute
+                // Debug: Verify all checkboxes
                 const checkboxes = container.querySelectorAll('.recipient-checkbox')
-                console.log(`✅ Generated ${checkboxes.length} checkboxes`)
-                checkboxes.forEach((cb, idx) => {
-                    const dataUserId = cb.getAttribute('data-user-id')
-                    console.log(`  [${idx}] followerId: ${cb.value}, data-user-id: ${dataUserId}`)
-                })
+                console.log(`✅ Generated ${checkboxes.length} checkboxes (${linkedFollowers.length} LINE, ${usersWithoutFollowers.length} Notification)`)
             } catch (e) {
                 console.error('Error loading compose recipients:', e.message)
                 document.getElementById('recipientsList').innerHTML = '<div style="text-align: center; color: var(--red); padding: 20px;">Error loading recipients</div>'
@@ -4099,7 +4646,11 @@
             const title = document.getElementById('memoTitle').value.trim()
             const type = document.querySelector('.memo-type-checkbox:checked')?.value || ''
             const text = document.getElementById('msg').value.trim()
-            const recipients = Array.from(document.querySelectorAll('.recipient-checkbox:checked')).map(cb => cb.value)
+            const recipients = Array.from(document.querySelectorAll('.recipient-checkbox:checked')).map(cb => ({
+                id: cb.value,
+                userId: cb.getAttribute('data-user-id'),
+                recipientType: cb.getAttribute('data-recipient-type') || 'line_follower'
+            }))
 
             if (!title) { setStatus('statusSingleSend', 'error', 'error', 'Please enter a memorandum title.'); return }
             if (!type) { setStatus('statusSingleSend', 'error', 'error', 'Please select a memorandum type.'); return }
@@ -4108,85 +4659,156 @@
 
             // Build a map of recipient IDs to their display names from the table
             const recipientNameMap = {}
-            const recipientUserIdMap = {}
             const recipientRows = document.querySelectorAll('#recipientsList table tbody tr')
             recipientRows.forEach(row => {
                 const checkbox = row.querySelector('.recipient-checkbox')
                 if (checkbox) {
-                    // Get user name (name + surname) from column index 2 (Select|Profile|User|Follower|Linked Date)
-                    const userName = row.querySelectorAll('td')[2]?.textContent.trim() || 'Unknown'
-                    const followerId = checkbox.value
-                    const linkedUserId = checkbox.getAttribute('data-user-id')
-                    console.log('🔍 Checkbox found:', { followerId, linkedUserId, hasAttribute: !!linkedUserId })
-                    recipientNameMap[followerId] = userName
-                    recipientUserIdMap[followerId] = linkedUserId
+                    // Get recipient name/info from column index 2 (Select|Profile|Recipient|Type|Date)
+                    const recipientInfo = row.querySelectorAll('td')[2]?.textContent.trim() || 'Unknown'
+                    recipientNameMap[checkbox.value] = recipientInfo
                 }
             })
 
-            console.log('📤 Sending memo:', { title, type, recipients, senderId: currentUser?.userId, recipientNameMap, recipientUserIdMap })
+            console.log('📤 Sending memo:', { title, type, recipients, senderId: currentUser?.userId })
             setStatus('statusSingleSend', 'loading', 'hourglass_empty', `Dispatching to ${recipients.length} ${recipients.length === 1 ? 'recipient' : 'recipients'}...`)
             try {
-                // Send to each recipient
-                let successCount = 0
-                let failCount = 0
+                // Separate LINE and notification recipients
+                const lineRecipients = recipients.filter(r => r.recipientType === 'line_follower')
+                const notificationRecipients = recipients.filter(r => r.recipientType === 'system_user')
+
+                let lineSuccessCount = 0
+                let lineFallCount = 0
+                let notificationSuccessCount = 0
+                let notificationFailCount = 0
                 let successfulRecipientNames = []
 
-                for (let recipientId of recipients) {
+                // Send LINE messages to linked followers
+                for (let recipient of lineRecipients) {
                     try {
-                        const linkedUserId = recipientUserIdMap[recipientId]
                         const sendData = {
-                            userId: recipientId,
-                            recipientUserId: linkedUserId,
+                            userId: recipient.id,
+                            recipientUserId: recipient.userId,
                             title: title,
                             type: type,
                             content: text,
                             senderUserId: currentUser?.userId
                         }
-                        console.log('📨 Request body:', sendData)
-                        console.log('   ├─ recipientId (followerId):', recipientId)
-                        console.log('   ├─ linkedUserId (systemUserId):', linkedUserId)
-                        console.log('   └─ from recipientUserIdMap:', recipientUserIdMap[recipientId])
+                        console.log('📨 Sending LINE message:', sendData)
                         const res = await fetch('/send', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(sendData)
                         })
                         if (res.ok) {
-                            successCount++
-                            const recipientName = recipientNameMap[recipientId] || 'Unknown'
-                            successfulRecipientNames.push(recipientName)
+                            lineSuccessCount++
+                            const recipientName = recipientNameMap[recipient.id] || 'Unknown'
+                            successfulRecipientNames.push(`${recipientName} (LINE)`)
                         } else {
-                            failCount++
+                            lineFallCount++
                         }
                     } catch (e) {
-                        failCount++
+                        console.error('Error sending LINE message:', e)
+                        lineFallCount++
                     }
                 }
 
-                if (failCount === 0) {
-                    setStatus('statusSingleSend', 'success', 'check_circle', `Memorandum sent to ${successCount} ${successCount === 1 ? 'recipient' : 'recipients'} successfully!`)
-                    // Add notification with recipient names and memoId for navigation
+                // Send notifications to system users
+                for (let recipient of notificationRecipients) {
+                    try {
+                        // Send memo data to be stored in received_memos
+                        const memoData = {
+                            targetUserId: recipient.userId,
+                            title: title,
+                            type: type,
+                            content: text
+                        }
+                        
+                        // Call new endpoint to store memo
+                        const memoRes = await fetch(`/send-system-memo`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(memoData)
+                        })
+                        
+                        if (!memoRes.ok) {
+                            notificationFailCount++
+                            continue
+                        }
+                        
+                        const memoResData = await memoRes.json()
+                        const memoId = memoResData.memoId
+                        
+                        // Create full memo object for notification display
+                        const fullMemoObject = {
+                            memoId: memoId,
+                            title: title,
+                            type: type,
+                            content: text,
+                            senderUserId: currentUser.userId,
+                            senderName: `${currentUser.name} ${currentUser.surname}`,
+                            senderUsername: currentUser.username,
+                            recipientUserId: recipient.userId,
+                            sentAt: new Date().toISOString()
+                        }
+                        
+                        // Create in-app notification with full memo data (same format as linked users)
+                        const senderName = `${currentUser.name} ${currentUser.surname}`
+                        const notificationData = {
+                            title: 'ได้รับ Memo ใหม่',
+                            message: `"${title}" จาก ${senderName}`,
+                            type: 'info',
+                            memoObject: fullMemoObject,
+                            memoType: 'received'
+                        }
+                        console.log('🔔 Sending notification to user:', recipient.userId, notificationData)
+                        
+                        const notifRes = await fetch(`/notifications/send/${recipient.userId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(notificationData)
+                        })
+                        
+                        if (notifRes.ok) {
+                            notificationSuccessCount++
+                            const recipientName = recipientNameMap[recipient.id] || 'Unknown'
+                            successfulRecipientNames.push(`${recipientName} (Notification)`)
+                        } else {
+                            notificationFailCount++
+                        }
+                    } catch (e) {
+                        console.error('Error sending memo/notification to system user:', e)
+                        notificationFailCount++
+                    }
+                }
+
+                const totalSuccessCount = lineSuccessCount + notificationSuccessCount
+                const totalFailCount = lineFallCount + notificationFailCount
+
+                if (totalFailCount === 0) {
+                    setStatus('statusSingleSend', 'success', 'check_circle', `Memorandum sent to ${totalSuccessCount} ${totalSuccessCount === 1 ? 'recipient' : 'recipients'} successfully!`)
                     const recipientDisplay = successfulRecipientNames.join(', ')
-                    // Get the memoId from the first successful send response if available
-                    // For now, we'll use a temporary ID - could be improved by collecting memoId from responses
-                    const tempMemoId = `memo_${Date.now()}`
                     addNotificationWithMemo(
                         'ส่ง Memo สำเร็จ',
                         `ส่ง "${title}" ไปยัง ${recipientDisplay}`,
                         'success',
-                        { title: title, recipients: recipientDisplay },  // Basic memo info
-                        'sent'  // Mark as sent memo
+                        { title: title, recipients: recipientDisplay },
+                        'sent'
                     )
-                    // Reload notifications to show updated list
                     loadNotificationsFromFirebase()
                     clearCompose()
                     sentCount++
-                } else if (successCount > 0) {
-                    setStatus('statusSingleSend', 'warn', 'warning', `Sent to ${successCount} recipients, failed for ${failCount}`)
+                } else if (totalSuccessCount > 0) {
+                    setStatus('statusSingleSend', 'warn', 'warning', `Sent to ${totalSuccessCount} recipients, failed for ${totalFailCount}`)
                     const recipientDisplay = successfulRecipientNames.join(', ')
                     addNotificationWithMemo(
                         'ส่ง Memo บางส่วนสำเร็จ',
-                        `ส่งไปยัง ${recipientDisplay} (ล้มเหลว ${failCount})`,
+                        `ส่งไปยัง ${recipientDisplay} (ล้มเหลว ${totalFailCount})`,
                         'warn',
                         { title: title, recipients: recipientDisplay },
                         'sent'
@@ -4622,6 +5244,16 @@
         function closeMemoDetail() {
             document.getElementById('memoDetailOverlay').classList.remove('show')
             currentMemoDetail = null
+        }
+
+        function showViewAndMemoDetail(viewName, memo) {
+            // Navigate to the specified view
+            showView(viewName)
+            // Small delay to ensure view is rendered before opening modal
+            setTimeout(() => {
+                openMemoDetail(memo)
+                markNotificationAsRead()
+            }, 100)
         }
 
         function copyMemoContent() {
