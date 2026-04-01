@@ -2132,6 +2132,10 @@
                     </div>
                     <div class="section-body">
                         <div class="field">
+                            <label>Document Number</label>
+                            <div style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-weight: 600; color: var(--accent); font-family: 'Courier New', monospace;" id="memoDocNumber">—</div>
+                        </div>
+                        <div class="field">
                             <label>Memorandum Title</label>
                             <input id="memoTitle" type="text" placeholder="Enter memorandum title...">
                         </div>
@@ -2198,8 +2202,8 @@
                         </div>
                     </div>
                 </div>
-
             </div>
+
 
             <!-- ── SENT MEMOS VIEW ────────────────── -->
             <div id="view-sent-memos" class="view" style="display:none;">
@@ -2427,13 +2431,15 @@
                                         <th>Username</th>
                                         <th>Name</th>
                                         <th>Role</th>
+                                        <th>Department (ฝ่าย)</th>
+                                        <th>Sub-Department (แผนก)</th>
                                         <th>Password</th>
                                         <th>Joined</th>
                                     </tr>
                                 </thead>
                                 <tbody id="allUsersTbody">
                                     <tr>
-                                        <td colspan="5">
+                                        <td colspan="7">
                                             <div class="empty-state"><span
                                                     class="material-symbols-outlined">person</span>
                                                 <p>Loading users...</p>
@@ -3193,6 +3199,7 @@
             if (name === 'compose' && currentUser) {
                 loadLinkedFollowersForCompose()
                 loadComposeRecipients()
+                loadMemoDocNumber()
                 updateTypeCheckboxStyle()
             }
             if (name === 'sent-memos' && currentUser) loadSentMemos()
@@ -4358,7 +4365,7 @@
 
                 const tbody = document.getElementById('allUsersTbody')
                 if (!res.ok || !data.users || data.users.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="material-symbols-outlined">person_off</span><p>No users found</p></div></td></tr>`
+                    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">person_off</span><p>No users found</p></div></td></tr>`
                     return
                 }
 
@@ -4366,8 +4373,10 @@
                 for (let user of data.users) {
                     const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'
                     const role = user.role || 'user'
-                    const roleStyle = role === 'admin' ? 'color: var(--accent); font-weight: 600;' : ''
+                    const roleStyle = role === 'admin' ? 'color: var(--accent); font-weight: 700;' : ''
                     const userId = user.userId || ''
+                    const department = user.department || '—'
+                    const department2 = user.department2 || '—'
 
                     // Initialize password visibility state and store actual password
                     if (!userPasswordStates[userId]) {
@@ -4378,6 +4387,8 @@
           <td><strong>${escHtml(user.username)}</strong></td>
           <td>${escHtml(user.name)} ${escHtml(user.surname || '')}</td>
           <td><span style="${roleStyle}">${escHtml(role.toUpperCase())}</span></td>
+          <td><span style="font-size: 12px; color: var(--ink-muted);">${escHtml(department)}</span></td>
+          <td><span style="font-size: 12px; color: var(--ink-muted);">${escHtml(department2)}</span></td>
           <td>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span style="font-size: 12px;" id="pwd-display-${escHtml(userId)}">●●●●●●</span>
@@ -4392,7 +4403,7 @@
                 tbody.innerHTML = rows
             } catch (err) {
                 const tbody = document.getElementById('allUsersTbody')
-                tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="material-symbols-outlined">error</span><p>Error loading users: ${err.message}</p></div></td></tr>`
+                tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">error</span><p>Error loading users: ${err.message}</p></div></td></tr>`
             }
         }
 
@@ -4444,6 +4455,27 @@
         }
 
         // ── Load Recipients for Compose ──────────
+        // Global variable to store current document number
+        let currentDocNumber = ''
+
+        async function loadMemoDocNumber() {
+            try {
+                console.log('📄 Loading next document number...')
+                const res = await fetch('/next-doc-number', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                if (data.docNumber) {
+                    currentDocNumber = data.docNumber
+                    document.getElementById('memoDocNumber').textContent = currentDocNumber
+                    console.log('✅ Document number loaded:', currentDocNumber)
+                }
+            } catch (err) {
+                console.error('❌ Error loading document number:', err)
+                currentDocNumber = 'ERROR'
+            }
+        }
+
         async function loadComposeRecipients() {
             try {
                 let linkedFollowers = []
@@ -4462,19 +4494,33 @@
                     const followersData = await followersRes.json()
                     const followerProfiles = followersData.followers || {}
 
-                    // Enrich linkedFollowers with picture URLs
-                    for (let link of linkedFollowers) {
-                        if (followerProfiles[link.followerId]) {
-                            link.pictureUrl = followerProfiles[link.followerId].pictureUrl
-                        }
-                    }
-
-                    // Fetch all users and identify those without linked followers
+                    // Fetch all users first to get department info
                     const usersRes = await fetch('/admin/users', {
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     })
                     const usersData = await usersRes.json()
                     const allUsers = usersData.users || []
+
+                    // Create a map of userId to user for quick lookup
+                    const userMap = {}
+                    for (let user of allUsers) {
+                        userMap[user.userId] = user
+                    }
+
+                    // Enrich linkedFollowers with picture URLs and department info
+                    for (let link of linkedFollowers) {
+                        if (followerProfiles[link.followerId]) {
+                            link.pictureUrl = followerProfiles[link.followerId].pictureUrl
+                        }
+                        // Add department and department2 from user info
+                        if (userMap[link.userId]) {
+                            link.department = userMap[link.userId].department || '—'
+                            link.department2 = userMap[link.userId].department2 || '—'
+                        } else {
+                            link.department = '—'
+                            link.department2 = '—'
+                        }
+                    }
 
                     // Get set of user IDs that have linked followers
                     const usersWithLinkedSet = new Set(linkedFollowers.map(link => link.userId))
@@ -4501,7 +4547,9 @@
                                 followerId: uid,
                                 followerName: follower.displayName || 'Unknown',
                                 pictureUrl: follower.pictureUrl,
-                                linkedAt: follower.linkedAt || new Date().toISOString()
+                                linkedAt: follower.linkedAt || new Date().toISOString(),
+                                department: currentUser.department || '—',
+                                department2: currentUser.department2 || '—'
                             })
                         }
                     }
@@ -4539,8 +4587,8 @@
                                 <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Select</th>
                                 <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Profile</th>
                                 <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Recipient</th>
-                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Type</th>
-                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Date</th>
+                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Department</th>
+                                <th style="text-align: left; padding: 12px; font-size: 12px; font-weight: 600; color: var(--ink-muted); background: var(--surface);">Sub-Department</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -4564,9 +4612,9 @@
                             <td style="padding: 12px; text-align: center;">
                                 ${avatar}
                             </td>
-                            <td style="padding: 12px; font-size: 13px; color: var(--ink);"><strong>${escHtml(userName)}</strong> → ${escHtml(link.followerName)}</td>
-                            <td style="padding: 12px; font-size: 12px; color: var(--accent); font-weight: 600;"><span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">chat</span> LINE</td>
-                            <td style="padding: 12px; font-size: 12px; color: var(--ink-muted);"><small>${linkedDate}</small></td>
+                            <td style="padding: 12px; font-size: 13px; color: var(--ink);"><strong>${escHtml(userName)}</strong></td>
+                            <td style="padding: 12px; font-size: 12px; color: var(--ink-muted);"><strong>${link.department || '—'}</strong></td>
+                            <td style="padding: 12px; font-size: 12px; color: var(--ink-muted);"><strong>${link.department2 || '—'}</strong></td>
                         </tr>
                     `
                 }
@@ -4578,16 +4626,16 @@
                     const initials = `${user.name.charAt(0)}${user.surname.charAt(0)}`.toUpperCase()
 
                     html += `
-                        <tr style="border-bottom: 1px solid var(--border); background: rgba(255,193,7,0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(255,193,7,0.15)'" onmouseout="this.style.background='rgba(255,193,7,0.05)'">
+                        <tr style="border-bottom: 1px solid var(--border);">
                             <td style="padding: 12px; text-align: center;">
                                 <input type="checkbox" value="${escHtml(user.userId)}" data-user-id="${escHtml(user.userId)}" data-recipient-type="system_user" class="recipient-checkbox" style="cursor: pointer; accent-color: var(--accent);">
                             </td>
-                            <td style="padding: 12px; text-align: center;">
+                            <td style="padding: 12px; text-align: center; display: flex; align-items: center; justify-content: center;">
                                 <div style="width: 32px; height: 32px; border-radius: 50%; background: #ffc107; color: #333; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border);">${initials}</div>
                             </td>
                             <td style="padding: 12px; font-size: 13px; color: var(--ink);"><strong>${escHtml(userName)}</strong></td>
-                            <td style="padding: 12px; font-size: 12px; color: #ffc107; font-weight: 600;"><span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">notifications</span> Notification</td>
-                            <td style="padding: 12px; font-size: 12px; color: var(--ink-muted);"><small>${createdDate}</small></td>
+                            <td style="padding: 12px; font-size: 12px; color: var(--ink-muted);"><strong>${user.department || '—'}</strong></td>
+                            <td style="padding: 12px; font-size: 12px; color: var(--ink-muted);"><strong>${user.department2 || '—'}</strong></td>
                         </tr>
                     `
                 }
@@ -4606,6 +4654,7 @@
                 document.getElementById('recipientsList').innerHTML = '<div style="text-align: center; color: var(--red); padding: 20px;">Error loading recipients</div>'
             }
         }
+
 
         // ── Clear Compose Form ──────────────────
         function clearCompose() {
@@ -4691,6 +4740,7 @@
                             title: title,
                             type: type,
                             content: text,
+                            docNumber: currentDocNumber,
                             senderUserId: currentUser?.userId
                         }
                         console.log('📨 Sending LINE message:', sendData)
@@ -4720,7 +4770,8 @@
                             targetUserId: recipient.userId,
                             title: title,
                             type: type,
-                            content: text
+                            content: text,
+                            docNumber: currentDocNumber
                         }
                         
                         // Call new endpoint to store memo

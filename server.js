@@ -513,6 +513,71 @@ app.get("/user/followers", verifyToken, async (req, res) => {
 })
 
 // Get departments for autocomplete (accessible to all authenticated users)
+// Get next document number (format: YY-0001)
+app.get("/next-doc-number", verifyToken, async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear().toString().slice(-2) // Get last 2 digits of year
+    
+    console.log('📄 Generating next doc number for year:', currentYear)
+    
+    // Get all users to scan through their sent_memos
+    const allUsersData = await firebase_get('users')
+    
+    const allMemos = []
+    
+    // Scan through each user's sent memos
+    if (allUsersData && typeof allUsersData === 'object') {
+      for (let userId in allUsersData) {
+        try {
+          const sentMemosData = await firebase_get(`sent_memos/${userId}`)
+          if (sentMemosData && typeof sentMemosData === 'object') {
+            const memos = Object.values(sentMemosData)
+            allMemos.push(...memos)
+            console.log(`📦 Found ${memos.length} sent memos for user ${userId}`)
+          }
+        } catch (err) {
+          // User has no memos yet, continue
+          continue
+        }
+      }
+    }
+    
+    console.log(`📊 Total memos found: ${allMemos.length}`)
+    
+    // Filter memos from current year that have a docNumber
+    const currentYearMemos = allMemos.filter(memo => {
+      if (!memo.docNumber) return false
+      const memoYear = memo.docNumber.split('-')[0]
+      return memoYear === currentYear
+    })
+    
+    console.log(`🔍 Current year (${currentYear}) memos with docNumber: ${currentYearMemos.length}`)
+    
+    let nextNumber = 1
+    if (currentYearMemos.length > 0) {
+      // Extract the number part from memos
+      const docNumbers = currentYearMemos.map(memo => {
+        const parts = memo.docNumber.split('-')
+        return parseInt(parts[1]) || 0
+      })
+      const maxNumber = Math.max(...docNumbers)
+      nextNumber = maxNumber + 1
+      console.log(`📈 Max doc number found: ${currentYear}-${String(maxNumber).padStart(4, '0')}, Next: ${nextNumber}`)
+    } else {
+      console.log(`✨ No memos found for current year, starting from ${nextNumber}`)
+    }
+    
+    const docNumber = `${currentYear}-${String(nextNumber).padStart(4, '0')}`
+    console.log('📄 Generated doc number:', docNumber)
+    
+    res.json({ docNumber })
+  } catch (err) {
+    console.error('❌ Error generating doc number:', err)
+    addLog('error', 'Get next doc number error', { message: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
 app.get("/departments", async (req, res) => {
   try {
     const departments = await firebase_get('departments')
@@ -543,6 +608,8 @@ app.get("/admin/users", verifyToken, async (req, res) => {
       surname: user.surname,
       password: user.password,
       role: user.role || 'user',
+      department: user.department || '',
+      department2: user.department2 || '',
       createdAt: user.createdAt
     }))
     
@@ -951,13 +1018,13 @@ async function handleEvent(event) {
 // Send ให้ USER เดียว (ถ้าส่ง userId ใน request)
 app.post("/send", async (req,res)=>{
 
- const { userId, recipientUserId, title, type, content, senderUserId } = req.body
+ const { userId, recipientUserId, title, type, content, senderUserId, docNumber } = req.body
  const targetUserId = userId
  // recipientUserId is the system user ID who manages this follower
  // userId is the LINE follower ID
 
- addLog('info', 'Send message request', { title, type, userId: targetUserId, recipientUserId: recipientUserId, hasRecipientUserId: !!recipientUserId })
- console.log('🔍 /send endpoint received:', { userId, recipientUserId, senderUserId, title })
+ addLog('info', 'Send message request', { title, type, userId: targetUserId, recipientUserId: recipientUserId, docNumber, hasRecipientUserId: !!recipientUserId })
+ console.log('🔍 /send endpoint received:', { userId, recipientUserId, senderUserId, docNumber, title })
 
  try{
 
@@ -1021,6 +1088,14 @@ app.post("/send", async (req,res)=>{
             weight: "bold",
             margin: "md"
           },
+          ...(docNumber ? [{
+            type: "text",
+            text: `Doc #: ${docNumber}`,
+            size: "sm",
+            color: "#1a2740",
+            weight: "bold",
+            margin: "md"
+          }] : []),
           {
             type: "separator",
             margin: "md"
@@ -1064,6 +1139,7 @@ app.post("/send", async (req,res)=>{
     title,
     type,
     content,
+    docNumber: docNumber || '',
     recipientId: targetUserId,
     senderId: senderUserId,
     sentAt: new Date().toISOString()
@@ -1390,7 +1466,7 @@ app.post("/notifications/send/:targetUserId", verifyToken, async (req, res) => {
 // Send memo to a system user (for users without linked followers)
 app.post("/send-system-memo", verifyToken, async (req, res) => {
   try {
-    const { targetUserId, title, type, content } = req.body
+    const { targetUserId, title, type, content, docNumber } = req.body
     const senderUserId = req.userId
     
     if (!targetUserId || !title || !type || !content) {
@@ -1418,6 +1494,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       title,
       type,
       content,
+      docNumber: docNumber || '',
       senderUserId,
       senderName: `${sender.name} ${sender.surname}`,
       senderUsername: sender.username,
@@ -1431,7 +1508,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
     // Store in recipient's received_memos
     await firebase_set(`received_memos/${targetUserId}/${memoId}`, memoData)
     
-    addLog('info', 'System memo sent successfully', { senderUserId, targetUserId, memoId })
+    addLog('info', 'System memo sent successfully', { senderUserId, targetUserId, memoId, docNumber })
     res.json({ status: 'Memo sent successfully', memoId })
   } catch (err) {
     addLog('error', 'Send system memo error', { message: err.message })
