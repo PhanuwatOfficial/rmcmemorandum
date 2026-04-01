@@ -486,9 +486,19 @@
             border: 2px solid transparent;
         }
 
+        .memo-type-label input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            flex-shrink: 0;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+
         .memo-type-label span {
             font-size: 13px;
             color: var(--ink);
+            line-height: 1;
         }
 
         /* ── Buttons ──────────────────────────────── */
@@ -539,11 +549,16 @@
 
         .btn-danger:hover {
             background: #f5d0d0;
+            border-color: var(--red);
         }
 
         .btn-sm {
             padding: 7px 13px;
             font-size: 11px;
+        }
+
+        .btn-sm .material-symbols-outlined {
+            font-size: 14px;
         }
 
         .btn-line {
@@ -1002,13 +1017,25 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         /* ── Notification Item ────────────────────── */
@@ -1400,22 +1427,29 @@
 
             /* ── Mobile Memo Type Selector ─────────── */
             .memo-type-container {
-                flex-direction: column;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
             }
 
             .memo-type-label {
                 width: 100%;
-                padding: 10px 14px;
+                padding: 10px 12px;
                 white-space: normal;
-                flex-direction: column;
-                align-items: flex-start;
+                flex-direction: row;
+                align-items: center;
                 text-align: left;
+            }
+
+            .memo-type-label input[type="radio"] {
+                width: 14px;
+                height: 14px;
+                flex-shrink: 0;
             }
 
             .memo-type-label span {
                 font-size: 12px;
-                width: 100%;
+                width: auto;
             }
 
             .sidebar-create {
@@ -1791,7 +1825,7 @@
                     </div>
                 </div>
 
-                <div class="section-card" style="max-width: 680px;">
+                    <div class="section-card" style="max-width: 680px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">lock</span>
@@ -1830,8 +1864,81 @@
                     </div>
                 </div>
 
-            </div>
+                <div class="section-card" style="max-width: 680px;">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">link</span>
+                            Linked LINE Profile
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()" title="Refresh profile data">
+                            <span class="material-symbols-outlined">refresh</span>
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="section-body">
+                        <div id="linkedProfileStatus" class="status-msg" style="margin-bottom: 16px; display:none;">
+                            <span class="material-symbols-outlined"></span>
+                            <span class="msg-text"></span>
+                        </div>
+                        
+                        <!-- Linked Profile Display -->
+                        <div id="linkedProfileContainer" style="display: none; background: linear-gradient(135deg, rgba(26, 39, 64, 0.05) 0%, rgba(200, 169, 110, 0.05) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-align: center;">
+                            <!-- Profile Picture Section -->
+                            <div style="margin-bottom: 24px; display: flex; justify-content: center;">
+                                <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--paper); border: 3px solid var(--accent-2); overflow: hidden; box-shadow: 0 4px 12px rgba(200, 169, 110, 0.15); display: flex; align-items: center; justify-content: center;">
+                                    <img id="linkedProfilePicture" src="" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            </div>
+                            
+                            <!-- Profile Name -->
+                            <div style="margin-bottom: 20px;">
+                                <div style="font-size: 18px; font-weight: 700; color: var(--ink);" id="linkedProfileName">—</div>
+                                <div style="font-size: 11px; color: var(--ink-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px;">LINE Profile Connected</div>
+                            </div>
+                            
+                            <!-- Profile Details Grid -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; background: var(--surface); border-radius: var(--radius); padding: 16px;">
+                                <div style="border-right: 1px solid var(--border); padding-right: 16px;">
+                                    <div style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">User ID</div>
+                                    <div style="font-size: 12px; color: var(--ink); font-family: 'Courier New', monospace; word-break: break-all; font-weight: 500;" id="linkedProfileUserId">—</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">Linked Date</div>
+                                    <div style="font-size: 12px; color: var(--ink); font-weight: 500;" id="linkedProfileDate">—</div>
+                                </div>
+                            </div>
 
+                            <!-- Status Message -->
+                            <div style="background: var(--surface); border-radius: var(--radius); padding: 12px; margin-bottom: 20px; border-left: 3px solid var(--accent-2);">
+                                <div style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">Status Message</div>
+                                <div style="font-size: 13px; color: var(--ink); line-height: 1.5; font-style: italic;" id="linkedProfileStatusMessage">—</div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div style="display: flex; gap: 10px; justify-content: center; padding-top: 16px; border-top: 1px solid var(--border);">
+                                <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()" style="flex: 1;">
+                                    <span class="material-symbols-outlined">sync</span>
+                                    Sync Profile
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="unlinkCurrentProfile()" style="flex: 1;">
+                                    <span class="material-symbols-outlined">link_off</span>
+                                    Unlink
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="noLinkedProfileContainer" style="text-align: center; padding: 50px 24px; background: linear-gradient(135deg, rgba(26, 39, 64, 0.03) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px dashed var(--border); border-radius: var(--radius); color: var(--ink-faint);">
+                            <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.35; color: var(--accent-2);">link_off</span>
+                            <p style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">No LINE Profile Linked</p>
+                            <p style="font-size: 12px; color: var(--ink-muted); line-height: 1.6;">Link a LINE profile to your account in the <strong>Followers Management</strong> section to get started.</p>
+                        </div>
+                    </div>
+                </div>
+
+            
+
+            </div>
 
 
             <!-- ── DASHBOARD VIEW ─────────────────── -->
@@ -1963,6 +2070,7 @@
                                 </label>
                             </div>
                         </div>
+                        <!--แก้ไขให้ ส่วน input กัย label แสดงผลตรงกัน ตอนนี้ input radio แสดงผลไม่ตรงกับ label เยื้องๆ-->
 
                         <div class="field">
                             <label>Recipients</label>
@@ -2157,53 +2265,55 @@
                     <p>Manage and review all active LINE followers.</p>
                 </div>
 
-                <div class="section-card">
-                    <div class="section-header">
-                        <div class="section-title">
-                            <span class="material-symbols-outlined">group</span>
-                            Active Followers
-                            <span id="followerCountBadge"
-                                style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
-                        </div>
-                        <div style="display:flex;gap:10px;">
-                            <button class="btn btn-ghost btn-sm" onclick="loadFollowers()">
+
+
+                <!-- Admin-Only: Linked Followers Management -->
+                <div id="adminOnlyFollowerMgmt" style="display: none;">
+
+
+                    <div id="adminPendingApprovals" class="section-card" style="max-width: 100%; display:none;">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="material-symbols-outlined">pending_actions</span>
+                                Pending User Registrations
+                                <span id="pendingUsersCountBadge"
+                                    style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--red); color:#fff; border-radius:2px; padding:2px 8px; margin-left:4px; display:none;"></span>
+                            </div>
+                            <button class="btn btn-ghost btn-sm" onclick="loadPendingUsers()">
                                 <span class="material-symbols-outlined">refresh</span>
                                 Refresh
                             </button>
                         </div>
+
+                        <div id="pendingUsersStatus" class="status-msg" style="margin:16px 28px 0; display:none;">
+                            <span class="material-symbols-outlined"></span>
+                            <span class="msg-text"></span>
+                        </div>
+
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Name</th>
+                                        <th>Applied</th>
+                                        <th style="text-align: center;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingUsersTbody">
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="empty-state"><span
+                                                    class="material-symbols-outlined">check_circle</span>
+                                                <p>No pending registrations.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
-                    <div id="followersStatus" class="status-msg" style="margin:16px 28px 0; display:none;">
-                        <span class="material-symbols-outlined"></span>
-                        <span class="msg-text"></span>
-                    </div>
-
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Follower</th>
-                                    <th>User ID</th>
-                                    <th>Status Message</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="followersTbody">
-                                <tr>
-                                    <td colspan="5">
-                                        <div class="empty-state"><span class="material-symbols-outlined">group</span>
-                                            <p>Click Refresh to load followers</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Admin-Only: Linked Followers Management -->
-                <div id="adminOnlyFollowerMgmt" style="display: none;">
                     <div class="section-card" style="max-width: 100%;">
                         <div class="section-header">
                             <div class="section-title">
@@ -2317,51 +2427,57 @@
                         </div>
                     </div>
 
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="material-symbols-outlined">group</span>
+                                Active Followers
+                                <span id="followerCountBadge"
+                                    style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
+                            </div>
+                            <div style="display:flex;gap:10px;">
+                                <button class="btn btn-ghost btn-sm" onclick="loadFollowers()">
+                                    <span class="material-symbols-outlined">refresh</span>
+                                    Refresh
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="followersStatus" class="status-msg" style="margin:16px 28px 0; display:none;">
+                            <span class="material-symbols-outlined"></span>
+                            <span class="msg-text"></span>
+                        </div>
+
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Follower</th>
+                                        <th>User ID</th>
+                                        <th>Status Message</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="followersTbody">
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="empty-state"><span
+                                                    class="material-symbols-outlined">group</span>
+                                                <p>Click Refresh to load followers</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!--user ที่ทำการ link ไปแล้ว ไม่ต้องแสดงในรายการ available followers-->
                 </div>
 
                 <!-- ── PENDING USER APPROVALS (ADMIN ONLY) ────────────────────── -->
-                <div id="adminPendingApprovals" class="section-card" style="max-width: 100%; display:none;">
-                    <div class="section-header">
-                        <div class="section-title">
-                            <span class="material-symbols-outlined">pending_actions</span>
-                            Pending User Registrations
-                            <span id="pendingUsersCountBadge"
-                                style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--red); color:#fff; border-radius:2px; padding:2px 8px; margin-left:4px; display:none;"></span>
-                        </div>
-                        <button class="btn btn-ghost btn-sm" onclick="loadPendingUsers()">
-                            <span class="material-symbols-outlined">refresh</span>
-                            Refresh
-                        </button>
-                    </div>
 
-                    <div id="pendingUsersStatus" class="status-msg" style="margin:16px 28px 0; display:none;">
-                        <span class="material-symbols-outlined"></span>
-                        <span class="msg-text"></span>
-                    </div>
-
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Name</th>
-                                    <th>Applied</th>
-                                    <th style="text-align: center;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pendingUsersTbody">
-                                <tr>
-                                    <td colspan="4">
-                                        <div class="empty-state"><span class="material-symbols-outlined">check_circle</span>
-                                            <p>No pending registrations.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
 
 
@@ -2419,23 +2535,28 @@
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav">
         <div class="mobile-bottom-nav-content">
-            <button class="mobile-bottom-nav-item" data-view="dashboard" onclick="showView('dashboard'); activateMobileNavItem(this)">
+            <button class="mobile-bottom-nav-item" data-view="dashboard"
+                onclick="showView('dashboard'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">dashboard</span>
                 <span>Dashboard</span>
             </button>
-            <button class="mobile-bottom-nav-item" data-view="compose" onclick="showView('compose'); activateMobileNavItem(this)">
+            <button class="mobile-bottom-nav-item" data-view="compose"
+                onclick="showView('compose'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">edit_note</span>
                 <span>Compose</span>
             </button>
-            <button class="mobile-bottom-nav-item" data-view="sent-memos" onclick="showView('sent-memos'); loadSentMemos(); activateMobileNavItem(this)">
+            <button class="mobile-bottom-nav-item" data-view="sent-memos"
+                onclick="showView('sent-memos'); loadSentMemos(); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">send</span>
                 <span>Sent</span>
             </button>
-            <button class="mobile-bottom-nav-item" data-view="received-memos" onclick="showView('received-memos'); loadReceivedMemos(); activateMobileNavItem(this)">
+            <button class="mobile-bottom-nav-item" data-view="received-memos"
+                onclick="showView('received-memos'); loadReceivedMemos(); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">inbox</span>
                 <span>Received</span>
             </button>
-            <button class="mobile-bottom-nav-item" data-view="followers" onclick="showView('followers'); activateMobileNavItem(this)">
+            <button class="mobile-bottom-nav-item" data-view="followers"
+                onclick="showView('followers'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">group</span>
                 <span>Users</span>
             </button>
@@ -2665,7 +2786,7 @@
                 const icon = notif.type === 'success' ? 'check_circle' : notif.type === 'error' ? 'error' : 'info'
                 const unreadClass = notif.read ? '' : 'unread'
                 const iconColor = notif.type === 'success' ? 'var(--green)' : notif.type === 'error' ? 'var(--red)' : 'var(--blue)'
-                
+
                 // Determine memo type styling
                 const memoTypeBorder = notif.memoType === 'received' ? '#2d8659' : notif.memoType === 'sent' ? '#1a5aa8' : 'transparent'
                 const memoTypeIcon = notif.memoType === 'received' ? 'mail' : notif.memoType === 'sent' ? 'send' : ''
@@ -2674,7 +2795,7 @@
                 // Extract sender name from message if available
                 let messageDisplay = escHtml(notif.message).replace(/From: /, '<strong>ผู้ส่ง: </strong>')
                 messageDisplay = messageDisplay.replace(/จาก /, '<strong>จาก: </strong>')
-                
+
                 // Determine click handler - if we have memoObject, use it; otherwise use memoId
                 let clickHandler = 'markNotificationAsRead()'
                 if (notif.memoObject) {
@@ -2784,20 +2905,20 @@
         // ── View Memo from Notification ─────────────
         async function viewNotificationMemo(memoId) {
             console.log('� Opening memo from notification:', memoId)
-            
+
             document.getElementById('notificationPanel').style.display = 'none'
-            
+
             // Wait a bit for view to render, then load and open memo
             setTimeout(async () => {
                 try {
                     // Try to find in sent memos first
                     let targetMemo = null
-                    
+
                     const sentRes = await fetch('/sent-memos', {
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     })
                     const sentData = await sentRes.json()
-                    
+
                     if (sentData.memos) {
                         targetMemo = sentData.memos.find(m => m.memoId === memoId)
                         if (targetMemo) {
@@ -2807,13 +2928,13 @@
                             return
                         }
                     }
-                    
+
                     // Try to find in received memos
                     const receivedRes = await fetch('/received-memos', {
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     })
                     const receivedData = await receivedRes.json()
-                    
+
                     if (receivedData.memos) {
                         targetMemo = receivedData.memos.find(m => m.memoId === memoId)
                         if (targetMemo) {
@@ -2825,7 +2946,7 @@
                             return
                         }
                     }
-                    
+
                     // Memo not found anywhere
                     console.warn('⚠️ Memo not found with ID:', memoId)
                     showView('sent-memos')
@@ -2879,6 +3000,13 @@
                     closeMobileSidebar()
                 })
             })
+        })
+
+        // Handle mobile bottom nav visibility on window resize
+        window.addEventListener('resize', () => {
+            if (currentUser) {
+                document.getElementById('mobileBottomNav').style.display = window.innerWidth <= 480 ? 'block' : 'none'
+            }
         })
 
         // ──────────────────────────────────────────────
@@ -2974,6 +3102,8 @@
                 const user = await res.json()
                 currentUser = user
                 updateUIForLoggedIn()
+                // Load user data and linked profile after successful auth
+                await loadUserData()
                 showView('dashboard')
             } catch (err) {
                 localStorage.removeItem('authToken')
@@ -2988,7 +3118,8 @@
             document.getElementById('createSection').style.display = 'block'
             document.getElementById('userSection').style.display = 'block'
             document.getElementById('guestSection').style.display = 'none'
-            document.getElementById('mobileBottomNav').style.display = 'block'
+            // Only show mobile bottom nav on mobile screens (max-width: 480px)
+            document.getElementById('mobileBottomNav').style.display = window.innerWidth <= 480 ? 'block' : 'none'
 
             // Activate first bottom nav item (dashboard)
             const dashboardNavItem = document.querySelector('.mobile-bottom-nav-item[data-view="dashboard"]')
@@ -3151,10 +3282,12 @@
 
                 setStatus('statusLogin', 'success', 'check_circle', 'Login successful!')
 
-                setTimeout(() => {
+                setTimeout(async () => {
                     document.getElementById('loginUsername').value = ''
                     document.getElementById('loginPassword').value = ''
                     updateUIForLoggedIn()
+                    // Load user data and linked profile after successful login
+                    await loadUserData()
                     showView('dashboard')
                 }, 1000)
             } catch (err) {
@@ -3365,6 +3498,149 @@
             document.getElementById('userUsername').textContent = currentUser.username
             document.getElementById('userName').textContent = currentUser.name
             document.getElementById('userSurname').textContent = currentUser.surname
+            
+            // Load linked LINE profile
+            await loadUserLinkedProfile()
+        }
+
+        async function loadUserLinkedProfile() {
+            try {
+                const container = document.getElementById('linkedProfileContainer')
+                const noContainer = document.getElementById('noLinkedProfileContainer')
+                const statusEl = document.getElementById('linkedProfileStatus')
+
+                // First check if current user has linkedFollowers data
+                if (!currentUser) {
+                    container.style.display = 'none'
+                    noContainer.style.display = 'block'
+                    statusEl.classList.remove('show', 'success', 'error', 'loading')
+                    return
+                }
+
+                // If linkedFollowers is empty, fetch fresh user data
+                if (!currentUser.linkedFollowers || Object.keys(currentUser.linkedFollowers).length === 0) {
+                    try {
+                        const freshUserRes = await fetch('/user/me', {
+                            headers: { 'Authorization': `Bearer ${authToken}` }
+                        })
+                        if (freshUserRes.ok) {
+                            const freshUser = await freshUserRes.json()
+                            currentUser = freshUser
+                        }
+                    } catch (e) {
+                        console.error('Error refreshing user data:', e)
+                    }
+
+                    if (!currentUser.linkedFollowers || Object.keys(currentUser.linkedFollowers).length === 0) {
+                        container.style.display = 'none'
+                        noContainer.style.display = 'block'
+                        statusEl.classList.remove('show', 'success', 'error', 'loading')
+                        return
+                    }
+                }
+
+                // Fetch followers data
+                const followersRes = await fetch('/followers', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const followersData = await followersRes.json()
+
+                if (!followersData.followers || Object.keys(followersData.followers).length === 0) {
+                    container.style.display = 'none'
+                    noContainer.style.display = 'block'
+                    statusEl.classList.remove('show', 'success', 'error', 'loading')
+                    return
+                }
+
+                // Get the first linked follower
+                const linkedFollowerIds = Object.keys(currentUser.linkedFollowers)
+                if (linkedFollowerIds.length === 0) {
+                    container.style.display = 'none'
+                    noContainer.style.display = 'block'
+                    statusEl.classList.remove('show', 'success', 'error', 'loading')
+                    return
+                }
+
+                const linkedFollowerId = linkedFollowerIds[0]
+                const followerData = followersData.followers[linkedFollowerId]
+                const linkedInfo = currentUser.linkedFollowers[linkedFollowerId]
+
+                if (!followerData) {
+                    container.style.display = 'none'
+                    noContainer.style.display = 'block'
+                    statusEl.classList.remove('show', 'success', 'error', 'loading')
+                    return
+                }
+
+                // Display linked profile
+                const profilePicEl = document.getElementById('linkedProfilePicture')
+                if (followerData.pictureUrl) {
+                    profilePicEl.src = followerData.pictureUrl
+                    profilePicEl.style.display = 'block'
+                } else {
+                    profilePicEl.style.display = 'none'
+                }
+
+                document.getElementById('linkedProfileName').textContent = followerData.displayName || '—'
+                document.getElementById('linkedProfileUserId').textContent = followerData.userId || '—'
+                document.getElementById('linkedProfileStatusMessage').textContent = followerData.statusMessage || 'No status message'
+                
+                // Format linked date
+                const linkedDate = linkedInfo.linkedAt ? new Date(linkedInfo.linkedAt).toLocaleDateString() : '—'
+                document.getElementById('linkedProfileDate').textContent = linkedDate
+                
+                container.style.display = 'block'
+                noContainer.style.display = 'none'
+                statusEl.classList.remove('show', 'success', 'error', 'loading')
+            } catch (err) {
+                console.error('Error loading linked profile:', err)
+                const statusEl = document.getElementById('linkedProfileStatus')
+                statusEl.className = 'status-msg show error'
+                statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                statusEl.querySelector('.msg-text').textContent = 'Error loading linked profile: ' + err.message
+                
+                document.getElementById('linkedProfileContainer').style.display = 'none'
+                document.getElementById('noLinkedProfileContainer').style.display = 'block'
+            }
+        }
+
+        async function unlinkCurrentProfile() {
+            const confirmed = await showConfirmModal('Unlink this LINE profile from your account?', 'Unlink')
+            if (!confirmed) return
+
+            try {
+                const res = await fetch('/user/unlink-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                const data = await res.json()
+                
+                if (!res.ok) {
+                    const statusEl = document.getElementById('linkedProfileStatus')
+                    statusEl.className = 'status-msg show error'
+                    statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                    statusEl.querySelector('.msg-text').textContent = data.error || 'Failed to unlink profile'
+                    return
+                }
+
+                const statusEl = document.getElementById('linkedProfileStatus')
+                statusEl.className = 'status-msg show success'
+                statusEl.querySelector('.material-symbols-outlined').textContent = 'check_circle'
+                statusEl.querySelector('.msg-text').textContent = 'Profile unlinked successfully'
+                
+                setTimeout(() => {
+                    loadUserLinkedProfile()
+                }, 1500)
+            } catch (err) {
+                console.error('Error unlinking profile:', err)
+                const statusEl = document.getElementById('linkedProfileStatus')
+                statusEl.className = 'status-msg show error'
+                statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                statusEl.querySelector('.msg-text').textContent = 'Error: ' + err.message
+            }
         }
 
         async function loadLinkedFollowers() {
@@ -3679,19 +3955,19 @@
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     })
                     data = await res.json()
-                    
+
                     // Fetch LINE profile pictures for each follower
                     const followersRes = await fetch('/followers')
                     const followersData = await followersRes.json()
                     const followerProfiles = followersData.followers || {}
-                    
+
                     // Enrich linkedFollowers with picture URLs
                     for (let link of data.linkedFollowers) {
                         if (followerProfiles[link.followerId]) {
                             link.pictureUrl = followerProfiles[link.followerId].pictureUrl
                         }
                     }
-                    
+
                     console.log('👑 Admin loaded linkedFollowers:', data.linkedFollowers)
                 } else {
                     // Regular users see only their own linked followers
@@ -3747,10 +4023,10 @@
 
                     const userName = `${link.name} ${link.surname}`
                     const linkedDate = new Date(link.linkedAt).toLocaleDateString()
-                    const avatar = link.pictureUrl 
-                        ? `<img src="${escHtml(link.pictureUrl)}" alt="${escHtml(link.followerName)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border);">` 
+                    const avatar = link.pictureUrl
+                        ? `<img src="${escHtml(link.pictureUrl)}" alt="${escHtml(link.followerName)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border);">`
                         : `<div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center;">${link.followerName.charAt(0).toUpperCase()}</div>`
-                    
+
                     html += `
                         <tr style="border-bottom: 1px solid var(--border); transition: background 0.15s;" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">
                             <td style="padding: 12px; text-align: center;">
@@ -4041,7 +4317,7 @@
                 statusEl.querySelector('.msg-text').textContent = e.message
             }
         }
- 
+
         // ── Load Received Memos ────────────────────────
         async function loadReceivedMemos() {
             const tbody = document.getElementById('receivedMemosTbody')
@@ -4118,7 +4394,7 @@
                 statusEl.querySelector('.msg-text').textContent = e.message
             }
         }
-//ส่วน openMemoDetail ตอนนี้ received จะใช้ร่วมกับ sent ซึ่งส่วนแสดง sent to จะต้องเปลี่ยนเป็น from และแสดงชื่อผู้ที่ส่งมาแทน 
+        //ส่วน openMemoDetail ตอนนี้ received จะใช้ร่วมกับ sent ซึ่งส่วนแสดง sent to จะต้องเปลี่ยนเป็น from และแสดงชื่อผู้ที่ส่งมาแทน 
 
         async function loadFollowers() {
             const tbody = document.getElementById('followersTbody')
@@ -4304,11 +4580,11 @@
             document.getElementById('memoDetailTitle').textContent = memo.title
             document.getElementById('memoDetailTitleValue').textContent = memo.title
             document.getElementById('memoDetailTypeValue').textContent = memo.type || 'Memorandum'
-            
+
             // Determine if memo is sent or received
             const isReceived = memo.senderName || memo.senderUserId
             const recipientLabel = document.getElementById('memoDetailRecipientLabel')
-            
+
             if (recipientLabel) {
                 // Update label based on memo type
                 if (isReceived) {
@@ -4320,29 +4596,29 @@
                 }
             } else {
                 // Fallback if label element doesn't exist
-                document.getElementById('memoDetailRecipient').textContent = isReceived ? 
-                    (memo.senderName || 'Unknown') : 
+                document.getElementById('memoDetailRecipient').textContent = isReceived ?
+                    (memo.senderName || 'Unknown') :
                     (memo.recipientName || memo.recipientId)
             }
-            
+
             const sentDate = new Date(memo.sentAt)
-            const dateStr = sentDate.toLocaleDateString('th-TH', { 
+            const dateStr = sentDate.toLocaleDateString('th-TH', {
                 weekday: 'short',
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
             })
-            const timeStr = sentDate.toLocaleTimeString('th-TH', { 
-                hour: '2-digit', 
+            const timeStr = sentDate.toLocaleTimeString('th-TH', {
+                hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'
             })
             document.getElementById('memoDetailDate').textContent = `${dateStr} ${timeStr}`
             document.getElementById('memoDetailContent').textContent = memo.content
-            
+
             document.getElementById('memoDetailOverlay').classList.add('show')
         }
-       
+
         function closeMemoDetail() {
             document.getElementById('memoDetailOverlay').classList.remove('show')
             currentMemoDetail = null
@@ -4366,18 +4642,18 @@
 
         function printMemoDetail() {
             if (!currentMemoDetail) return
-            
+
             const printWindow = window.open('', '_blank')
             const date = new Date(currentMemoDetail.sentAt).toLocaleDateString('th-TH')
             const time = new Date(currentMemoDetail.sentAt).toLocaleTimeString('th-TH')
-            
+
             // Determine if memo is sent or received
             const isReceived = currentMemoDetail.senderName || currentMemoDetail.senderUserId
             const personLabel = isReceived ? 'From' : 'Sent to'
-            const personName = isReceived ? 
-                (currentMemoDetail.senderName || 'Unknown') : 
+            const personName = isReceived ?
+                (currentMemoDetail.senderName || 'Unknown') :
                 (currentMemoDetail.recipientName || currentMemoDetail.recipientId)
-            
+
             printWindow.document.write(`
                 <!DOCTYPE html>
                 <html>
@@ -4410,7 +4686,7 @@
         }
 
         // Close memo detail when clicking outside
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const overlay = document.getElementById('memoDetailOverlay')
             if (overlay && e.target === overlay) {
                 closeMemoDetail()
