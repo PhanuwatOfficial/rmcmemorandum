@@ -1234,6 +1234,75 @@
             font-variation-settings: 'wght' 400;
         }
 
+        .department-item {
+            margin-bottom: 12px;
+        }
+        
+        .department-name {
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 14px;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .subdepartment-list {
+            margin-left: 20px;
+            border-left: 2px solid var(--accent-2);
+            padding-left: 12px;
+            margin-top: 8px;
+        }
+
+        .subdepartment-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+            color: var(--ink);
+            font-size: 13px;
+            position: relative;
+        }
+
+        .subdepartment-item:before {
+            content: '→';
+            color: var(--accent-2);
+            font-weight: 700;
+            margin-right: 8px;
+            font-size: 14px;
+        }
+
+        .subdepartment-name {
+            flex: 1;
+            padding: 4px 8px;
+            background: var(--paper);
+            border-radius: 3px;
+            border: 1px solid var(--border);
+        }
+
+        .unlink-btn-small {
+            padding: 2px 6px;
+            font-size: 11px;
+            color: var(--red);
+            background: transparent;
+            border: 1px solid var(--red);
+            border-radius: 2px;
+            cursor: pointer;
+            margin-left: 6px;
+            transition: all 0.2s;
+        }
+
+        .unlink-btn-small:hover {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .empty-hierarchy {
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--ink-faint);
+            font-size: 13px;
+        }
+
         /* ── Responsive Design ────────────────────── */
         /* Tablet (768px and below) */
         @media (max-width: 768px) {
@@ -2595,7 +2664,7 @@
 
                             <div style="border-top: 1px solid var(--border); padding-top: 20px;">
                                 <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 16px;">Department Hierarchy</h4>
-                                <div id="departmentHierarchyContainer" style="background: linear-gradient(135deg, rgba(26, 39, 64, 0.02) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; max-height: 700px; overflow-y: auto;">
+                                <div id="departmentHierarchyContainer" style="background: linear-gradient(135deg, rgba(26, 39, 64, 0.02) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;  overflow-y: auto;">
                                     <div style="padding: 24px; text-align: center; color: var(--ink-muted); font-size: 13px;">Loading department structure...</div>
                                 </div>
                             </div>
@@ -2607,76 +2676,6 @@
                         </div>
                     </div>
 
-                    <style>
-                        .department-item {
-                            margin-bottom: 12px;
-                        }
-                        
-                        .department-name {
-                            font-weight: 600;
-                            color: var(--accent);
-                            font-size: 14px;
-                            padding: 8px 0;
-                            display: flex;
-                            align-items: center;
-                        }
-
-                        .subdepartment-list {
-                            margin-left: 20px;
-                            border-left: 2px solid var(--accent-2);
-                            padding-left: 12px;
-                            margin-top: 8px;
-                        }
-
-                        .subdepartment-item {
-                            display: flex;
-                            align-items: center;
-                            padding: 6px 0;
-                            color: var(--ink);
-                            font-size: 13px;
-                            position: relative;
-                        }
-
-                        .subdepartment-item:before {
-                            content: '→';
-                            color: var(--accent-2);
-                            font-weight: 700;
-                            margin-right: 8px;
-                            font-size: 14px;
-                        }
-
-                        .subdepartment-name {
-                            flex: 1;
-                            padding: 4px 8px;
-                            background: var(--paper);
-                            border-radius: 3px;
-                            border: 1px solid var(--border);
-                        }
-
-                        .unlink-btn-small {
-                            padding: 2px 6px;
-                            font-size: 11px;
-                            color: var(--red);
-                            background: transparent;
-                            border: 1px solid var(--red);
-                            border-radius: 2px;
-                            cursor: pointer;
-                            margin-left: 6px;
-                            transition: all 0.2s;
-                        }
-
-                        .unlink-btn-small:hover {
-                            background: var(--red);
-                            color: #fff;
-                        }
-
-                        .empty-hierarchy {
-                            text-align: center;
-                            padding: 32px 16px;
-                            color: var(--ink-faint);
-                            font-size: 13px;
-                        }
-                    </style>
 
                     <div class="section-card" style="max-width: 680px;">
                         <div class="section-header">
@@ -2711,11 +2710,6 @@
                         </div>
                     </div>
 
-    <!--
-    prompt:ในหน้า All Linked Followers เมื่อ unlink แล้ว ให้ผู้ใช้ที่ทำการ unlineออกจากรายการ linked followers และกลับไปแสดงใน available followers ทันที (realtime)
-    
-    
-    -->
                     <div class="section-card">
                         <div class="section-header">
                             <div class="section-title">
@@ -2762,16 +2756,11 @@
                         </div>
                     </div>
 
-                    <!--user ที่ทำการ link ไปแล้ว ไม่ต้องแสดงในรายการ available followers-->
                 </div>
 
                 <!-- ── PENDING USER APPROVALS (ADMIN ONLY) ────────────────────── -->
 
             </div>
-
-<!--หน้า Follower Registry ให้เพิ่ม card
-จำนวนผู้ใช้ทั้งหมดในระบบ, จำนวน followers (line) , จำนวนผู้ใช้ที่ link แล้ว
-ดูตัวอย่าง card จากหน้า dashboard-->
 
 
             <!-- ── LOGS VIEW ──────────────────────── -->
@@ -2797,11 +2786,6 @@
                                     <span class="material-symbols-outlined">delete_sweep</span>
                                     Clear
                                 </button>
-
-
-                                <!-- prompt: 
-         ถ้ากด Clear ให้ Backup ข้อมูลที่ Clear ไว้ใน db.ref(logs_Backup)
-        -->
                             </div>
 
 
@@ -2907,6 +2891,33 @@
                     <span class="material-symbols-outlined">close</span>
                     Close
                 </button>
+            </div>
+        </div>
+    </div>
+
+        <!-- Custom Modal -->
+    <div id="customModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; align-items: center; justify-content: center;">
+        <div style="position: absolute; inset: 0; background: rgba(15, 17, 23, 0.5); backdrop-filter: blur(4px);"></div>
+        <div
+            style="position: relative; background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 420px; width: 90%; max-height: 80vh; overflow: auto; border: 1px solid var(--border);">
+            <div style="padding: 24px; border-bottom: 1px solid var(--border);">
+                <h2 id="modalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;">
+                    Confirmation</h2>
+            </div>
+            <div style="padding: 24px;">
+                <p id="modalMessage" style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0;">Are you
+                    sure?</p>
+            </div>
+            <div
+                style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 12px; justify-content: flex-end;">
+                <button id="modalCancelBtn" onclick="closeCustomModal(false)"
+                    style="padding: 10px 24px; border: 1px solid var(--border); background: var(--paper); color: var(--ink); border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; outline: none;"
+                    onmouseover="this.style.background='var(--surface)'"
+                    onmouseout="this.style.background='var(--paper)'">Cancle</button>
+                <button id="modalConfirmBtn" onclick="closeCustomModal(true)"
+                    style="padding: 10px 24px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; outline: none;"
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Confirm</button>
             </div>
         </div>
     </div>
@@ -5815,106 +5826,9 @@
             refreshDashboard()
         }
 
-        /*
-    "followers": {
-    "U6389af3cace45f66bc645cf93b2a32ac": {
-      "displayName": "AEY🐱🐻",
-      "followedAt": "2026-03-19T09:22:47.455Z",
-      "pictureUrl": "https://sprofile.line-scdn.net/0hh7gZ87_ZNxhKIyaPQE9JJjpzNHJpUm4KYEx8f3gibilyFHhObhV6LHknPC93FnlOMRd5KyogbC9oVDszDiExGwtfF00RcnAVAhcOKhEmEHIgFxsZGRkjJiJ6CWELYAUKYBomeAlQN2EPQRYtOyQkDjZfFnJ0aQ07MnRbTk8RWZslIUBNZ0RwfH0layrz",
-      "status": "active",
-      "userId": "U6389af3cace45f66bc645cf93b2a32ac"
-    },
-    "Ue78fdf247dea19fe8ef461f8645ef746": {
-      "displayName": "N",
-      "followedAt": "2026-03-25T02:48:08.105Z",
-      "pictureUrl": "https://sprofile.line-scdn.net/0hZ0koOqSlBR9GFhWzrIZ7YDZGBnVlZ1wNanUafCAeUn8rc0MZOnROfidBCS17ckpJYiAZLXEXXiZKBXJ5WED5K0EmWC56LkBLbHJI_Q",
-      "status": "active",
-      "userId": "Ue78fdf247dea19fe8ef461f8645ef746"
-    }
-  },
-    "users": {
-    "user_1774408705336": {
-      "createdAt": "2026-03-25T03:18:25.340Z",
-      "linkedFollowers": {
-        "Ue78fdf247dea19fe8ef461f8645ef746": {
-          "displayName": "N",
-          "linkedAt": "2026-03-25T03:19:10.137Z"
-        }
-      },
-      "name": "Phanuwat",
-      "password": "230199",
-      "role": "admin",
-      "surname": "Limphutthanuphab",
-      "userId": "user_1774408705336",
-      "username": "Phanuwat"
-    },
-    "user_1774409766090": {
-      "createdAt": "2026-03-25T03:36:06.090Z",
-      "linkedFollowers": {
-        "U6389af3cace45f66bc645cf93b2a32ac": {
-          "displayName": "AEY🐱🐻",
-          "linkedAt": "2026-03-25T04:17:35.305Z"
-        }
-      },
-      "name": "Kawintida",
-      "password": "230199",
-      "role": "admin",
-      "surname": "Taisawat",
-      "userId": "user_1774409766090",
-      "username": "Kawintida"
-    },
-    "user_1774412170496": {
-      "createdAt": "2026-03-25T04:16:10.496Z",
-      "name": "test2",
-      "password": "230199",
-      "role": "user",
-      "surname": "test2",
-      "userId": "user_1774412170496",
-      "username": "test2"
-    }
-  },
-  "users_by_username": {
-    "Phanuwat": {
-      "userId": "user_1774408705336"
-    },
-    "Kawintida": {
-      "userId": "user_1774409766090"
-    },
-    "test2": {
-      "userId": "user_1774412170496"
-    }
-  }
-        
-        */
-
     </script>
 
-    <!-- Custom Modal -->
-    <div id="customModal"
-        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; align-items: center; justify-content: center;">
-        <div style="position: absolute; inset: 0; background: rgba(15, 17, 23, 0.5); backdrop-filter: blur(4px);"></div>
-        <div
-            style="position: relative; background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 420px; width: 90%; max-height: 80vh; overflow: auto; border: 1px solid var(--border);">
-            <div style="padding: 24px; border-bottom: 1px solid var(--border);">
-                <h2 id="modalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;">
-                    Confirmation</h2>
-            </div>
-            <div style="padding: 24px;">
-                <p id="modalMessage" style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0;">Are you
-                    sure?</p>
-            </div>
-            <div
-                style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 12px; justify-content: flex-end;">
-                <button id="modalCancelBtn" onclick="closeCustomModal(false)"
-                    style="padding: 10px 24px; border: 1px solid var(--border); background: var(--paper); color: var(--ink); border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; outline: none;"
-                    onmouseover="this.style.background='var(--surface)'"
-                    onmouseout="this.style.background='var(--paper)'">Cancle</button>
-                <button id="modalConfirmBtn" onclick="closeCustomModal(true)"
-                    style="padding: 10px 24px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; outline: none;"
-                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Confirm</button>
-            </div>
-        </div>
-    </div>
+
 
 </body>
 
