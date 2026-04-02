@@ -209,5 +209,21 @@ card
 - เข้าถึง tab user management 
 - เข้าถึง system log
 - approve/reject memo ก่อนส่งไปฝ่ายอื่น
+
+
+01/04 
+-bug autocomplete (z-index)
+
+log system
+login✓
+logout✓
+register✓
+approve user✓
+
+1.memo ที่ถูกส่งไป จะต้องได้รับการ approve ก่อน (ให้กำหนดสิทธิ์ user ที่สามารถ approve ได้ จาก department ,sub-department) เมื่อ approve แล้วจึงจะสามารถส่งต่อไปยังฝ่ายอื่นได้ (ขึ้นแจ้งเตือนไปยัง user นั้นๆที่ได้รับ memo เมื่อ approve แล้ว)
+2.เช่นเมื่อกำหนดให้ user A สามารถ approve memo ของ department X ได้ เมื่อ user B ที่อยู่ใน department X ส่ง memo ไป จะต้องรอให้ user A approve ก่อนที่จะส่งต่อไปยังฝ่ายอื่นได้
+3.ให้สามารถกำหนดทั้ง department หรือแยก sub-department ได้
+4.เพิ่มกำหนดสิทธิ์ แต่ละ user ว่าเข้าถึง tab ไหนได้บ้าง
+
 */
 

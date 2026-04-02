@@ -306,14 +306,23 @@
 
         /* ── Content ──────────────────────────────── */
         .content {
-            padding: 48px 40px;
+            padding: 35px 40px;
             /* max-width: 1200px; */
             max-width: 100%;
             width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content.auth-center {
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - var(--sidebar-w));
+            padding: 40px 20px;
         }
 
         .page-header {
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .page-header h2 {
@@ -328,6 +337,24 @@
             font-size: 14px;
             color: var(--ink-muted);
             margin-top: 6px;
+        }
+
+        .auth-center .page-header {
+            margin-bottom: 32px;
+            text-align: center;
+            width: 100%;
+            margin-top: 0;
+        }
+
+        .auth-center .page-header h2 {
+            font-size: 32px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .auth-center .page-header p {
+            color: var(--ink-faint);
+            font-size: 14px;
         }
 
         /* ── Stats Grid ───────────────────────────── */
@@ -393,7 +420,16 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             margin-bottom: 24px;
-            overflow: hidden;
+            overflow: visible;
+        }
+
+        .auth-center .section-card {
+            background: var(--paper);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(15, 17, 23, 0.08), 0 1px 3px rgba(15, 17, 23, 0.04);
+            width: 100%;
+            max-width: 420px;
         }
 
         .section-header {
@@ -421,44 +457,53 @@
 
         .section-body {
             padding: 24px 28px;
+            overflow: visible;
         }
 
         /* ── Form Controls ────────────────────────── */
         .field {
-            margin-bottom: 14px;
+            margin-bottom: 16px;
         }
 
         .field label {
             display: block;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.12em;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--ink-muted);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .field input,
         .field textarea,
         .field select {
             width: 100%;
-            padding: 10px 14px;
+            padding: 11px 14px;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: 6px;
             font-family: "Noto Sans Thai", sans-serif;
-            font-size: 13px;
+            font-size: 14px;
             color: var(--ink);
             outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            transition: all 0.2s ease;
             resize: vertical;
+        }
+
+        .field input:hover,
+        .field textarea:hover,
+        .field select:hover {
+            border-color: var(--accent-2);
+            background: #fefdfb;
         }
 
         .field input:focus,
         .field textarea:focus,
         .field select:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(26, 39, 64, 0.08);
+            box-shadow: 0 0 0 3px rgba(26, 39, 64, 0.08), 0 0 0 1px rgba(200, 169, 110, 0.2);
+            background: #fff;
         }
 
         .field textarea {
@@ -470,24 +515,31 @@
         .custom-autocomplete-wrapper {
             position: relative;
             width: 100%;
+            overflow: visible;
         }
 
         .custom-autocomplete-input {
             width: 100%;
-            padding: 10px 14px;
+            padding: 11px 14px;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: 6px;
             font-family: "Noto Sans Thai", sans-serif;
-            font-size: 13px;
+            font-size: 14px;
             color: var(--ink);
             outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            transition: all 0.2s ease;
+        }
+
+        .custom-autocomplete-input:hover {
+            border-color: var(--accent-2);
+            background: #fefdfb;
         }
 
         .custom-autocomplete-input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(26, 39, 64, 0.08);
+            box-shadow: 0 0 0 3px rgba(26, 39, 64, 0.08), 0 0 0 1px rgba(200, 169, 110, 0.2);
+            background: #fff;
         }
 
         .custom-autocomplete-dropdown {
@@ -499,9 +551,10 @@
             border: 1px solid var(--border);
             border-radius: var(--radius);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            max-height: 240px;
+            max-height: 300px;
             overflow-y: auto;
-            z-index: 1000;
+            z-index: 10000;
+            pointer-events: auto;
         }
 
         .custom-autocomplete-item {
@@ -642,9 +695,9 @@
 
         .btn-row {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
-            margin-top: 4px;
+            margin-top: 20px;
         }
 
         /* ── Status Messages ──────────────────────── */
@@ -842,6 +895,204 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
+        }
+
+        /* Activity Log Styles */
+        .activity-log {
+            margin-top: 0;
+            background: var(--surface);
+            border-radius: 0;
+            padding: 0;
+            font-family: "Noto Sans Thai", sans-serif;
+            font-size: 14px;
+            /* max-height: 600px; */
+            overflow-y: auto;
+            line-height: 1.5;
+            color: var(--ink);
+        }
+
+        .activity-event {
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            transition: background-color 0.2s ease;
+        }
+
+        .activity-event:hover {
+            background-color: var(--paper);
+        }
+
+        .activity-event-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .activity-event-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .activity-event-title {
+            font-weight: 600;
+            color: var(--ink);
+            font-size: 14px;
+        }
+
+        .activity-event-description {
+            color: var(--ink-muted);
+            font-size: 13px;
+        }
+
+        .activity-event-time {
+            color: var(--ink-faint);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        /* Event Type Colors */
+        .event-login .activity-event-icon {
+            background-color: var(--green-bg);
+            color: var(--green);
+        }
+
+        .event-logout .activity-event-icon {
+            background-color: var(--amber-bg);
+            color: var(--amber);
+        }
+
+        .event-send .activity-event-icon {
+            background-color: var(--blue-bg);
+            color: var(--blue);
+        }
+
+        .event-receive .activity-event-icon {
+            background-color: var(--blue-bg);
+            color: var(--blue);
+        }
+
+        .event-follower .activity-event-icon {
+            background-color: var(--green-bg);
+            color: var(--green);
+        }
+
+        .event-error .activity-event-icon {
+            background-color: var(--red-bg);
+            color: var(--red);
+        }
+
+        .event-approval .activity-event-icon {
+            background-color: var(--green-bg);
+            color: var(--green);
+        }
+
+        .event-system .activity-event-icon {
+            background-color: var(--blue-bg);
+            color: var(--blue);
+        }
+
+        /* Legacy log styles for compatibility */
+        /* Activity Log Styles */
+
+
+        .activity-event {
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            transition: background-color 0.2s ease;
+        }
+
+        .activity-event:hover {
+            background-color: var(--paper);
+        }
+
+        .activity-event-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .activity-event-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .activity-event-title {
+            font-weight: 600;
+            color: var(--ink);
+            font-size: 14px;
+        }
+
+        .activity-event-description {
+            color: var(--ink-muted);
+            font-size: 13px;
+        }
+
+        .activity-event-time {
+            color: var(--ink-faint);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        /* Event Type Colors */
+        .event-login .activity-event-icon {
+            background-color: var(--green-bg);
+            color: var(--green);
+        }
+
+        .event-logout .activity-event-icon {
+            background-color: var(--amber-bg);
+            color: var(--amber);
+        }
+
+        .event-send .activity-event-icon {
+            background-color: var(--blue-bg);
+            color: var(--blue);
+        }
+
+        .event-receive .activity-event-icon {
+            background-color: var(--blue-bg);
+            color: var(--blue);
+        }
+
+        .event-follower .activity-event-icon {
+            background-color: var(--green-bg);
+            color: var(--green);
+        }
+
+        .event-error .activity-event-icon {
+            background-color: var(--red-bg);
+            color: var(--red);
+        }
+
+        .event-approval .activity-event-icon {
+            background-color: var(--green-bg);
+            color: var(--green);
+        }
+
+        .event-system .activity-event-icon {
+            background-color: var(--blue-bg);
+            color: var(--blue);
         }
 
         .logs-terminal {
@@ -1663,15 +1914,37 @@
                 padding: 4px 10px;
             }
 
+            .activity-log {
+                margin-top: 12px;
+                padding: 0;
+                font-size: 12px;
+                max-height: 250px;
+            }
+
+            .activity-event {
+                gap: 12px;
+                padding: 12px 16px;
+            }
+
+            .activity-event-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            .activity-event-title {
+                font-size: 13px;
+            }
+
+            .activity-event-description {
+                font-size: 12px;
+            }
+
             .logs-terminal {
                 margin-top: 12px;
                 padding: 12px;
                 font-size: 10px;
                 max-height: 250px;
-            }
-
-            .log-line {
-                gap: 6px;
             }
 
             .status-msg {
@@ -1741,6 +2014,13 @@
                     <span class="material-symbols-outlined">send</span>
                     Sent Memos
                 </a>
+                <a class="nav-item" id="navPendingApprovals" onclick="showView('pending-approvals'); loadPendingApprovals()" style="display:none;">
+                    <span class="material-symbols-outlined">pending_actions</span>
+                    <span style="display: inline-block; position: relative;">
+                        Pending Approvals
+                        <span id="pendingBadge" style="display:none; position: absolute; top: -8px; right: -12px; background: #c8a96e; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;">0</span>
+                    </span>
+                </a>
                 <a class="nav-item" onclick="showView('received-memos'); loadReceivedMemos()">
                     <span class="material-symbols-outlined">inbox</span>
                     Received Memos
@@ -1754,8 +2034,8 @@
                     Users Management
                 </a>
                 <a class="nav-item" onclick="showView('logs')">
-                    <span class="material-symbols-outlined">terminal</span>
-                    System Logs
+                    <span class="material-symbols-outlined">event_note</span>
+                    Activity Log
                 </a>
             </div>
         </nav>
@@ -1842,111 +2122,108 @@
         <div class="content">
 
             <!-- ── LOGIN VIEW ─────────────────────── -->
-            <div id="view-login" class="view" style="display:none;">
-                <div class="page-header">
-                    <h2>Login</h2>
-                    <p>Access your Executive Memorandum account.</p>
-                </div>
+            <div id="view-login" class="view" style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
+                <div style="width: 35%; max-width: 80%; margin:0 25% auto;">
+                    <div class="page-header" style="text-align: center; margin-bottom: 25px;">
+                        <h2 style="font-size: 32px; color: var(--accent);">Login</h2>
+                        <!-- <p style="color: var(--ink-faint); font-size: 15px;">Access your Executive Memorandum account.</p> -->
+                    </div>
 
-                <div class="section-card" style="max-width: 420px;">
-                    <div class="section-body">
-                        <div class="field">
-                            <label>Username</label>
-                            <input id="loginUsername" type="text" placeholder="Enter your username"
-                                onkeypress="if(event.key==='Enter') doLogin()">
-                        </div>
-                        <div class="field">
-                            <label>Password</label>
-                            <input id="loginPassword" type="password" placeholder="Enter your password"
-                                onkeypress="if(event.key==='Enter') doLogin()">
-                        </div>
-                        <div class="btn-row">
-                            <button class="btn btn-primary" onclick="doLogin()">
-                                <span class="material-symbols-outlined">login</span>
-                                Sign In
-                            </button>
-                        </div>
-                        <div class="status-msg" id="statusLogin" style="margin-top: 16px;">
-                            <span class="material-symbols-outlined"></span>
-                            <span class="msg-text"></span>
-                        </div>
-                        <div style="margin-top: 16px; text-align: center; font-size: 12px; color: var(--ink-muted);">
-                            Don't have an account? <a onclick="showView('register')"
-                                style="color: var(--accent); cursor: pointer; text-decoration: underline;">Register
-                                here</a>
+                    <div class="section-card" style="border-radius: 8px;">
+                        <div class="section-body" style="padding: 32px 28px; overflow: visible;">
+                            <div class="field">
+                                <label>Username</label>
+                                <input id="loginUsername" type="text" placeholder="Enter your username"
+                                    onkeypress="if(event.key==='Enter') doLogin()">
+                            </div>
+                            <div class="field" style="margin-bottom: 24px;">
+                                <label>Password</label>
+                                <input id="loginPassword" type="password" placeholder="Enter your password"
+                                    onkeypress="if(event.key==='Enter') doLogin()">
+                            </div>
+                            <div class="btn-row" style="margin-top: 24px;">
+                                <button class="btn btn-primary" onclick="doLogin()" style="width: 100%; padding: 11px 16px; font-weight: 600;">
+                                    <span class="material-symbols-outlined">login</span>
+                                    Sign In
+                                </button>
+                            </div>
+                            <div class="status-msg" id="statusLogin" style="margin-top: 16px;">
+                                <span class="material-symbols-outlined"></span>
+                                <span class="msg-text"></span>
+                            </div>
+                            <div style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); border-top: 1px solid var(--border); padding-top: 20px;">
+                                Don't have an account? <a onclick="showView('register')"
+                                    style="color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-2)'" onmouseout="this.style.color='var(--accent)'">Register here</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- ── REGISTER VIEW ──────────────────── -->
-            <div id="view-register" class="view" style="display:none;">
-                <div class="page-header">
-                    <h2>Register Account</h2>
-                    <p>Create a new Executive Memorandum account.</p>
-                </div>
+            <div id="view-register" class="view" style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
+                <div style="width: 40%; max-width: 80%; margin:0 25% auto;">
+                <!-- <div style="width: 40%; max-width: 80%; margin:0 auto;"> -->
+                    <div class="page-header" style="text-align: center; margin-bottom: 25px;">
+                        <h2 style="font-size: 32px; color: var(--accent); ">Create Account</h2>
+                        <!-- <p style="color: var(--ink-faint); font-size: 15px;">Register a new Executive Memorandum account.</p> -->
+                    </div>
 
-                <div class="section-card" style="max-width: 420px;">
-                    <div class="section-body">
-                        <div class="field">
-                            <label>Username</label>
-                            <input id="regUsername" type="text" placeholder="Choose a username">
-                        </div>
-                        <div class="field">
-                            <label>First Name</label>
-                            <input id="regName" type="text" placeholder="Your first name">
-                        </div>
-                        <div class="field">
-                            <label>Last Name</label>
-                            <input id="regSurname" type="text" placeholder="Your last name">
-                        </div>
-                        <div class="field">
-                            <label>Password</label>
-                            <input id="regPassword" type="password" placeholder="Create a password">
-                        </div>
-                        <div class="field">
-                            <label>Confirm Password</label>
-                            <input id="regConfirmPassword" type="password" placeholder="Confirm your password">
-                        </div>
-                        <div class="field">
-                            <label>Department (ฝ่าย)</label>
-                            <div class="custom-autocomplete-wrapper">
-                                <input id="regDepartment" type="text" placeholder="Select department..." class="custom-autocomplete-input" autocomplete="off">
-                                <div id="regDepartmentDropdown" class="custom-autocomplete-dropdown" style="display: none;"></div>
+                    <div class="section-card" style="border-radius: 8px;">
+                        <div class="section-body" style="padding: 32px 28px; overflow: visible;">
+                            <div class="field">
+                                <label>Username</label>
+                                <input id="regUsername" type="text" placeholder="Choose a username">
                             </div>
-                        </div>
-                        <div class="field">
-                            <label>Sub-Department (แผนก)</label>
-                            <div class="custom-autocomplete-wrapper">
-                                <input id="regDepartment2" type="text" placeholder="Select sub-department..." class="custom-autocomplete-input" autocomplete="off">
-                                <div id="regDepartment2Dropdown" class="custom-autocomplete-dropdown" style="display: none;"></div>
+                            <div class="field">
+                                <label>First Name</label>
+                                <input id="regName" type="text" placeholder="Your first name">
                             </div>
-                        </div>
-                        <div class="btn-row">
-                            <button class="btn btn-primary" onclick="doRegister()">
-                                <span class="material-symbols-outlined">person_add</span>
-                                Create Account
-                            </button>
-                        </div>
-                        <div class="status-msg" id="statusRegister" style="margin-top: 16px;">
-                            <span class="material-symbols-outlined"></span>
-                            <span class="msg-text"></span>
-                        </div>
-                        <div style="margin-top: 16px; text-align: center; font-size: 12px; color: var(--ink-muted);">
-                            Already have an account? <a onclick="showView('login')"
-                                style="color: var(--accent); cursor: pointer; text-decoration: underline;">Login
-                                here</a>
+                            <div class="field">
+                                <label>Last Name</label>
+                                <input id="regSurname" type="text" placeholder="Your last name">
+                            </div>
+                            <div class="field">
+                                <label>Password</label>
+                                <input id="regPassword" type="password" placeholder="Create a password">
+                            </div>
+                            <div class="field">
+                                <label>Confirm Password</label>
+                                <input id="regConfirmPassword" type="password" placeholder="Confirm your password">
+                            </div>
+                            <div class="field">
+                                <label>Department (ฝ่าย)</label>
+                                <div class="custom-autocomplete-wrapper">
+                                    <input id="regDepartment" type="text" placeholder="Select department..." class="custom-autocomplete-input" autocomplete="off">
+                                    <div id="regDepartmentDropdown" class="custom-autocomplete-dropdown" style="display: none;"></div>
+                                </div>
+                            </div>
+                            <div class="field" style="margin-bottom: 24px;">
+                                <label>Sub-Department (แผนก)</label>
+                                <div class="custom-autocomplete-wrapper">
+                                    <input id="regDepartment2" type="text" placeholder="Select sub-department..." class="custom-autocomplete-input" autocomplete="off">
+                                    <div id="regDepartment2Dropdown" class="custom-autocomplete-dropdown" style="display: none;"></div>
+                                </div>
+                            </div>
+
+                            <div class="btn-row" style="margin-top: 24px;">
+                                <button class="btn btn-primary" onclick="doRegister()" style="width: 100%; padding: 11px 16px; font-weight: 600;">
+                                    <span class="material-symbols-outlined">person_add</span>
+                                    Create Account
+                                </button>
+                            </div>
+                            <div class="status-msg" id="statusRegister" style="margin-top: 16px;">
+                                <span class="material-symbols-outlined"></span>
+                                <span class="msg-text"></span>
+                            </div>
+                            <div style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); border-top: 1px solid var(--border); padding-top: 20px;">
+                                Already have an account? <a onclick="showView('login')"
+                                    style="color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-2)'" onmouseout="this.style.color='var(--accent)'">Login here</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!--
-            1.เพิ่ม confirm password
-            2.เพิ่ม department (ฝ่าย) เป็น populate autocomplete
-            3.เพิ่ม department2 (แผนก) เป็น populate autocomplete
-            autocomplete department , department2 ให้ผู้ใช้ userrole = admin สามารถเพิ่ม/แก้ไขได้จากหน้า manage user
-            -->
 
 
             <!-- ── MANAGE USER VIEW ───────────────── -->
@@ -2177,8 +2454,8 @@
                         </button>
                     </div>
                     <div class="section-body" style="padding: 0;">
-                        <div class="logs-terminal" id="dash-logs-preview" style="border-radius: 0; max-height: 200px;">
-                            <div style="color: #4a5568; font-style: italic;">Loading activity...</div>
+                        <div class="activity-log" id="dash-logs-preview" style="border-radius: 0; max-height: 200px;">
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading activity...</div>
                         </div>
                     </div>
                 </div>
@@ -2382,6 +2659,52 @@
                 </div>
             </div>
 
+            <!-- ── PENDING APPROVALS VIEW ────────────── -->
+            <div id="view-pending-approvals" class="view" style="display:none;">
+                <div class="page-header">
+                    <h2>Pending Memo Approvals</h2>
+                    <p>Review and approve memorandums from your department.</p>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">pending_actions</span>
+                            Memos Awaiting Your Approval
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="loadPendingApprovals()">
+                            <span class="material-symbols-outlined">refresh</span>
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="section-body" style="padding: 0;">
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: var(--surface); border-bottom: 2px solid var(--border); position: sticky; top: 0;">
+                                    <tr>
+                                        <th style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">Date</th>
+                                        <th style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">Title</th>
+                                        <th style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">From</th>
+                                        <th style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">Department</th>
+                                        <th style="padding: 12px; text-align: center; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingApprovalsTbody">
+                                    <tr>
+                                        <td colspan="5" style="padding: 32px; text-align: center;">
+                                            <div style="color: var(--ink-faint);">
+                                                <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.3;">inbox</span>
+                                                <p style="margin: 0;">No pending approvals.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ── BROADCAST VIEW ─────────────────── -->
             <div id="view-broadcast" class="view" style="display:none;">
                 <div class="page-header">
@@ -2455,6 +2778,59 @@
                         <div class="stat-sub">Users awaiting approval</div>
                     </div>
                 </div>
+
+                <!-- Admin Navigation -->
+                <div id="adminNav" style="display: none; max-width: 680px; padding: 20px 0;">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="material-symbols-outlined">admin_panel_settings</span>
+                                Administration
+                            </div>
+                        </div>
+                        <div class="section-body" style="display: flex; flex-direction: column; gap: 10px;">
+                            <button class="btn btn-primary" onclick="showView('memo-approvers'); loadMemoApprovers()" style="width: 100%; justify-content: flex-start;">
+                                <span class="material-symbols-outlined">verified_user</span>
+                                Memo Approvers
+                            </button>
+                            <button class="btn btn-primary" onclick="showView('tab-access'); loadTabAccess()" style="width: 100%; justify-content: flex-start;">
+                                <span class="material-symbols-outlined">security</span>
+                                Tab Access Control
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+    <!--prompt: แก้ไขบัคเมื่อส่ง memo แล้วตอนนี้จะถูกส่งไปยังผู้รับทันที ไม่ผ่านการอนุมัติจาก user ที่กำหนดใน memoApprovers 
+                ต้องแก้ไขให้ยังไม่ต้องส่งไปทันที ต้องให้อนุมัติก่อน
+                
+                ex.
+                ตอนนี้กำหนด user ที่ approve ดังนี้
+   
+                  "memoApprovers": {
+                    "approver_1775116584831_scmim6orn": {
+                    "approverId": "user_1774408705336",
+                    "approverName": "Phanuwat Limphutthanuphab",
+                    "approverUsername": "Phanuwat",
+                    "createdAt": "2026-04-02T07:56:24.831Z",
+                    "createdBy": "user_1774408705336",
+                    "departmentId": "dept_1775028261114"
+                    },
+                    "approver_1775117902820_jqa2nc62q": {
+                    "approverId": "user_1775104086215",
+                    "approverName": "aaa aaa",
+                    "approverUsername": "aaa",
+                    "createdAt": "2026-04-02T08:18:22.820Z",
+                    "createdBy": "user_1774408705336",
+                    "departmentId": "dept_1775028216604"
+                    }
+                },
+
+                ตอนนี้เมื่อ user zzz ที่อยู่ department "ทรัพยากรมนุษย์" ส่ง memo ไปหา Phanuwat
+                ตอนนี้ Phanuwat จะได้รับ memo ของ zzz ทันที ซึ่งผิด
+                จะเป็นสถานะรอการอนุมัติ แล้วต้องส่งไปยัง aaa เพื่อทำการ approve ก่อน ทันทีที่ approve memo ถึงจะส่งไปยัง user Phanuwat
+                *กรณี reject memo จะสิ้นสุด ไม่ส่งไปหา Phanuwat
+                -->
 
                 <!-- Admin-Only: Linked Followers Management -->
                 <div id="adminOnlyFollowerMgmt" style="display: none;">
@@ -2766,15 +3142,15 @@
             <!-- ── LOGS VIEW ──────────────────────── -->
             <div id="view-logs" class="view" style="display:none;">
                 <div class="page-header">
-                    <h2>System Logs</h2>
+                    <h2>Activity Log</h2>
                     <p>Live activity trail from the LINE Bot server.</p>
                 </div>
 
                 <div class="section-card">
                     <div class="section-header">
                         <div class="section-title">
-                            <span class="material-symbols-outlined">terminal</span>
-                            Live Feed
+                            <span class="material-symbols-outlined">event_note</span>
+                            System Activities
                         </div>
                         <div class="logs-toolbar">
                             <div class="logs-toolbar-left">
@@ -2797,9 +3173,150 @@
                             <div class="logs-counter" id="logsCount">0 entries</div>
                         </div>
                     </div>
-                    <div class="section-body" style="padding: 0 28px 24px;">
-                        <div class="logs-terminal" id="logsViewer">
-                            <div style="color: #4a5568; font-style: italic;">No logs loaded yet.</div>
+                    <div class="section-body" style="padding: 0;">
+                        <div class="activity-log" id="logsViewer">
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">No activity logged yet.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── MEMO APPROVERS MANAGEMENT ───── -->
+            <div id="view-memo-approvers" class="view" style="display:none;">
+                <div class="page-header">
+                    <h2>Memo Approvers Management</h2>
+                    <p>Assign users who can approve memorandums by department.</p>
+                </div>
+
+                <div class="section-card" style="max-width: 800px;">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">person_add</span>
+                            Add New Approver
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div style="display: grid; gap: 12px;">
+                            <div class="field">
+                                <label>Select User (Approver)</label>
+                                <select id="approverUserId">
+                                    <option value="">-- Select user --</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Department</label>
+                                <select id="approverDepartmentId">
+                                    <option value="">-- Select department --</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Sub-Department (Optional - leave blank for entire department)</label>
+                                <select id="approverSubDepartmentId">
+                                    <option value="">-- All Sub-Departments --</option>
+                                </select>
+                            </div>
+                            <div class="btn-row" style="margin-top: 16px;">
+                                <button class="btn btn-primary" onclick="addMemoApprover()">
+                                    <span class="material-symbols-outlined">add</span>
+                                    Assign Approver
+                                </button>
+                            </div>
+                            <div class="status-msg" id="statusAddApprover">
+                                <span class="material-symbols-outlined"></span>
+                                <span class="msg-text"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">list</span>
+                            Current Approvers
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="loadMemoApprovers()">
+                            <span class="material-symbols-outlined">refresh</span>
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="section-body" style="padding: 0;">
+                        <div id="approversList" style="max-height: 500px; overflow-y: auto;">
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading approvers...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── TAB ACCESS CONTROL ──────────── -->
+            <div id="view-tab-access" class="view" style="display:none;">
+                <div class="page-header">
+                    <h2>Tab Access Control</h2>
+                    <p>Configure which tabs each user can access.</p>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">security</span>
+                            User Access Configuration
+                        </div>
+                        <button class="btn btn-ghost btn-sm" onclick="loadTabAccess()">
+                            <span class="material-symbols-outlined">refresh</span>
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="section-body" style="padding: 0;">
+                        <div id="tabAccessList" style="max-height: 600px; overflow-y: auto;">
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading user access configurations...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Access Editor Modal -->
+                <div id="tabAccessModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                    <div class="modal-content" style="background: white; border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                        <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="margin: 0;">Configure Tab Access</h3>
+                            <button class="modal-close" onclick="closeTabAccessModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
+                        </div>
+                        <div class="modal-body" style="padding: 20px;">
+                            <div class="field">
+                                <label>User: <strong id="tabAccessModalUsername"></strong></label>
+                            </div>
+                            <div class="field">
+                                <label>Select Allowed Tabs</label>
+                                <div style="display: grid; gap: 12px; margin-top: 12px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" class="tab-checkbox" value="dashboard"> Dashboard
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" class="tab-checkbox" value="compose"> Compose Memo
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" class="tab-checkbox" value="sent-memos"> Sent Memos
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" class="tab-checkbox" value="received-memos"> Received Memos
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" class="tab-checkbox" value="broadcast"> Broadcast
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" class="tab-checkbox" value="followers"> Users Management
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" class="tab-checkbox" value="logs"> Activity Log
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" class="tab-checkbox" value="manage-user"> My Account
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
+                            <button class="btn btn-ghost" onclick="closeTabAccessModal()">Cancel</button>
+                            <button class="btn btn-primary" onclick="saveTabAccess()">Save</button>
                         </div>
                     </div>
                 </div>
@@ -3248,6 +3765,24 @@
                         }
                     }
 
+                    // Try to find in pending approvals (for approvers)
+                    const pendingRes = await fetch('/memos/pending-approval', {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                    const pendingData = await pendingRes.json()
+
+                    if (pendingData.pendingMemos) {
+                        targetMemo = pendingData.pendingMemos.find(m => m.memoId === memoId)
+                        if (targetMemo) {
+                            console.log('✅ Found memo in pending approvals:', targetMemo)
+                            showView('pending-approvals')
+                            // Load the table first
+                            await loadPendingApprovals()
+                            openMemoDetail(targetMemo)
+                            return
+                        }
+                    }
+
                     // Memo not found anywhere
                     console.warn('⚠️ Memo not found with ID:', memoId)
                     showView('sent-memos')
@@ -3313,7 +3848,7 @@
         // ──────────────────────────────────────────────
         // View Management (Must be declared before auth)
         // ──────────────────────────────────────────────
-        const views = ['login', 'register', 'manage-user', 'dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs']
+        const views = ['login', 'register', 'manage-user', 'dashboard', 'compose', 'sent-memos', 'received-memos', 'pending-approvals', 'broadcast', 'followers', 'logs', 'memo-approvers', 'tab-access']
         function showView(name) {
             views.forEach(v => {
                 const el = document.getElementById('view-' + v)
@@ -3528,6 +4063,7 @@
         // Store departments data globally for autocomplete
         let registrationDepartments = []
         let registrationDepartments2 = []
+        let currentFilteredSubDepts = [] // Track filtered sub-departments (BUG #1 FIX)
 
         async function loadRegistrationDepartments() {
             try {
@@ -3547,9 +4083,32 @@
                     console.log('✅ Sub-departments found:', registrationDepartments2.length)
                     initCustomAutocomplete('regDepartment2', 'regDepartment2Dropdown', registrationDepartments2)
                 }
+                
+                // BUG #2 FIX: Add document-level click handler to close dropdowns
+                setupAutocompleteDimissal()
             } catch (err) {
                 console.error('❌ Error loading registration departments:', err)
             }
+        }
+
+        // BUG #2 FIX: Close autocomplete when clicking outside
+        function setupAutocompleteDimissal() {
+            document.addEventListener('click', (e) => {
+                const regDept1Wrapper = document.querySelector('#regDepartmentDropdown')?.parentElement
+                const regDept2Wrapper = document.querySelector('#regDepartment2Dropdown')?.parentElement
+                
+                // Close regDepartment dropdown if clicking outside
+                if (regDept1Wrapper && !regDept1Wrapper.contains(e.target)) {
+                    const dropdown1 = document.getElementById('regDepartmentDropdown')
+                    if (dropdown1) dropdown1.style.display = 'none'
+                }
+                
+                // Close regDepartment2 dropdown if clicking outside
+                if (regDept2Wrapper && !regDept2Wrapper.contains(e.target)) {
+                    const dropdown2 = document.getElementById('regDepartment2Dropdown')
+                    if (dropdown2) dropdown2.style.display = 'none'
+                }
+            })
         }
 
         function initCustomAutocomplete(inputId, dropdownId, items) {
@@ -3560,24 +4119,89 @@
 
             // Show dropdown on focus
             input.addEventListener('focus', () => {
-                updateAutocompleteDropdown(inputId, dropdownId, items)
+                // BUG #1 FIX: For regDepartment2, use filtered items if available
+                let itemsToUse = items
+                if (inputId === 'regDepartment2' && currentFilteredSubDepts.length > 0) {
+                    itemsToUse = currentFilteredSubDepts
+                }
+                updateAutocompleteDropdown(inputId, dropdownId, itemsToUse)
                 dropdown.style.display = 'block'
             })
 
             // Filter on input
             input.addEventListener('input', (e) => {
-                updateAutocompleteDropdown(inputId, dropdownId, items)
+                // BUG #1 FIX: For regDepartment2, use filtered items if available
+                let itemsToUse = items
+                if (inputId === 'regDepartment2' && currentFilteredSubDepts.length > 0) {
+                    itemsToUse = currentFilteredSubDepts
+                }
+                updateAutocompleteDropdown(inputId, dropdownId, itemsToUse)
                 if (dropdown.childElementCount > 0) {
                     dropdown.style.display = 'block'
                 }
             })
 
-            // Hide dropdown on blur
+            // BUG #2 FIX: Immediate close on blur (without delay, actual close handled by document click)
             input.addEventListener('blur', () => {
-                setTimeout(() => {
-                    dropdown.style.display = 'none'
-                }, 200)
+                // Don't close immediately - let outside click handler manage it
+                // This prevents dropdown from flickering
             })
+
+            // Handle department selection to filter sub-departments
+            if (inputId === 'regDepartment') {
+                input.addEventListener('change', async () => {
+                    // When department is selected, filter sub-departments
+                    const selectedDept = registrationDepartments.find(d => d.name === input.value.trim())
+                    if (selectedDept) {
+                        await filterSubDepartmentsByDepartment(selectedDept.id)
+                    }
+                })
+            }
+        }
+
+        async function filterSubDepartmentsByDepartment(departmentId) {
+            try {
+                // Fetch department links from Firebase (public endpoint for registration)
+                const response = await fetch('/department-links-public')
+                const data = await response.json()
+                
+                if (!data.links || !Array.isArray(data.links)) {
+                    return
+                }
+
+                // Find all sub-department IDs linked to this department
+                const linkedSubDeptIds = data.links
+                    .filter(link => link.departmentId === departmentId)
+                    .map(link => link.subDepartmentId)
+
+                // Filter sub-departments to show only linked ones
+                const filteredSubDepts = registrationDepartments2.filter(dept => 
+                    linkedSubDeptIds.includes(dept.id)
+                )
+
+                // BUG #1 FIX: Store filtered items globally so focus event can use them
+                currentFilteredSubDepts = filteredSubDepts
+
+                // Update the regDepartment2 autocomplete
+                const regDept2Input = document.getElementById('regDepartment2')
+                const regDept2Dropdown = document.getElementById('regDepartment2Dropdown')
+                
+                if (regDept2Input && regDept2Dropdown) {
+                    // Clear any existing value
+                    regDept2Input.value = ''
+                    regDept2Dropdown.innerHTML = ''
+                    
+                    // Update the autocomplete with filtered items
+                    updateAutocompleteDropdown('regDepartment2', 'regDepartment2Dropdown', filteredSubDepts)
+                    
+                    // Show dropdown if there are items
+                    if (filteredSubDepts.length > 0) {
+                        regDept2Dropdown.style.display = 'block'
+                    }
+                }
+            } catch (err) {
+                console.error('❌ Error filtering sub-departments:', err)
+            }
         }
 
         function updateAutocompleteDropdown(inputId, dropdownId, items) {
@@ -3604,6 +4228,9 @@
                     div.onclick = () => {
                         input.value = item.name
                         dropdown.style.display = 'none'
+                        // Trigger change event to handle filtering
+                        const event = new Event('change', { bubbles: true })
+                        input.dispatchEvent(event)
                     }
                     dropdown.appendChild(div)
                 })
@@ -3629,8 +4256,8 @@
                 return
             }
 
-            if (password.length < 6) {
-                setStatus('statusRegister', 'error', 'error', 'Password must be at least 6 characters.')
+            if (password.length < 4) {
+                setStatus('statusRegister', 'error', 'error', 'Password must be at least 4 characters.')
                 return
             }
 
@@ -3701,6 +4328,7 @@
                     updateUIForLoggedIn()
                     // Load user data and linked profile after successful login
                     await loadUserData()
+                    await initializeTabAccess()
                     showView('dashboard')
                 }, 1000)
             } catch (err) {
@@ -3712,6 +4340,17 @@
         async function logout() {
             const confirmed = await showConfirmModal('Sign out from your account?', 'Sign Out')
             if (!confirmed) return
+            
+            try {
+                // Call logout endpoint to log the event
+                await fetch('/logout', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+            } catch (err) {
+                console.warn('Logout notification failed:', err)
+            }
+            
             localStorage.removeItem('authToken')
             authToken = null
             currentUser = null
@@ -3745,8 +4384,8 @@
                 return
             }
 
-            if (newPassword.length < 6) {
-                setStatus('statusChangePassword', 'error', 'error', 'New password must be at least 6 characters.')
+            if (newPassword.length < 4) {
+                setStatus('statusChangePassword', 'error', 'error', 'New password must be at least 4 characters.')
                 return
             }
 
@@ -5067,9 +5706,18 @@
                             body: JSON.stringify(sendData)
                         })
                         if (res.ok) {
-                            lineSuccessCount++
-                            const recipientName = recipientNameMap[recipient.id] || 'Unknown'
-                            successfulRecipientNames.push(`${recipientName} (LINE)`)
+                            const responseData = await res.json()
+                            // Check if memo is pending approval
+                            if (responseData.status === 'Memo created - pending approval') {
+                                console.log(`✓ Memo created - pending approval from ${responseData.approverCount} approver(s)`)
+                                lineSuccessCount++
+                                const recipientName = recipientNameMap[recipient.id] || 'Unknown'
+                                successfulRecipientNames.push(`${recipientName} (Pending Approval)`)
+                            } else {
+                                lineSuccessCount++
+                                const recipientName = recipientNameMap[recipient.id] || 'Unknown'
+                                successfulRecipientNames.push(`${recipientName} (LINE)`)
+                            }
                         } else {
                             lineFallCount++
                         }
@@ -5091,7 +5739,7 @@
                             docNumber: currentDocNumber
                         }
                         
-                        // Call new endpoint to store memo
+                        // Call endpoint to send memo (with approval workflow if needed)
                         const memoRes = await fetch(`/send-system-memo`, {
                             method: 'POST',
                             headers: {
@@ -5107,42 +5755,15 @@
                         }
                         
                         const memoResData = await memoRes.json()
-                        const memoId = memoResData.memoId
                         
-                        // Create full memo object for notification display
-                        const fullMemoObject = {
-                            memoId: memoId,
-                            title: title,
-                            type: type,
-                            content: text,
-                            senderUserId: currentUser.userId,
-                            senderName: `${currentUser.name} ${currentUser.surname}`,
-                            senderUsername: currentUser.username,
-                            recipientUserId: recipient.userId,
-                            sentAt: new Date().toISOString()
-                        }
-                        
-                        // Create in-app notification with full memo data (same format as linked users)
-                        const senderName = `${currentUser.name} ${currentUser.surname}`
-                        const notificationData = {
-                            title: 'ได้รับ Memo ใหม่',
-                            message: `"${title}" จาก ${senderName}`,
-                            type: 'info',
-                            memoObject: fullMemoObject,
-                            memoType: 'received'
-                        }
-                        console.log('🔔 Sending notification to user:', recipient.userId, notificationData)
-                        
-                        const notifRes = await fetch(`/notifications/send/${recipient.userId}`, {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${authToken}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(notificationData)
-                        })
-                        
-                        if (notifRes.ok) {
+                        // Check if memo requires approval
+                        if (memoResData.status === 'Memo created - pending approval') {
+                            console.log(`✓ Memo created - pending approval from ${memoResData.approverCount} approver(s)`)
+                            notificationSuccessCount++
+                            const recipientName = recipientNameMap[recipient.id] || 'Unknown'
+                            successfulRecipientNames.push(`${recipientName} (Pending Approval)`)
+                        } else if (memoResData.status === 'Memo sent successfully') {
+                            // Memo sent directly without approval needed
                             notificationSuccessCount++
                             const recipientName = recipientNameMap[recipient.id] || 'Unknown'
                             successfulRecipientNames.push(`${recipientName} (Notification)`)
@@ -5273,6 +5894,16 @@
                     const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
                     const preview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
                     const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
+                    
+                    // Determine status badge
+                    let statusBadge = '<span class="badge badge-pending">Sent</span>'
+                    if (memo.status === 'pending_approval') {
+                        statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">Pending Approval</span>'
+                    } else if (memo.status === 'approved') {
+                        statusBadge = '<span class="badge" style="background: var(--green-bg); color: var(--green); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">Approved</span>'
+                    } else if (memo.status === 'rejected') {
+                        statusBadge = '<span class="badge" style="background: var(--red-bg); color: var(--red); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">Rejected</span>'
+                    }
 
                     rows += `<tr>
           <td style="font-size:12px;">
@@ -5288,7 +5919,7 @@
             <span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span>
           </td>
           <td style="font-size:12px;color:var(--ink-muted);">
-            ${escHtml(memo.recipientName || memo.recipientId)}
+            ${statusBadge}
           </td>
           <td style="font-size:12px;color:var(--ink-faint);max-width:200px;">
             <span title="${escHtml(memo.content)}">${escHtml(preview)}</span>
@@ -5524,35 +6155,125 @@
             else { clearInterval(autoRefreshInterval) }
         }
 
+        function getEventTypeAndIcon(message, data) {
+            const msg = message.toLowerCase()
+            
+            if (msg.includes('registered successfully')) return { type: 'approval', icon: '✓', title: 'User Registered', color: 'green' }
+            if (msg.includes('user approved')) return { type: 'approval', icon: '✓', title: 'User Approved', color: 'green' }
+            if (msg.includes('login successful')) return { type: 'login', icon: '→', title: 'Login', color: 'green' }
+            if (msg.includes('logout successful')) return { type: 'logout', icon: '✕', title: 'Logout', color: 'amber' }
+            if (msg.includes('pending user rejected')) return { type: 'logout', icon: '✕', title: 'User Rejected', color: 'amber' }
+            if (msg.includes('linking follower')) return { type: 'follower', icon: '✆', title: 'Follower Linked', color: 'green' }
+            if (msg.includes('follower linked successfully')) return { type: 'follower', icon: '✆', title: 'Follower Connected', color: 'green' }
+            if (msg.includes('follower unlinked')) return { type: 'follower', icon: '✕', title: 'Follower Unlinked', color: 'amber' }
+            if (msg.includes('send message request') || msg.includes('sent to')) return { type: 'send', icon: '↑', title: 'Memo Sent', color: 'blue' }
+            if (msg.includes('received memos')) return { type: 'receive', icon: '↓', title: 'Memo Received', color: 'blue' }
+            if (msg.includes('department added') || msg.includes('sub-department added')) return { type: 'system', icon: '⚙', title: 'Department Added', color: 'blue' }
+            if (msg.includes('department deleted')) return { type: 'system', icon: '⚙', title: 'Department Deleted', color: 'amber' }
+            if (msg.includes('password changed')) return { type: 'system', icon: '🔒', title: 'Password Changed', color: 'blue' }
+            if (msg.includes('error')) return { type: 'error', icon: '⚠', title: 'Error', color: 'red' }
+            
+            return { type: 'system', icon: '●', title: 'Activity', color: 'blue' }
+        }
+
         function renderLogs(logs, containerId) {
             const el = document.getElementById(containerId)
             if (!logs || logs.length === 0) {
-                el.innerHTML = '<div style="color:#4a5568;font-style:italic;">No logs available.</div>'
+                el.innerHTML = '<div style="color:#4a5568;font-style:italic;padding:24px 28px;">No activity logged yet.</div>'
                 return
             }
-            const recent = logs.slice(-100)
+            
+            const recent = logs.slice(-100) // Most recent first
+            
             el.innerHTML = recent.map(log => {
-                const t = log.timestamp ? log.timestamp.replace('T', ' ').replace(/\.\d+Z/, '') : ''
-                const d = log.data ? ` <span class="log-data">${escHtml(JSON.stringify(log.data))}</span>` : ''
-                return `<div class="log-line log-${log.level}">
-        <span class="log-time">${t}</span>
-        <span class="log-level">[${(log.level || 'info').toUpperCase()}]</span>
-        <span class="log-msg">${escHtml(log.message || '')}${d}</span>
-      </div>`
+                const eventInfo = getEventTypeAndIcon(log.message, log.data)
+                const timestamp = log.timestamp ? new Date(log.timestamp) : new Date()
+                const timeStr = formatActivityTime(timestamp)
+                const fullDateStr = formatFullDateTime(timestamp)
+                const dataStr = log.data ? formatActivityData(log.data) : ''
+                
+                return `<div class="activity-event event-${eventInfo.type}">
+                    <div class="activity-event-icon">${eventInfo.icon}</div>
+                    <div class="activity-event-content">
+                        <div class="activity-event-title">${eventInfo.title}</div>
+                        <div class="activity-event-description">${escHtml(log.message)}${dataStr ? ' — ' + dataStr : ''}</div>
+                        <div class="activity-event-time">${timeStr} <span style="color: var(--ink-faint); font-size: 11px;">(${fullDateStr})</span></div>
+                    </div>
+                </div>`
             }).join('')
-            el.scrollTop = el.scrollHeight
+        }
+
+        function formatFullDateTime(date) {
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            }) + ', ' + date.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            })
+        }
+
+        //ตอนนี้บอกแค่เวลาที่ผ่านไปแบบคร่าวๆ (activity-event-time) อยากให้เพิ่มระบุเป็นวันที่ logs แบบเต็มๆ
+
+        function formatActivityTime(date) {
+            const now = new Date()
+            const diffMs = now - date
+            const diffMins = Math.floor(diffMs / 60000)
+            const diffHours = Math.floor(diffMs / 3600000)
+            const diffDays = Math.floor(diffMs / 86400000)
+            
+            if (diffMins < 1) return 'Just now'
+            if (diffMins < 60) return `${diffMins}m ago`
+            if (diffHours < 24) return `${diffHours}h ago`
+            if (diffDays < 7) return `${diffDays}d ago`
+            
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        }
+
+        function formatActivityData(data) {
+            if (!data || typeof data !== 'object') return ''
+            
+            const important = []
+            if (data.senderName && data.recipientNames) {
+                important.push(`From: ${data.senderName} → ${data.recipientNames}`)
+            } else if (data.senderName && data.recipientUserId) {
+                important.push(`From: ${data.senderName} → Recipient`)
+            } else if (data.username) {
+                important.push(`User: ${data.username}`)
+            }
+            if (data.approverUsername) important.push(`Approved by: ${data.approverUsername}`)
+            if (data.title) important.push(`"${data.title}"`)
+            if (data.count !== undefined) important.push(`(${data.count} items)`)
+            if (data.deptId || data.name) important.push(data.name || data.deptId)
+            
+            return important.slice(0, 2).join(', ')
         }
 
         async function loadLogs() {
             try {
-                const res = await fetch('/logs')
-                const data = await res.json()
-                document.getElementById('logsCount').textContent = `${data.logCount} entries`
-                renderLogs(data.logs, 'logsViewer')
-                renderLogs(data.logs.slice(-20), 'dash-logs-preview')
-                document.getElementById('stat-logs').textContent = data.logCount
+                // Fetch logs from Firebase
+                const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                const res = await fetch(firebaseUrl)
+                const logsData = await res.json()
+                
+                // Convert Firebase object to array of log entries
+                let logs = []
+                if (logsData && typeof logsData === 'object') {
+                    logs = Object.values(logsData).sort((a, b) => 
+                        new Date(b.timestamp) - new Date(a.timestamp)
+                    )
+                }
+                
+                const logCount = logs.length
+                document.getElementById('logsCount').textContent = `${logCount} entries`
+                renderLogs(logs, 'logsViewer')
+                renderLogs(logs.slice(0, 20), 'dash-logs-preview')
+                document.getElementById('stat-logs').textContent = logCount
             } catch (e) {
-                document.getElementById('logsCount').textContent = 'Error'
+                document.getElementById('logsCount').textContent = 'Loading from Firebase...'
+                console.warn('Could not load from Firebase:', e)
             }
         }
 
@@ -5824,6 +6545,425 @@
         // Init
         if (currentUser && authToken) {
             refreshDashboard()
+            initializeTabAccess()
+        }
+
+        // ── Memo Approvers Management ────────────
+        async function loadMemoApprovers() {
+            try {
+                const res = await fetch('/admin/memo-approvers', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                
+                // Load dropdown options
+                let users = await fetch('/admin/users', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                }).then(r => r.json())
+                
+                let depts = await fetch('/departments', {}).then(r => r.json())
+                
+                // Populate dropdowns
+                const userSelect = document.getElementById('approverUserId')
+                userSelect.innerHTML = '<option value="">-- Select user --</option>'
+                if (users.users) {
+                    users.users.forEach(u => {
+                        const opt = document.createElement('option')
+                        opt.value = u.userId
+                        opt.textContent = `${u.name} ${u.surname} (@${u.username})`
+                        userSelect.appendChild(opt)
+                    })
+                }
+                
+                const deptSelect = document.getElementById('approverDepartmentId')
+                deptSelect.innerHTML = '<option value="">-- Select department --</option>'
+                if (depts.departments) {
+                    depts.departments.forEach(d => {
+                        const opt = document.createElement('option')
+                        opt.value = d.id
+                        opt.textContent = d.name
+                        deptSelect.appendChild(opt)
+                        
+                        deptSelect.onchange = async function() {
+                            // Load sub-departments for selected department
+                            const subDeptSelect = document.getElementById('approverSubDepartmentId')
+                            if (this.value) {
+                                const link = await fetch('/department-links-public')
+                                const linkData = await link.json()
+                                subDeptSelect.innerHTML = '<option value="">-- All Sub-Departments --</option>'
+                                
+                                const relatedSubDepts = linkData.links
+                                    .filter(l => l.departmentId === this.value)
+                                    .map(l => l.subDepartmentName)
+                                    .filter((v, i, a) => a.indexOf(v) === i)
+                                
+                                if (depts.departments2) {
+                                    depts.departments2.forEach(sd => {
+                                        if (relatedSubDepts.includes(sd.name)) {
+                                            const opt = document.createElement('option')
+                                            opt.value = sd.id
+                                            opt.textContent = sd.name
+                                            subDeptSelect.appendChild(opt)
+                                        }
+                                    })
+                                }
+                            } else {
+                                subDeptSelect.innerHTML = '<option value="">-- All Sub-Departments --</option>'
+                            }
+                        }
+                    })
+                }
+                
+                // Render approvers list
+                const list = document.getElementById('approversList')
+                if (data.approvers && data.approvers.length > 0) {
+                    list.innerHTML = data.approvers.map(a => `
+                        <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; color: var(--ink);">${a.approverName}</div>
+                                <div style="font-size: 12px; color: var(--ink-faint);">
+                                    ${a.departmentName} ${a.subDepartmentName && a.subDepartmentName !== 'All' ? `/ ${a.subDepartmentName}` : '(All Sub-Depts)'}
+                                </div>
+                                <div style="font-size: 11px; color: var(--ink-muted); margin-top: 4px;">@${a.approverUsername}</div>
+                            </div>
+                            <button class="btn btn-danger btn-sm" onclick="deleteMemoApprover('${a.id}')">
+                                <span class="material-symbols-outlined">delete</span>
+                                Remove
+                            </button>
+                        </div>
+                    `).join('')
+                } else {
+                    list.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--ink-faint);">No approvers assigned yet</div>'
+                }
+            } catch (err) {
+                console.error('Error loading approvers:', err)
+                document.getElementById('approversList').innerHTML = '<div style="color: red; padding: 16px;">Error loading approvers</div>'
+            }
+        }
+        
+        async function addMemoApprover() {
+            try {
+                const approverId = document.getElementById('approverUserId').value
+                const departmentId = document.getElementById('approverDepartmentId').value
+                const subDepartmentId = document.getElementById('approverSubDepartmentId').value
+                
+                if (!approverId || !departmentId) {
+                    setStatus('statusAddApprover', 'error', 'error', 'Please select user and department')
+                    return
+                }
+                
+                const res = await fetch('/admin/memo-approvers/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        approverId,
+                        departmentId,
+                        subDepartmentId: subDepartmentId || null
+                    })
+                })
+                
+                const data = await res.json()
+                if (res.ok) {
+                    setStatus('statusAddApprover', 'success', 'check_circle', 'Approver assigned successfully!')
+                    document.getElementById('approverUserId').value = ''
+                    document.getElementById('approverDepartmentId').value = ''
+                    document.getElementById('approverSubDepartmentId').value = ''
+                    loadMemoApprovers()
+                } else {
+                    setStatus('statusAddApprover', 'error', 'error', data.error || 'Error adding approver')
+                }
+            } catch (err) {
+                setStatus('statusAddApprover', 'error', 'error', err.message)
+            }
+        }
+        
+        async function deleteMemoApprover(approverId) {
+            const confirmed = await showConfirmModal('Remove this approver assignment?', 'Confirm')
+            if (!confirmed) return
+            
+            try {
+                const res = await fetch(`/admin/memo-approvers/${approverId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                
+                if (res.ok) {
+                    loadMemoApprovers()
+                } else {
+                    await showAlertModal('Error removing approver', 'Error')
+                }
+            } catch (err) {
+                await showAlertModal(err.message, 'Error')
+            }
+        }
+
+        // ── Tab Access Control ──────────────────
+        async function loadTabAccess() {
+            try {
+                const res = await fetch('/admin/user-tabs', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                
+                const list = document.getElementById('tabAccessList')
+                if (data.users && data.users.length > 0) {
+                    list.innerHTML = data.users.map(u => `
+                        <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; color: var(--ink);">${u.name}</div>
+                                <div style="font-size: 12px; color: var(--ink-faint);">@${u.username} (${u.role})</div>
+                                <div style="font-size: 11px; color: var(--ink-muted); margin-top: 4px;">
+                                    ${u.isCustom ? `Tabs: ${u.tabs.join(', ')}` : 'Using default access'}
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="openTabAccessModal('${u.userId}', '${u.username}', ${JSON.stringify(u.tabs).replace(/"/g, '&quot;')})">
+                                <span class="material-symbols-outlined">edit</span>
+                                Edit
+                            </button>
+                        </div>
+                    `).join('')
+                } else {
+                    list.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--ink-faint);">No users found</div>'
+                }
+            } catch (err) {
+                console.error('Error loading tab access:', err)
+                document.getElementById('tabAccessList').innerHTML = '<div style="color: red; padding: 16px;">Error loading tab access</div>'
+            }
+        }
+        
+        function openTabAccessModal(userId, username, currentTabs) {
+            document.getElementById('tabAccessModal').style.display = 'flex'
+            document.getElementById('tabAccessModalUsername').textContent = username
+            
+            // Store userId for saving later
+            document.getElementById('tabAccessModal').dataset.userId = userId
+            
+            // Uncheck all first
+            document.querySelectorAll('.tab-checkbox').forEach(cb => cb.checked = false)
+            
+            // Check current tabs
+            if (Array.isArray(currentTabs)) {
+                document.querySelectorAll('.tab-checkbox').forEach(cb => {
+                    if (currentTabs.includes(cb.value)) {
+                        cb.checked = true
+                    }
+                })
+            }
+        }
+        
+        function closeTabAccessModal() {
+            document.getElementById('tabAccessModal').style.display = 'none'
+        }
+        
+        async function saveTabAccess() {
+            try {
+                const userId = document.getElementById('tabAccessModal').dataset.userId
+                const selectedTabs = Array.from(document.querySelectorAll('.tab-checkbox:checked')).map(cb => cb.value)
+                
+                if (selectedTabs.length === 0) {
+                    await showAlertModal('Select at least one tab', 'Validation Error')
+                    return
+                }
+                
+                const res = await fetch('/admin/user-tabs/set', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        userId,
+                        tabs: selectedTabs
+                    })
+                })
+                
+                const data = await res.json()
+                if (res.ok) {
+                    closeTabAccessModal()
+                    loadTabAccess()
+                    await showAlertModal('Tab access updated successfully!', 'Success')
+                } else {
+                    await showAlertModal(data.error || 'Error updating tab access', 'Error')
+                }
+            } catch (err) {
+                await showAlertModal(err.message, 'Error')
+            }
+        }
+        
+        // ── Initialize Tab Access on Page Load ────
+        async function initializeTabAccess() {
+            try {
+                const res = await fetch('/user/allowed-tabs', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                
+                // Determine if user is admin
+                const userRes = await fetch('/user/me', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const userMe = await userRes.json()
+                const isAdmin = userMe.role === 'admin'
+                
+                // Hide/show admin nav
+                const adminNav = document.getElementById('adminNav')
+                if (adminNav) {
+                    adminNav.style.display = isAdmin ? 'block' : 'none'
+                }
+                
+                // Check if user is a memo approver and show pending approvals tab
+                const approverRes = await fetch('/user/is-approver', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                }).catch(() => ({ json: () => ({ isApprover: false }) }))
+                const approverData = await approverRes.json()
+                
+                const navPending = document.getElementById('navPendingApprovals')
+                if (navPending) {
+                    navPending.style.display = approverData.isApprover ? 'block' : 'none'
+                }
+                
+                // Store allowed tabs globally for showView() to check
+                window.userAllowedTabs = data.tabs
+                
+                // Update nav items visibility based on allowed tabs
+                document.querySelectorAll('[data-view]', '.nav-item').forEach(el => {
+                    const view = el.dataset.view || el.textContent.toLowerCase()
+                    const isAllowed = data.tabs.includes(view) || data.tabs.some(t => 
+                        el.textContent.toLowerCase().includes(t)
+                    )
+                    if (!isAllowed) {
+                        el.style.display = 'none'
+                    }
+                })
+            } catch (err) {
+                console.warn('Could not initialize tab access:', err)
+                window.userAllowedTabs = []
+            }
+        }
+
+        // ── Pending Approvals Management ─────────
+        async function loadPendingApprovals() {
+            try {
+                // Call server endpoint to get pending approvals for current approver
+                const res = await fetch('/memos/pending-approval', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                const pendingMemos = data.pendingMemos || []
+                
+                console.log('📋 Pending approvals loaded:', pendingMemos.length)
+                
+                // Render pending approvals table
+                const tbody = document.getElementById('pendingApprovalsTbody')
+                if (pendingMemos.length > 0) {
+                    tbody.innerHTML = pendingMemos.map(memo => `
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 12px; font-size: 12px;">${new Date(memo.sentAt).toLocaleDateString('th-TH')}</td>
+                            <td style="padding: 12px;">
+                                <div style="font-weight: 600; color: var(--ink); cursor: pointer;" onclick="showMemoDetail('${memo.memoId}', ${JSON.stringify(memo).replace(/'/g, '&#39;')})">
+                                    ${escHtml(memo.title)}
+                                </div>
+                                <div style="font-size: 11px; color: var(--ink-faint); margin-top: 2px;">${escHtml(memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : ''))}</div>
+                            </td>
+                            <td style="padding: 12px; font-size: 12px;">
+                                ${memo.senderObject ? `${memo.senderObject.name} ${memo.senderObject.surname}` : 'Unknown'}
+                            </td>
+                            <td style="padding: 12px; font-size: 12px;">
+                                ${memo.senderObject?.department || '-'}
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                <div style="display: flex; gap: 6px; justify-content: center;">
+                                    <button class="btn btn-success btn-sm" onclick="approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
+                                        <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                                        Approve
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="rejectMemoDialog('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
+                                        <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+                                        Reject
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 32px; text-align: center; color: var(--ink-faint);">No pending approvals</td></tr>'
+                }
+                
+                // Update badge
+                const badge = document.getElementById('pendingBadge')
+                if (badge && pendingMemos.length > 0) {
+                    badge.textContent = pendingMemos.length > 9 ? '9+' : pendingMemos.length
+                    badge.style.display = 'flex'
+                } else if (badge) {
+                    badge.style.display = 'none'
+                }
+            } catch (err) {
+                console.error('Error loading pending approvals:', err)
+                document.getElementById('pendingApprovalsTbody').innerHTML = '<tr><td colspan="5" style="padding: 16px; color: red;">Error loading approvals</td></tr>'
+            }
+        }
+        
+        async function approveMemo(memoId) {
+            try {
+                const notes = await showPromptModal('Add approval notes (optional):', 'Approve Memo')
+                
+                const res = await fetch(`/memo/approve/${memoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ notes: notes || '' })
+                })
+                
+                const data = await res.json()
+                if (res.ok) {
+                    await showAlertModal('Memo approved successfully!', 'Success')
+                    loadPendingApprovals()
+                    loadSentMemos()
+                } else {
+                    await showAlertModal(data.error || 'Error approving memo', 'Error')
+                }
+            } catch (err) {
+                await showAlertModal(err.message, 'Error')
+            }
+        }
+        
+        async function rejectMemoDialog(memoId) {
+            try {
+                const reason = await showPromptModal('Enter rejection reason:', 'Reject Memo')
+                if (!reason) return
+                
+                const res = await fetch(`/memo/reject/${memoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ reason })
+                })
+                
+                const data = await res.json()
+                if (res.ok) {
+                    await showAlertModal('Memo rejected successfully!', 'Success')
+                    loadPendingApprovals()
+                    loadSentMemos()
+                } else {
+                    await showAlertModal(data.error || 'Error rejecting memo', 'Error')
+                }
+            } catch (err) {
+                await showAlertModal(err.message, 'Error')
+            }
+        }
+        
+        function showPromptModal(message, title = 'Input') {
+            return new Promise((resolve) => {
+                const input = prompt(message, '')
+                resolve(input)
+            })
         }
 
     </script>
