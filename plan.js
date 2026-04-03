@@ -225,5 +225,11 @@ approve user✓
 3.ให้สามารถกำหนดทั้ง department หรือแยก sub-department ได้
 4.เพิ่มกำหนดสิทธิ์ แต่ละ user ว่าเข้าถึง tab ไหนได้บ้าง
 
+
+3/4/26
+1.แก้บัค notification
+2.บัคเมื่อ unlink user ส่ง memo ไปยัง link user จะไม่แจ้งเตือน line
+3.เมื่อส่ง memo ต้องส่งแจ้งเตือน line ให้ผู้ที่ต้อง approve แล้วเมื่อทำการ approve แล้วค่อยแจ้งเตือน line ไปยังผู้รับ memo
+
 */
 

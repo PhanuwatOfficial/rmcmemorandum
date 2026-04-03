@@ -1488,7 +1488,7 @@
         .department-item {
             margin-bottom: 12px;
         }
-        
+
         .department-name {
             font-weight: 600;
             color: var(--accent);
@@ -1760,6 +1760,15 @@
                 font-size: 10px;
             }
 
+            /* ── Login/Register View Mobile ─────────── */
+            #view-login > div,
+            #view-register > div {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto !important;
+                padding: 0 12px;
+            }
+
             .section-card {
                 border-radius: 4px;
                 margin-bottom: 16px;
@@ -2014,17 +2023,20 @@
                     <span class="material-symbols-outlined">send</span>
                     Sent Memos
                 </a>
-                <a class="nav-item" id="navPendingApprovals" onclick="showView('pending-approvals'); loadPendingApprovals()" style="display:none;">
-                    <span class="material-symbols-outlined">pending_actions</span>
-                    <span style="display: inline-block; position: relative;">
-                        Pending Approvals
-                        <span id="pendingBadge" style="display:none; position: absolute; top: -8px; right: -12px; background: #c8a96e; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;">0</span>
-                    </span>
-                </a>
                 <a class="nav-item" onclick="showView('received-memos'); loadReceivedMemos()">
                     <span class="material-symbols-outlined">inbox</span>
                     Received Memos
                 </a>
+                <a class="nav-item" id="navPendingApprovals"
+                    onclick="showView('pending-approvals'); loadPendingApprovals()" style="display:none;">
+                    <span class="material-symbols-outlined">pending_actions</span>
+                    <span style="display: inline-block; position: relative;">
+                        Pending Approvals
+                        <span id="pendingBadge"
+                            style="display:none; position: absolute; top: -8px; right: -12px; background: #c8a96e; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;">0</span>
+                    </span>
+                </a>
+
                 <a class="nav-item" onclick="showView('broadcast')">
                     <span class="material-symbols-outlined">campaign</span>
                     Broadcast
@@ -2122,8 +2134,9 @@
         <div class="content">
 
             <!-- ── LOGIN VIEW ─────────────────────── -->
-            <div id="view-login" class="view" style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
-                <div style="width: 35%; max-width: 80%; margin:0 25% auto;">
+            <div id="view-login" class="view"
+                style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
+                <div style="width: 30%; max-width: 80%; margin:0 30% auto;">
                     <div class="page-header" style="text-align: center; margin-bottom: 25px;">
                         <h2 style="font-size: 32px; color: var(--accent);">Login</h2>
                         <!-- <p style="color: var(--ink-faint); font-size: 15px;">Access your Executive Memorandum account.</p> -->
@@ -2142,7 +2155,8 @@
                                     onkeypress="if(event.key==='Enter') doLogin()">
                             </div>
                             <div class="btn-row" style="margin-top: 24px;">
-                                <button class="btn btn-primary" onclick="doLogin()" style="width: 100%; padding: 11px 16px; font-weight: 600;">
+                                <button class="btn btn-primary" onclick="doLogin()"
+                                    style="width: 100%; padding: 11px 16px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px;">
                                     <span class="material-symbols-outlined">login</span>
                                     Sign In
                                 </button>
@@ -2151,9 +2165,12 @@
                                 <span class="material-symbols-outlined"></span>
                                 <span class="msg-text"></span>
                             </div>
-                            <div style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); border-top: 1px solid var(--border); padding-top: 20px;">
+                            <div
+                                style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); border-top: 1px solid var(--border); padding-top: 20px;">
                                 Don't have an account? <a onclick="showView('register')"
-                                    style="color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-2)'" onmouseout="this.style.color='var(--accent)'">Register here</a>
+                                    style="color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; transition: color 0.2s;"
+                                    onmouseover="this.style.color='var(--accent-2)'"
+                                    onmouseout="this.style.color='var(--accent)'">Register here</a>
                             </div>
                         </div>
                     </div>
@@ -2161,9 +2178,10 @@
             </div>
 
             <!-- ── REGISTER VIEW ──────────────────── -->
-            <div id="view-register" class="view" style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
-                <div style="width: 40%; max-width: 80%; margin:0 25% auto;">
-                <!-- <div style="width: 40%; max-width: 80%; margin:0 auto;"> -->
+            <div id="view-register" class="view"
+                style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
+                <div style="width: 30%; max-width: 80%; margin:0 30% auto;">
+                    <!-- <div style="width: 40%; max-width: 80%; margin:0 auto;"> -->
                     <div class="page-header" style="text-align: center; margin-bottom: 25px;">
                         <h2 style="font-size: 32px; color: var(--accent); ">Create Account</h2>
                         <!-- <p style="color: var(--ink-faint); font-size: 15px;">Register a new Executive Memorandum account.</p> -->
@@ -2194,20 +2212,25 @@
                             <div class="field">
                                 <label>Department (ฝ่าย)</label>
                                 <div class="custom-autocomplete-wrapper">
-                                    <input id="regDepartment" type="text" placeholder="Select department..." class="custom-autocomplete-input" autocomplete="off">
-                                    <div id="regDepartmentDropdown" class="custom-autocomplete-dropdown" style="display: none;"></div>
+                                    <input id="regDepartment" type="text" placeholder="Select department..."
+                                        class="custom-autocomplete-input" autocomplete="off">
+                                    <div id="regDepartmentDropdown" class="custom-autocomplete-dropdown"
+                                        style="display: none;"></div>
                                 </div>
                             </div>
                             <div class="field" style="margin-bottom: 24px;">
                                 <label>Sub-Department (แผนก)</label>
                                 <div class="custom-autocomplete-wrapper">
-                                    <input id="regDepartment2" type="text" placeholder="Select sub-department..." class="custom-autocomplete-input" autocomplete="off">
-                                    <div id="regDepartment2Dropdown" class="custom-autocomplete-dropdown" style="display: none;"></div>
+                                    <input id="regDepartment2" type="text" placeholder="Select sub-department..."
+                                        class="custom-autocomplete-input" autocomplete="off">
+                                    <div id="regDepartment2Dropdown" class="custom-autocomplete-dropdown"
+                                        style="display: none;"></div>
                                 </div>
                             </div>
 
                             <div class="btn-row" style="margin-top: 24px;">
-                                <button class="btn btn-primary" onclick="doRegister()" style="width: 100%; padding: 11px 16px; font-weight: 600;">
+                                <button class="btn btn-primary" onclick="doRegister()"
+                                    style="width: 100%; padding: 11px 16px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px;">
                                     <span class="material-symbols-outlined">person_add</span>
                                     Create Account
                                 </button>
@@ -2216,9 +2239,12 @@
                                 <span class="material-symbols-outlined"></span>
                                 <span class="msg-text"></span>
                             </div>
-                            <div style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); border-top: 1px solid var(--border); padding-top: 20px;">
+                            <div
+                                style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); border-top: 1px solid var(--border); padding-top: 20px;">
                                 Already have an account? <a onclick="showView('login')"
-                                    style="color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-2)'" onmouseout="this.style.color='var(--accent)'">Login here</a>
+                                    style="color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; transition: color 0.2s;"
+                                    onmouseover="this.style.color='var(--accent-2)'"
+                                    onmouseout="this.style.color='var(--accent)'">Login here</a>
                             </div>
                         </div>
                     </div>
@@ -2311,7 +2337,8 @@
                             <span class="material-symbols-outlined">link</span>
                             Linked LINE Profile
                         </div>
-                        <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()" title="Refresh profile data">
+                        <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()"
+                            title="Refresh profile data">
                             <span class="material-symbols-outlined">refresh</span>
                             Refresh
                         </button>
@@ -2321,42 +2348,60 @@
                             <span class="material-symbols-outlined"></span>
                             <span class="msg-text"></span>
                         </div>
-                        
+
                         <!-- Linked Profile Display -->
-                        <div id="linkedProfileContainer" style="display: none; background: linear-gradient(135deg, rgba(26, 39, 64, 0.05) 0%, rgba(200, 169, 110, 0.05) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-align: center;">
+                        <div id="linkedProfileContainer"
+                            style="display: none; background: linear-gradient(135deg, rgba(26, 39, 64, 0.05) 0%, rgba(200, 169, 110, 0.05) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-align: center;">
                             <!-- Profile Picture Section -->
                             <div style="margin-bottom: 24px; display: flex; justify-content: center;">
-                                <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--paper); border: 3px solid var(--accent-2); overflow: hidden; box-shadow: 0 4px 12px rgba(200, 169, 110, 0.15); display: flex; align-items: center; justify-content: center;">
-                                    <img id="linkedProfilePicture" src="" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div
+                                    style="width: 100px; height: 100px; border-radius: 50%; background: var(--paper); border: 3px solid var(--accent-2); overflow: hidden; box-shadow: 0 4px 12px rgba(200, 169, 110, 0.15); display: flex; align-items: center; justify-content: center;">
+                                    <img id="linkedProfilePicture" src="" alt="Profile"
+                                        style="width: 100%; height: 100%; object-fit: cover;">
                                 </div>
                             </div>
-                            
+
                             <!-- Profile Name -->
                             <div style="margin-bottom: 20px;">
-                                <div style="font-size: 18px; font-weight: 700; color: var(--ink);" id="linkedProfileName">—</div>
-                                <div style="font-size: 11px; color: var(--ink-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px;">LINE Profile Connected</div>
+                                <div style="font-size: 18px; font-weight: 700; color: var(--ink);"
+                                    id="linkedProfileName">—</div>
+                                <div
+                                    style="font-size: 11px; color: var(--ink-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px;">
+                                    LINE Profile Connected</div>
                             </div>
-                            
+
                             <!-- Profile Details Grid -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; background: var(--surface); border-radius: var(--radius); padding: 16px;">
+                            <div
+                                style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; background: var(--surface); border-radius: var(--radius); padding: 16px;">
                                 <div style="border-right: 1px solid var(--border); padding-right: 16px;">
-                                    <div style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">User ID</div>
-                                    <div style="font-size: 12px; color: var(--ink); font-family: 'Courier New', monospace; word-break: break-all; font-weight: 500;" id="linkedProfileUserId">—</div>
+                                    <div
+                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
+                                        User ID</div>
+                                    <div style="font-size: 12px; color: var(--ink); font-family: 'Courier New', monospace; word-break: break-all; font-weight: 500;"
+                                        id="linkedProfileUserId">—</div>
                                 </div>
                                 <div>
-                                    <div style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">Linked Date</div>
-                                    <div style="font-size: 12px; color: var(--ink); font-weight: 500;" id="linkedProfileDate">—</div>
+                                    <div
+                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
+                                        Linked Date</div>
+                                    <div style="font-size: 12px; color: var(--ink); font-weight: 500;"
+                                        id="linkedProfileDate">—</div>
                                 </div>
                             </div>
 
                             <!-- Status Message -->
-                            <div style="background: var(--surface); border-radius: var(--radius); padding: 12px; margin-bottom: 20px; border-left: 3px solid var(--accent-2);">
-                                <div style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">Status Message</div>
-                                <div style="font-size: 13px; color: var(--ink); line-height: 1.5; font-style: italic;" id="linkedProfileStatusMessage">—</div>
+                            <div
+                                style="background: var(--surface); border-radius: var(--radius); padding: 12px; margin-bottom: 20px; border-left: 3px solid var(--accent-2);">
+                                <div
+                                    style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
+                                    Status Message</div>
+                                <div style="font-size: 13px; color: var(--ink); line-height: 1.5; font-style: italic;"
+                                    id="linkedProfileStatusMessage">—</div>
                             </div>
-                            
+
                             <!-- Action Buttons -->
-                            <div style="display: flex; gap: 10px; justify-content: center; padding-top: 16px; border-top: 1px solid var(--border);">
+                            <div
+                                style="display: flex; gap: 10px; justify-content: center; padding-top: 16px; border-top: 1px solid var(--border);">
                                 <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()" style="flex: 1;">
                                     <span class="material-symbols-outlined">sync</span>
                                     Sync Profile
@@ -2367,17 +2412,21 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- Empty State -->
-                        <div id="noLinkedProfileContainer" style="text-align: center; padding: 50px 24px; background: linear-gradient(135deg, rgba(26, 39, 64, 0.03) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px dashed var(--border); border-radius: var(--radius); color: var(--ink-faint);">
-                            <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.35; color: var(--accent-2);">link_off</span>
-                            <p style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">No LINE Profile Linked</p>
-                            <p style="font-size: 12px; color: var(--ink-muted); line-height: 1.6;">Link a LINE profile to your account in the <strong>Followers Management</strong> section to get started.</p>
+                        <div id="noLinkedProfileContainer"
+                            style="text-align: center; padding: 50px 24px; background: linear-gradient(135deg, rgba(26, 39, 64, 0.03) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px dashed var(--border); border-radius: var(--radius); color: var(--ink-faint);">
+                            <span class="material-symbols-outlined"
+                                style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.35; color: var(--accent-2);">link_off</span>
+                            <p style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">No LINE Profile Linked
+                            </p>
+                            <p style="font-size: 12px; color: var(--ink-muted); line-height: 1.6;">Link a LINE profile
+                                to your account in the <strong>Followers Management</strong> section to get started.</p>
                         </div>
                     </div>
                 </div>
 
-            
+
 
             </div>
 
@@ -2389,28 +2438,27 @@
                     <p>Manage LINE notifications and formal directives.</p>
                 </div>
 
-                <!-- Stats -->
+                <!-- User Dashboard Stats -->
                 <div class="stats-grid">
                     <div class="stat-card accent-card">
-                        <div class="stat-label">Followers</div>
-                        <div class="stat-value" id="stat-followers">—</div>
-                        <div class="stat-sub">Active subscribers</div>
+                        <div class="stat-label">Memo Sent</div>
+                        <div class="stat-value" id="stat-memos-sent">—</div>
+                        <div class="stat-sub">All memos dispatched</div>
+                    </div>
+                    <div class="stat-card" id="stat-pending-approvals-card">
+                        <div class="stat-label">Pending Approvals</div>
+                        <div class="stat-value" id="stat-pending-approvals">—</div>
+                        <div class="stat-sub">Awaiting your decision</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Sent Today</div>
-                        <div class="stat-value" id="stat-sent">—</div>
-                        <div class="stat-sub">Messages dispatched</div>
+                        <div class="stat-label">Memos Received</div>
+                        <div class="stat-value" id="stat-memos-received">—</div>
+                        <div class="stat-sub">Sent to followers</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">System Logs</div>
-                        <div class="stat-value" id="stat-logs">—</div>
-                        <div class="stat-sub">Entries recorded</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Status</div>
-                        <div class="stat-value" style="font-size:20px; padding-top:6px; color: var(--green);">● Live
-                        </div>
-                        <div class="stat-sub">Webhook active</div>
+                        <div class="stat-label">Approved</div>
+                        <div class="stat-value" id="stat-memos-approved">—</div>
+                        <div class="stat-sub">Successfully approved</div>
                     </div>
                 </div>
 
@@ -2455,7 +2503,8 @@
                     </div>
                     <div class="section-body" style="padding: 0;">
                         <div class="activity-log" id="dash-logs-preview" style="border-radius: 0; max-height: 200px;">
-                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading activity...</div>
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading activity...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2479,7 +2528,8 @@
                     <div class="section-body">
                         <div class="field">
                             <label>Document Number</label>
-                            <div style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-weight: 600; color: var(--accent); font-family: 'Courier New', monospace;" id="memoDocNumber">—</div>
+                            <div style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-weight: 600; color: var(--accent); font-family: 'Courier New', monospace;"
+                                id="memoDocNumber">—</div>
                         </div>
                         <div class="field">
                             <label>Memorandum Title</label>
@@ -2587,6 +2637,7 @@
                                     <th>Title</th>
                                     <th>Type</th>
                                     <th>Recipient</th>
+                                    <th>Status</th>
                                     <th>Preview</th>
                                     <th style="text-align: center;">Action</th>
                                 </tr>
@@ -2680,20 +2731,32 @@
                     <div class="section-body" style="padding: 0;">
                         <div style="overflow-x: auto;">
                             <table style="width: 100%; border-collapse: collapse;">
-                                <thead style="background: var(--surface); border-bottom: 2px solid var(--border); position: sticky; top: 0;">
+                                <thead
+                                    style="background: var(--surface); border-bottom: 2px solid var(--border); position: sticky; top: 0;">
                                     <tr>
-                                        <th style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">Date</th>
-                                        <th style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">Title</th>
-                                        <th style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">From</th>
-                                        <th style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">Department</th>
-                                        <th style="padding: 12px; text-align: center; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">Action</th>
+                                        <th
+                                            style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
+                                            Date</th>
+                                        <th
+                                            style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
+                                            Title</th>
+                                        <th
+                                            style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
+                                            From</th>
+                                        <th
+                                            style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
+                                            Department</th>
+                                        <th
+                                            style="padding: 12px; text-align: center; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
+                                            Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pendingApprovalsTbody">
                                     <tr>
                                         <td colspan="5" style="padding: 32px; text-align: center;">
                                             <div style="color: var(--ink-faint);">
-                                                <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.3;">inbox</span>
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.3;">inbox</span>
                                                 <p style="margin: 0;">No pending approvals.</p>
                                             </div>
                                         </td>
@@ -2789,11 +2852,13 @@
                             </div>
                         </div>
                         <div class="section-body" style="display: flex; flex-direction: column; gap: 10px;">
-                            <button class="btn btn-primary" onclick="showView('memo-approvers'); loadMemoApprovers()" style="width: 100%; justify-content: flex-start;">
+                            <button class="btn btn-primary" onclick="showView('memo-approvers'); loadMemoApprovers()"
+                                style="width: 100%; justify-content: flex-start;">
                                 <span class="material-symbols-outlined">verified_user</span>
                                 Memo Approvers
                             </button>
-                            <button class="btn btn-primary" onclick="showView('tab-access'); loadTabAccess()" style="width: 100%; justify-content: flex-start;">
+                            <button class="btn btn-primary" onclick="showView('tab-access'); loadTabAccess()"
+                                style="width: 100%; justify-content: flex-start;">
                                 <span class="material-symbols-outlined">security</span>
                                 Tab Access Control
                             </button>
@@ -2801,35 +2866,7 @@
                     </div>
                 </div>
 
-    <!--prompt: แก้ไขบัคเมื่อส่ง memo แล้วตอนนี้จะถูกส่งไปยังผู้รับทันที ไม่ผ่านการอนุมัติจาก user ที่กำหนดใน memoApprovers 
-                ต้องแก้ไขให้ยังไม่ต้องส่งไปทันที ต้องให้อนุมัติก่อน
-                
-                ex.
-                ตอนนี้กำหนด user ที่ approve ดังนี้
-   
-                  "memoApprovers": {
-                    "approver_1775116584831_scmim6orn": {
-                    "approverId": "user_1774408705336",
-                    "approverName": "Phanuwat Limphutthanuphab",
-                    "approverUsername": "Phanuwat",
-                    "createdAt": "2026-04-02T07:56:24.831Z",
-                    "createdBy": "user_1774408705336",
-                    "departmentId": "dept_1775028261114"
-                    },
-                    "approver_1775117902820_jqa2nc62q": {
-                    "approverId": "user_1775104086215",
-                    "approverName": "aaa aaa",
-                    "approverUsername": "aaa",
-                    "createdAt": "2026-04-02T08:18:22.820Z",
-                    "createdBy": "user_1774408705336",
-                    "departmentId": "dept_1775028216604"
-                    }
-                },
-
-                ตอนนี้เมื่อ user zzz ที่อยู่ department "ทรัพยากรมนุษย์" ส่ง memo ไปหา Phanuwat
-                ตอนนี้ Phanuwat จะได้รับ memo ของ zzz ทันที ซึ่งผิด
-                จะเป็นสถานะรอการอนุมัติ แล้วต้องส่งไปยัง aaa เพื่อทำการ approve ก่อน ทันทีที่ approve memo ถึงจะส่งไปยัง user Phanuwat
-                *กรณี reject memo จะสิ้นสุด ไม่ส่งไปหา Phanuwat
+                <!--prompt: 
                 -->
 
                 <!-- Admin-Only: Linked Followers Management -->
@@ -2975,13 +3012,19 @@
                         </div>
                         <div class="section-body">
                             <div style="margin-bottom: 20px;">
-                                <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">Departments (ฝ่าย)</h4>
+                                <h4
+                                    style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">
+                                    Departments (ฝ่าย)</h4>
                                 <div id="departmentsListContainer" style="margin-bottom: 12px;">
-                                    <div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">Loading...</div>
+                                    <div
+                                        style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">
+                                        Loading...</div>
                                 </div>
                                 <div style="display: grid; gap: 8px; grid-template-columns: 1fr auto;">
-                                    <input id="newDepartmentName" type="text" placeholder="Enter new department..." style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
-                                    <button class="btn btn-primary" onclick="addNewDepartment()" style="padding: 8px 16px; font-size: 13px;">
+                                    <input id="newDepartmentName" type="text" placeholder="Enter new department..."
+                                        style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
+                                    <button class="btn btn-primary" onclick="addNewDepartment()"
+                                        style="padding: 8px 16px; font-size: 13px;">
                                         <span class="material-symbols-outlined">add</span>
                                         Add
                                     </button>
@@ -2989,13 +3032,19 @@
                             </div>
 
                             <div style="border-top: 1px solid var(--border); padding-top: 20px;">
-                                <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">Sub-Departments (แผนก)</h4>
+                                <h4
+                                    style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">
+                                    Sub-Departments (แผนก)</h4>
                                 <div id="departments2ListContainer" style="margin-bottom: 12px;">
-                                    <div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">Loading...</div>
+                                    <div
+                                        style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">
+                                        Loading...</div>
                                 </div>
                                 <div style="display: grid; gap: 8px; grid-template-columns: 1fr auto;">
-                                    <input id="newDepartment2Name" type="text" placeholder="Enter new sub-department..." style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
-                                    <button class="btn btn-primary" onclick="addNewDepartment2()" style="padding: 8px 16px; font-size: 13px;">
+                                    <input id="newDepartment2Name" type="text" placeholder="Enter new sub-department..."
+                                        style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
+                                    <button class="btn btn-primary" onclick="addNewDepartment2()"
+                                        style="padding: 8px 16px; font-size: 13px;">
                                         <span class="material-symbols-outlined">add</span>
                                         Add
                                     </button>
@@ -3023,15 +3072,20 @@
                         </div>
                         <div class="section-body">
                             <div style="margin-bottom: 20px;">
-                                <label style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; display: block;">Link Sub-Departments to Departments</label>
+                                <label
+                                    style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; display: block;">Link
+                                    Sub-Departments to Departments</label>
                                 <div style="display: grid; gap: 8px; grid-template-columns: 1fr 1fr auto;">
-                                    <select id="linkDepartment" style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
+                                    <select id="linkDepartment"
+                                        style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
                                         <option value="">— Select Department —</option>
                                     </select>
-                                    <select id="linkSubDepartment" style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
+                                    <select id="linkSubDepartment"
+                                        style="border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
                                         <option value="">— Select Sub-Department —</option>
                                     </select>
-                                    <button class="btn btn-primary" onclick="linkDepartmentToSubDepartment()" style="padding: 8px 16px; font-size: 13px;">
+                                    <button class="btn btn-primary" onclick="linkDepartmentToSubDepartment()"
+                                        style="padding: 8px 16px; font-size: 13px;">
                                         <span class="material-symbols-outlined">link</span>
                                         Link
                                     </button>
@@ -3039,9 +3093,14 @@
                             </div>
 
                             <div style="border-top: 1px solid var(--border); padding-top: 20px;">
-                                <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 16px;">Department Hierarchy</h4>
-                                <div id="departmentHierarchyContainer" style="background: linear-gradient(135deg, rgba(26, 39, 64, 0.02) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;  overflow-y: auto;">
-                                    <div style="padding: 24px; text-align: center; color: var(--ink-muted); font-size: 13px;">Loading department structure...</div>
+                                <h4
+                                    style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 16px;">
+                                    Department Hierarchy</h4>
+                                <div id="departmentHierarchyContainer"
+                                    style="background: linear-gradient(135deg, rgba(26, 39, 64, 0.02) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;  overflow-y: auto;">
+                                    <div
+                                        style="padding: 24px; text-align: center; color: var(--ink-muted); font-size: 13px;">
+                                        Loading department structure...</div>
                                 </div>
                             </div>
 
@@ -3175,7 +3234,8 @@
                     </div>
                     <div class="section-body" style="padding: 0;">
                         <div class="activity-log" id="logsViewer">
-                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">No activity logged yet.</div>
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">No activity logged yet.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3242,7 +3302,8 @@
                     </div>
                     <div class="section-body" style="padding: 0;">
                         <div id="approversList" style="max-height: 500px; overflow-y: auto;">
-                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading approvers...</div>
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading approvers...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3267,54 +3328,71 @@
                         </button>
                     </div>
                     <div class="section-body" style="padding: 0;">
-                        <div id="tabAccessList" style="max-height: 600px; overflow-y: auto;">
-                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading user access configurations...</div>
+                        <div id="tabAccessList">
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading user access
+                                configurations...</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Tab Access Editor Modal -->
-                <div id="tabAccessModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
-                    <div class="modal-content" style="background: white; border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
-                        <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <div id="tabAccessModal" class="modal"
+                    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                    <div class="modal-content"
+                        style="background: white; border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                        <div class="modal-header"
+                            style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                             <h3 style="margin: 0;">Configure Tab Access</h3>
-                            <button class="modal-close" onclick="closeTabAccessModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
+                            <button class="modal-close" onclick="closeTabAccessModal()"
+                                style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
                         </div>
-                        <div class="modal-body" style="padding: 20px;">
-                            <div class="field">
-                                <label>User: <strong id="tabAccessModalUsername"></strong></label>
+                        <div class="modal-body" style="padding: 20px 20px 20px 50px;">
+                            <div class="field" style="display: flex; flex-direction: column; margin-bottom: 18px;">
+                                <label style="font-weight: 600; margin-bottom: 6px;">User:</label>
+                                <div style="font-size: 15px; color: var(--ink); font-weight: 500; padding-left: 2px;">
+                                    <strong id="tabAccessModalUsername"></strong>
+                                </div>
                             </div>
-                            <div class="field">
-                                <label>Select Allowed Tabs</label>
-                                <div style="display: grid; gap: 12px; margin-top: 12px;">
+                            <div class="field" style="display: flex; flex-direction: column;">
+                                <label style="font-weight: 600; margin-bottom: 12px;">Select Allowed Tabs</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px;">
                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" class="tab-checkbox" value="dashboard"> Dashboard
+                                        <input type="checkbox" class="tab-checkbox" value="dashboard" style="width: 16px; height: 16px; cursor: pointer;"> 
+                                        <span>Dashboard</span>
                                     </label>
                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" class="tab-checkbox" value="compose"> Compose Memo
+                                        <input type="checkbox" class="tab-checkbox" value="compose" style="width: 16px; height: 16px; cursor: pointer;"> 
+                                        <span>Compose Memo</span>
                                     </label>
                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" class="tab-checkbox" value="sent-memos"> Sent Memos
+                                        <input type="checkbox" class="tab-checkbox" value="sent-memos" style="width: 16px; height: 16px; cursor: pointer;"> 
+                                        <span>Sent Memos</span>
                                     </label>
                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" class="tab-checkbox" value="received-memos"> Received Memos
+                                        <input type="checkbox" class="tab-checkbox" value="received-memos" style="width: 16px; height: 16px; cursor: pointer;"> 
+                                        <span>Received Memos</span>
                                     </label>
                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" class="tab-checkbox" value="broadcast"> Broadcast
+                                        <input type="checkbox" class="tab-checkbox" value="broadcast" style="width: 16px; height: 16px; cursor: pointer;"> 
+                                        <span>Broadcast</span>
                                     </label>
                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" class="tab-checkbox" value="followers"> Users Management
+                                        <input type="checkbox" class="tab-checkbox" value="followers" style="width: 16px; height: 16px; cursor: pointer;"> 
+                                        <span>Users Management</span>
                                     </label>
                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" class="tab-checkbox" value="logs"> Activity Log
+                                        <input type="checkbox" class="tab-checkbox" value="logs" style="width: 16px; height: 16px; cursor: pointer;"> 
+                                        <span>Activity Log</span>
                                     </label>
                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" class="tab-checkbox" value="manage-user"> My Account
+                                        <input type="checkbox" class="tab-checkbox" value="manage-user" style="width: 16px; height: 16px; cursor: pointer;"> 
+                                        <span>My Account</span>
                                     </label>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer" style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
+                        <div class="modal-footer"
+                            style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
                             <button class="btn btn-ghost" onclick="closeTabAccessModal()">Cancel</button>
                             <button class="btn btn-primary" onclick="saveTabAccess()">Save</button>
                         </div>
@@ -3390,6 +3468,67 @@
                     <div class="memo-detail-label">Message Body</div>
                     <div class="memo-detail-content" id="memoDetailContent">—</div>
                 </div>
+                
+                <!-- Approval Status Section (shown when memo is approved or rejected) -->
+                <div id="memoApprovalStatusSection" style="margin-top: 20px; padding: 16px; background: var(--surface); border-radius: var(--radius); display: none;">
+                    <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 12px;">
+                        <div style="flex: 0 0 auto;">
+                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;">Status</div>
+                            <div id="memoApprovalStatus" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,0,0,0.05); border-radius: 4px;">
+                                <span id="memoStatusIcon" class="material-symbols-outlined" style="font-size: 20px;"></span>
+                                <span id="memoStatusText" style="font-weight: 600; color: var(--ink);"></span>
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;">Approved/Rejected By</div>
+                            <div class="memo-detail-value" id="memoApprovalBy" style="padding: 8px 12px; background: transparent; color: var(--ink); font-weight: 500;">—</div>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;">Date & Time</div>
+                            <div class="memo-detail-value" id="memoApprovalDateTime" style="padding: 8px 12px; background: transparent; color: var(--ink-muted); font-size: 13px;">—</div>
+                        </div>
+                    </div>
+                    <div id="memoRejectionReasonSection" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.08);">
+                        <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 8px; color: var(--red); font-weight: 600;">Rejection Reason</div>
+                        <div class="memo-detail-content" id="memoRejectionReason" style="padding: 12px; background: rgba(220, 66, 59, 0.05); border-left: 3px solid var(--red); font-size: 13px; color: var(--ink); line-height: 1.5;">—</div>
+                    </div>
+                </div>
+                
+                <!-- Approver Action Section (shown when user is an authorized approver and memo is pending) -->
+                <div id="memoApprovalActionsSection" style="margin-top: 20px; padding: 16px; background: var(--surface); border-radius: var(--radius); border: 2px solid var(--blue); display: none;">
+                    <div style="margin-bottom: 16px;">
+                        <p style="margin: 0 0 12px 0; font-weight: 500; color: var(--ink);">This memo requires your approval</p>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-sm" style="background: var(--green); color: white; flex: 1;" onclick="showApprovalConfirm('approve')">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                                Approve
+                            </button>
+                            <button class="btn btn-sm btn-danger" style="background: var(--red); color: white; flex: 1;" onclick="showApprovalConfirm('reject')">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">cancel</span>
+                                Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rejection Reason Input (shown when user clicks reject) -->
+                <div id="memoRejectionInputSection" style="margin-top: 16px; padding: 16px; background: var(--surface); border-radius: var(--radius); border: 2px solid var(--red); display: none;">
+                    <div class="memo-detail-field">
+                        <label for="rejectionReasonInput" class="memo-detail-label">Please provide a reason for rejection</label>
+                        <textarea id="rejectionReasonInput" placeholder="Enter rejection reason..." style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; line-height: 1.5; resize: vertical; min-height: 80px; color: var(--ink);" spellcheck="false"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 12px;">
+                        <button class="btn btn-sm" style="background: var(--red); color: white; flex: 1;" onclick="submitMemoRejection()">
+                            <span class="material-symbols-outlined">send</span>
+                            Submit Rejection
+                        </button>
+                        <button class="btn btn-sm btn-ghost" style="flex: 1;" onclick="cancelApprovalAction()">
+                            <span class="material-symbols-outlined">close</span>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="status-msg" id="memoDetailStatus" style="margin-top: 16px; display: none;">
                     <span class="material-symbols-outlined"></span>
                     <span class="msg-text"></span>
@@ -3412,7 +3551,7 @@
         </div>
     </div>
 
-        <!-- Custom Modal -->
+    <!-- Custom Modal -->
     <div id="customModal"
         style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; align-items: center; justify-content: center;">
         <div style="position: absolute; inset: 0; background: rgba(15, 17, 23, 0.5); backdrop-filter: blur(4px);"></div>
@@ -3490,6 +3629,57 @@
                 clearInterval(notificationRefreshInterval)
                 notificationRefreshInterval = null
                 console.log('⏹️ Notification auto-refresh stopped')
+            }
+        }
+
+        // ──────────────────────────────────────────────
+        // Pending Approvals Badge Refresh System
+        // ──────────────────────────────────────────────
+        let pendingApprovalsRefreshInterval = null
+
+        async function refreshPendingApprovalsBadge() {
+            if (!authToken) return
+            try {
+                const res = await fetch('/memos/pending-approval', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    const pendingMemos = data.pendingMemos || []
+                    const badge = document.getElementById('pendingBadge')
+                    
+                    if (badge) {
+                        if (pendingMemos.length > 0) {
+                            badge.textContent = pendingMemos.length > 9 ? '9+' : pendingMemos.length
+                            badge.style.display = 'flex'
+                            console.log('🔔 Pending approvals badge updated:', pendingMemos.length)
+                        } else {
+                            badge.style.display = 'none'
+                            console.log('🔔 No pending approvals - badge hidden')
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Error refreshing pending approvals badge:', err)
+            }
+        }
+
+        function startPendingApprovalsRefresh() {
+            if (pendingApprovalsRefreshInterval) clearInterval(pendingApprovalsRefreshInterval)
+            // Refresh immediately on start
+            refreshPendingApprovalsBadge()
+            // Then refresh every 10 seconds for real-time updates
+            pendingApprovalsRefreshInterval = setInterval(() => {
+                refreshPendingApprovalsBadge()
+            }, 3000)
+            console.log('🔄 Pending approvals badge auto-refresh started (every 10s)')
+        }
+
+        function stopPendingApprovalsRefresh() {
+            if (pendingApprovalsRefreshInterval) {
+                clearInterval(pendingApprovalsRefreshInterval)
+                pendingApprovalsRefreshInterval = null
+                console.log('⏹️ Pending approvals badge auto-refresh stopped')
             }
         }
 
@@ -3603,25 +3793,56 @@
                 const timeStr = timestamp.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
                 const dateStr = timestamp.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })
                 const displayTime = timestamp.toDateString() === new Date().toDateString() ? timeStr : dateStr
-                const icon = notif.type === 'success' ? 'check_circle' : notif.type === 'error' ? 'error' : 'info'
+                
+                // Determine icon and color based on notification type
+                let icon = 'info'
+                let iconColor = 'var(--blue)'
+                
+                if (notif.type === 'success') {
+                    icon = 'check_circle'
+                    iconColor = 'var(--green)'
+                } else if (notif.type === 'error' || notif.type === 'rejected') {
+                    icon = 'error'
+                    iconColor = 'var(--red)'
+                } else if (notif.type === 'pending_approval') {
+                    icon = 'schedule'
+                    iconColor = 'var(--accent)'
+                } else if (notif.type === 'approved') {
+                    icon = 'check_circle'
+                    iconColor = 'var(--green)'
+                }
+                
                 const unreadClass = notif.read ? '' : 'unread'
-                const iconColor = notif.type === 'success' ? 'var(--green)' : notif.type === 'error' ? 'var(--red)' : 'var(--blue)'
 
                 // Extract sender name from message if available
                 let messageDisplay = escHtml(notif.message).replace(/From: /, '<strong>ผู้ส่ง: </strong>')
                 messageDisplay = messageDisplay.replace(/จาก /, '<strong>จาก: </strong>')
 
-                // Determine click handler - if we have memoObject, use it; otherwise use memoId
+                // Determine click handler - if we have memo, use it; otherwise use memoId
                 let clickHandler = 'markNotificationAsRead()'
-                if (notif.memoObject && notif.memoType === 'received') {
+                if (notif.memoObject || notif.memo) {
+                    console.log('📌 Notification has memo:', { 
+                        hasMemoObject: !!notif.memoObject, 
+                        hasMemo: !!notif.memo,
+                        memoType: notif.memoType,
+                        memoStatus: notif.memo?.status || notif.memoObject?.status,
+                        notificationType: notif.type
+                    })
+                    const memoToUse = notif.memoObject || notif.memo
+                    const memoJson = escHtml(JSON.stringify(memoToUse)).replace(/"/g, '&quot;')
+                    
                     // For received memos from system users, navigate to received-memos and show detail
-                    const memoJson = escHtml(JSON.stringify(notif.memoObject)).replace(/"/g, '&quot;')
-                    clickHandler = `showViewAndMemoDetail('received-memos', ${memoJson})`
-                } else if (notif.memoObject) {
-                    const memoJson = escHtml(JSON.stringify(notif.memoObject)).replace(/"/g, '&quot;')
-                    clickHandler = `openMemoDetail(${memoJson})`
+                    if (notif.memoType === 'received') {
+                        clickHandler = `showViewAndMemoDetail('received-memos', ${memoJson})`
+                    } else {
+                        // For all other memos (sent, pending approval, etc), open detail modal
+                        clickHandler = `openMemoDetail(${memoJson})`
+                    }
                 } else if (notif.memoId) {
+                    console.log('⚠️ Notification has no memo object, using memoId:', notif.memoId)
                     clickHandler = `viewNotificationMemo('${notif.memoId}')`
+                } else {
+                    console.log('❌ Notification has no memo or memoId:', notif.id)
                 }
 
                 html += `
@@ -3960,11 +4181,17 @@
         }
 
         function updateUIForLoggedIn() {
+            console.log('🔄 [LOGIN] updateUIForLoggedIn() called')
+            console.log('👤 [LOGIN] Current user:', currentUser)
+            console.log('🔑 [LOGIN] Auth token exists:', !!authToken)
+            showView('dashboard')
             document.getElementById('authNav').style.display = 'none'
             document.getElementById('mainNav').style.display = 'block'
             document.getElementById('createSection').style.display = 'block'
             document.getElementById('userSection').style.display = 'block'
             document.getElementById('guestSection').style.display = 'none'
+            // Show adminNav only if user has admin role
+            document.getElementById('adminNav').style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none'
             // Only show mobile bottom nav on mobile screens (max-width: 480px)
             document.getElementById('mobileBottomNav').style.display = window.innerWidth <= 480 ? 'block' : 'none'
 
@@ -3990,6 +4217,126 @@
 
                 // Start auto-refresh for notifications
                 startNotificationRefresh()
+
+                // Apply tab access restrictions first
+                applyTabAccessRestrictions()
+
+                // Check if user is an approver and load pending approvals
+                // This runs AFTER tab access to override and show the tab if user is an approver
+                checkApproverStatusAndLoadPending()
+                
+                // Load dashboard stats (sent, received, approved, pending approvals)
+                console.log('📊 [LOGIN] Calling loadDashboardStats()...')
+                loadDashboardStats()
+                console.log('📊 [LOGIN] loadDashboardStats() called')
+            }
+        }
+
+        async function applyTabAccessRestrictions() {
+            try {
+                const res = await fetch('/user/allowed-tabs', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    const allowedTabs = data.tabs || []
+                    
+                    console.log('📋 Applying tab restrictions. Allowed tabs:', allowedTabs)
+                    
+                    // Hide all nav items in mainNav first
+                    const mainNav = document.getElementById('mainNav')
+                    if (mainNav) {
+                        const allNavItems = mainNav.querySelectorAll('a.nav-item')
+                        allNavItems.forEach(item => {
+                            // SPECIAL: Don't hide pending-approvals here - let checkApproverStatusAndLoadPending() decide
+                            if (item.id === 'navPendingApprovals') {
+                                return // Skip this item for now
+                            }
+                            
+                            const isAllowed = allowedTabs.some(tab => {
+                                if (item.textContent.toLowerCase().includes('dashboard')) return tab === 'dashboard'
+                                if (item.textContent.toLowerCase().includes('compose')) return tab === 'compose'
+                                if (item.textContent.toLowerCase().includes('sent')) return tab === 'sent-memos'
+                                if (item.textContent.toLowerCase().includes('received')) return tab === 'received-memos'
+                                if (item.textContent.toLowerCase().includes('broadcast')) return tab === 'broadcast'
+                                if (item.textContent.toLowerCase().includes('users') || item.textContent.toLowerCase().includes('followers')) return tab === 'followers'
+                                if (item.textContent.toLowerCase().includes('activity') || item.textContent.toLowerCase().includes('logs')) return tab === 'logs'
+                                return false
+                            })
+                            
+                            item.style.display = isAllowed ? '' : 'none'
+                        })
+                    }
+                    
+                    // Apply to userSection (manage-user tab)
+                    const userSection = document.getElementById('userSection')
+                    if (userSection) {
+                        const manageUserLink = userSection.querySelector('a.nav-item')
+                        if (manageUserLink && !allowedTabs.includes('manage-user')) {
+                            manageUserLink.style.display = 'none'
+                        }
+                    }
+                    
+                    // Apply to mobile nav as well (but skip pending-approvals)
+                    const mobileNav = document.getElementById('mobileBottomNav')
+                    if (mobileNav) {
+                        const mobileItems = mobileNav.querySelectorAll('.mobile-bottom-nav-item')
+                        mobileItems.forEach(item => {
+                            const viewName = item.getAttribute('data-view')
+                            // Don't hide pending-approvals - let approver check handle it
+                            if (viewName === 'pending-approvals') return
+                            item.style.display = allowedTabs.includes(viewName) ? '' : 'none'
+                        })
+                    }
+                    
+                    console.log('✅ Tab access restrictions applied')
+                }
+            } catch (err) {
+                console.error('Error applying tab restrictions:', err)
+            }
+        }
+
+        async function checkApproverStatusAndLoadPending() {
+            try {
+                const res = await fetch('/user/is-approver', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    const navItem = document.getElementById('navPendingApprovals')
+                    const mobileNavItem = document.querySelector('.mobile-bottom-nav-item[data-view="pending-approvals"]')
+                    
+                    if (data.isApprover) {
+                        console.log('✅ User is an approver - showing Pending Approvals tab')
+                        // Show the nav item regardless of tabAccess settings
+                        if (navItem) {
+                            navItem.style.display = 'block'
+                        }
+                        if (mobileNavItem) {
+                            mobileNavItem.style.display = ''
+                        }
+                        // Start real-time badge refresh
+                        startPendingApprovalsRefresh()
+                    } else {
+                        // Not an approver - hide the tab and badge
+                        console.log('❌ User is not an approver')
+                        if (navItem) {
+                            navItem.style.display = 'none'
+                        }
+                        if (mobileNavItem) {
+                            mobileNavItem.style.display = 'none'
+                        }
+                        // Explicitly hide badge
+                        const badge = document.getElementById('pendingBadge')
+                        if (badge) {
+                            badge.style.display = 'none'
+                        }
+                        // Stop refresh if not an approver
+                        stopPendingApprovalsRefresh()
+                    }
+                }
+            } catch (err) {
+                console.error('Error checking approver status:', err)
             }
         }
 
@@ -4050,6 +4397,7 @@
             document.getElementById('createSection').style.display = 'none'
             document.getElementById('userSection').style.display = 'none'
             document.getElementById('guestSection').style.display = 'block'
+            document.getElementById('adminNav').style.display = 'none'
             document.getElementById('mobileBottomNav').style.display = 'none'
 
             // Reset topbar user info
@@ -4071,19 +4419,19 @@
                 const res = await fetch('/departments')
                 const data = await res.json()
                 console.log('📥 Departments response:', data)
-                
+
                 if (data.departments && Array.isArray(data.departments)) {
                     registrationDepartments = data.departments
                     console.log('✅ Departments found:', registrationDepartments.length)
                     initCustomAutocomplete('regDepartment', 'regDepartmentDropdown', registrationDepartments)
                 }
-                
+
                 if (data.departments2 && Array.isArray(data.departments2)) {
                     registrationDepartments2 = data.departments2
                     console.log('✅ Sub-departments found:', registrationDepartments2.length)
                     initCustomAutocomplete('regDepartment2', 'regDepartment2Dropdown', registrationDepartments2)
                 }
-                
+
                 // BUG #2 FIX: Add document-level click handler to close dropdowns
                 setupAutocompleteDimissal()
             } catch (err) {
@@ -4096,13 +4444,13 @@
             document.addEventListener('click', (e) => {
                 const regDept1Wrapper = document.querySelector('#regDepartmentDropdown')?.parentElement
                 const regDept2Wrapper = document.querySelector('#regDepartment2Dropdown')?.parentElement
-                
+
                 // Close regDepartment dropdown if clicking outside
                 if (regDept1Wrapper && !regDept1Wrapper.contains(e.target)) {
                     const dropdown1 = document.getElementById('regDepartmentDropdown')
                     if (dropdown1) dropdown1.style.display = 'none'
                 }
-                
+
                 // Close regDepartment2 dropdown if clicking outside
                 if (regDept2Wrapper && !regDept2Wrapper.contains(e.target)) {
                     const dropdown2 = document.getElementById('regDepartment2Dropdown')
@@ -4164,7 +4512,7 @@
                 // Fetch department links from Firebase (public endpoint for registration)
                 const response = await fetch('/department-links-public')
                 const data = await response.json()
-                
+
                 if (!data.links || !Array.isArray(data.links)) {
                     return
                 }
@@ -4175,7 +4523,7 @@
                     .map(link => link.subDepartmentId)
 
                 // Filter sub-departments to show only linked ones
-                const filteredSubDepts = registrationDepartments2.filter(dept => 
+                const filteredSubDepts = registrationDepartments2.filter(dept =>
                     linkedSubDeptIds.includes(dept.id)
                 )
 
@@ -4185,15 +4533,15 @@
                 // Update the regDepartment2 autocomplete
                 const regDept2Input = document.getElementById('regDepartment2')
                 const regDept2Dropdown = document.getElementById('regDepartment2Dropdown')
-                
+
                 if (regDept2Input && regDept2Dropdown) {
                     // Clear any existing value
                     regDept2Input.value = ''
                     regDept2Dropdown.innerHTML = ''
-                    
+
                     // Update the autocomplete with filtered items
                     updateAutocompleteDropdown('regDepartment2', 'regDepartment2Dropdown', filteredSubDepts)
-                    
+
                     // Show dropdown if there are items
                     if (filteredSubDepts.length > 0) {
                         regDept2Dropdown.style.display = 'block'
@@ -4210,7 +4558,7 @@
             const query = input.value.toLowerCase().trim()
 
             // Filter items
-            const filtered = items.filter(item => 
+            const filtered = items.filter(item =>
                 item.name.toLowerCase().includes(query)
             )
 
@@ -4340,7 +4688,7 @@
         async function logout() {
             const confirmed = await showConfirmModal('Sign out from your account?', 'Sign Out')
             if (!confirmed) return
-            
+
             try {
                 // Call logout endpoint to log the event
                 await fetch('/logout', {
@@ -4350,13 +4698,14 @@
             } catch (err) {
                 console.warn('Logout notification failed:', err)
             }
-            
+
             localStorage.removeItem('authToken')
             authToken = null
             currentUser = null
             notifications = []
             notificationsLoaded = false
             stopNotificationRefresh()
+            stopPendingApprovalsRefresh()
             updateNotificationUI()
             updateUIForLoggedOut()
             showView('login')
@@ -4471,13 +4820,13 @@
                 }
 
                 setStatus('statusUpdateDepartments', 'success', 'check_circle', 'Departments updated successfully!')
-                
+
                 // Update current user object
                 if (currentUser) {
                     currentUser.department = department
                     currentUser.department2 = department2
                 }
-                
+
                 setTimeout(() => {
                     document.getElementById('statusUpdateDepartments').classList.remove('show', 'success', 'error', 'loading')
                 }, 2000)
@@ -4615,7 +4964,7 @@
             document.getElementById('userUsername').textContent = currentUser.username
             document.getElementById('userName').textContent = currentUser.name
             document.getElementById('userSurname').textContent = currentUser.surname
-            
+
             // Load linked LINE profile
             await loadUserLinkedProfile()
         }
@@ -4701,11 +5050,11 @@
                 document.getElementById('linkedProfileName').textContent = followerData.displayName || '—'
                 document.getElementById('linkedProfileUserId').textContent = followerData.userId || '—'
                 document.getElementById('linkedProfileStatusMessage').textContent = followerData.statusMessage || 'No status message'
-                
+
                 // Format linked date
                 const linkedDate = linkedInfo.linkedAt ? new Date(linkedInfo.linkedAt).toLocaleDateString() : '—'
                 document.getElementById('linkedProfileDate').textContent = linkedDate
-                
+
                 container.style.display = 'block'
                 noContainer.style.display = 'none'
                 statusEl.classList.remove('show', 'success', 'error', 'loading')
@@ -4715,7 +5064,7 @@
                 statusEl.className = 'status-msg show error'
                 statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
                 statusEl.querySelector('.msg-text').textContent = 'Error loading linked profile: ' + err.message
-                
+
                 document.getElementById('linkedProfileContainer').style.display = 'none'
                 document.getElementById('noLinkedProfileContainer').style.display = 'block'
             }
@@ -4734,7 +5083,7 @@
                     }
                 })
                 const data = await res.json()
-                
+
                 if (!res.ok) {
                     const statusEl = document.getElementById('linkedProfileStatus')
                     statusEl.className = 'status-msg show error'
@@ -4747,7 +5096,7 @@
                 statusEl.className = 'status-msg show success'
                 statusEl.querySelector('.material-symbols-outlined').textContent = 'check_circle'
                 statusEl.querySelector('.msg-text').textContent = 'Profile unlinked successfully'
-                
+
                 setTimeout(() => {
                     loadUserLinkedProfile()
                 }, 1500)
@@ -4764,7 +5113,7 @@
         async function loadDepartmentsList() {
             try {
                 setStatus('statusDepartmentManagement', 'loading', 'hourglass_empty', 'Loading departments...')
-                
+
                 const res = await fetch('/departments', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
@@ -4819,7 +5168,7 @@
             setStatus('statusDepartmentManagement', 'loading', 'hourglass_empty', 'Adding department...')
             try {
                 console.log('📤 Sending department request:', { name, authToken: authToken ? 'token exists' : 'no token' })
-                
+
                 const res = await fetch('/admin/departments/add', {
                     method: 'POST',
                     headers: {
@@ -4828,11 +5177,11 @@
                     },
                     body: JSON.stringify({ name })
                 })
-                
+
                 console.log('📥 Response status:', res.status, res.statusText)
                 const data = await res.json()
                 console.log('📥 Response data:', data)
-                
+
                 if (!res.ok) {
                     setStatus('statusDepartmentManagement', 'error', 'error', data.error || 'Failed to add department')
                     return
@@ -4859,7 +5208,7 @@
             setStatus('statusDepartmentManagement', 'loading', 'hourglass_empty', 'Adding sub-department...')
             try {
                 console.log('📤 Sending sub-department request:', { name, authToken: authToken ? 'token exists' : 'no token' })
-                
+
                 const res = await fetch('/admin/departments2/add', {
                     method: 'POST',
                     headers: {
@@ -4868,11 +5217,11 @@
                     },
                     body: JSON.stringify({ name })
                 })
-                
+
                 console.log('📥 Response status:', res.status, res.statusText)
                 const data = await res.json()
                 console.log('📥 Response data:', data)
-                
+
                 if (!res.ok) {
                     setStatus('statusDepartmentManagement', 'error', 'error', data.error || 'Failed to add sub-department')
                     return
@@ -4941,7 +5290,7 @@
         async function loadDepartmentStructure() {
             try {
                 setStatus('statusDepartmentStructure', 'loading', 'hourglass_empty', 'Loading structure...')
-                
+
                 const res = await fetch('/departments', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
@@ -4950,10 +5299,10 @@
                 // Populate select dropdowns
                 const deptSelect = document.getElementById('linkDepartment')
                 const subDeptSelect = document.getElementById('linkSubDepartment')
-                
+
                 deptSelect.innerHTML = '<option value="">— Select Department —</option>'
                 subDeptSelect.innerHTML = '<option value="">— Select Sub-Department —</option>'
-                
+
                 if (data.departments && data.departments.length > 0) {
                     data.departments.forEach(d => {
                         const option = document.createElement('option')
@@ -4962,7 +5311,7 @@
                         deptSelect.appendChild(option)
                     })
                 }
-                
+
                 if (data.departments2 && data.departments2.length > 0) {
                     data.departments2.forEach(d => {
                         const option = document.createElement('option')
@@ -4980,7 +5329,7 @@
 
                 // Display hierarchy
                 const container = document.getElementById('departmentHierarchyContainer')
-                
+
                 if (!hierarchyData.links || hierarchyData.links.length === 0) {
                     container.innerHTML = '<div class="empty-hierarchy"><span class="material-symbols-outlined" style="font-size: 32px; margin-bottom: 8px; display: block;">account_tree</span>No department links yet. Create a link above to get started.</div>'
                 } else {
@@ -5056,9 +5405,9 @@
                     },
                     body: JSON.stringify({ departmentId: deptId, subDepartmentId: subDeptId })
                 })
-                
+
                 const data = await res.json()
-                
+
                 if (!res.ok) {
                     setStatus('statusDepartmentStructure', 'error', 'error', data.error || 'Failed to create link')
                     return
@@ -5491,7 +5840,7 @@
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     })
                     const userFollowerData = await res.json()
-                    
+
                     if (userFollowerData.followerCount > 0) {
                         for (let uid in userFollowerData.followers) {
                             const follower = userFollowerData.followers[uid]
@@ -5509,7 +5858,7 @@
                             })
                         }
                     }
-                    
+
                     // Fetch all users to show as notification recipients
                     try {
                         const usersRes = await fetch('/admin/users', {
@@ -5518,14 +5867,14 @@
                         if (usersRes.ok) {
                             const usersData = await usersRes.json()
                             const allUsers = usersData.users || []
-                            
+
                             // Show all users except current user as notification recipients
                             usersWithoutFollowers = allUsers.filter(user => user.userId !== currentUser.userId)
                         }
                     } catch (err) {
                         console.warn('Could not fetch other users for notification recipients:', err.message)
                     }
-                    
+
                     console.log('👤 Regular user loaded linkedFollowers:', linkedFollowers.length, 'usersWithout:', usersWithoutFollowers.length)
                 }
 
@@ -5738,7 +6087,7 @@
                             content: text,
                             docNumber: currentDocNumber
                         }
-                        
+
                         // Call endpoint to send memo (with approval workflow if needed)
                         const memoRes = await fetch(`/send-system-memo`, {
                             method: 'POST',
@@ -5748,14 +6097,14 @@
                             },
                             body: JSON.stringify(memoData)
                         })
-                        
+
                         if (!memoRes.ok) {
                             notificationFailCount++
                             continue
                         }
-                        
+
                         const memoResData = await memoRes.json()
-                        
+
                         // Check if memo requires approval
                         if (memoResData.status === 'Memo created - pending approval') {
                             console.log(`✓ Memo created - pending approval from ${memoResData.approverCount} approver(s)`)
@@ -5883,7 +6232,7 @@
                 statusEl.className = 'status-msg'
 
                 if (data.count === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined">send</span><p>No sent memos yet.</p></div></td></tr>`
+                    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">send</span><p>No sent memos yet.</p></div></td></tr>`
                     return
                 }
 
@@ -5894,7 +6243,10 @@
                     const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
                     const preview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
                     const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
-                    
+
+                    // Get recipient name
+                    const recipientName = memo.recipientNames ? memo.recipientNames.join(', ') : (memo.recipientName || 'Unknown')
+
                     // Determine status badge
                     let statusBadge = '<span class="badge badge-pending">Sent</span>'
                     if (memo.status === 'pending_approval') {
@@ -5917,6 +6269,9 @@
           </td>
           <td>
             <span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span>
+          </td>
+          <td style="font-size:12px;color:var(--ink-muted);">
+            ${escHtml(recipientName)}
           </td>
           <td style="font-size:12px;color:var(--ink-muted);">
             ${statusBadge}
@@ -5981,7 +6336,7 @@
                     const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
                     const preview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
                     const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
-
+                    
                     rows += `<tr>
           <td style="font-size:12px;">
             <span style="color:var(--ink-muted);">
@@ -6045,7 +6400,7 @@
                 })
                 const linkedData = await linkedRes.json()
                 const linkedFollowers = linkedData.linkedFollowers || []
-                
+
                 // Count unique users with linked followers
                 const usersWithLinked = new Set(linkedFollowers.map(link => link.userId)).size
 
@@ -6157,7 +6512,7 @@
 
         function getEventTypeAndIcon(message, data) {
             const msg = message.toLowerCase()
-            
+
             if (msg.includes('registered successfully')) return { type: 'approval', icon: '✓', title: 'User Registered', color: 'green' }
             if (msg.includes('user approved')) return { type: 'approval', icon: '✓', title: 'User Approved', color: 'green' }
             if (msg.includes('login successful')) return { type: 'login', icon: '→', title: 'Login', color: 'green' }
@@ -6172,7 +6527,7 @@
             if (msg.includes('department deleted')) return { type: 'system', icon: '⚙', title: 'Department Deleted', color: 'amber' }
             if (msg.includes('password changed')) return { type: 'system', icon: '🔒', title: 'Password Changed', color: 'blue' }
             if (msg.includes('error')) return { type: 'error', icon: '⚠', title: 'Error', color: 'red' }
-            
+
             return { type: 'system', icon: '●', title: 'Activity', color: 'blue' }
         }
 
@@ -6182,16 +6537,16 @@
                 el.innerHTML = '<div style="color:#4a5568;font-style:italic;padding:24px 28px;">No activity logged yet.</div>'
                 return
             }
-            
+
             const recent = logs.slice(-100) // Most recent first
-            
+
             el.innerHTML = recent.map(log => {
                 const eventInfo = getEventTypeAndIcon(log.message, log.data)
                 const timestamp = log.timestamp ? new Date(log.timestamp) : new Date()
                 const timeStr = formatActivityTime(timestamp)
                 const fullDateStr = formatFullDateTime(timestamp)
                 const dataStr = log.data ? formatActivityData(log.data) : ''
-                
+
                 return `<div class="activity-event event-${eventInfo.type}">
                     <div class="activity-event-icon">${eventInfo.icon}</div>
                     <div class="activity-event-content">
@@ -6204,12 +6559,12 @@
         }
 
         function formatFullDateTime(date) {
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            }) + ', ' + date.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            }) + ', ' + date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'
             })
@@ -6223,18 +6578,18 @@
             const diffMins = Math.floor(diffMs / 60000)
             const diffHours = Math.floor(diffMs / 3600000)
             const diffDays = Math.floor(diffMs / 86400000)
-            
+
             if (diffMins < 1) return 'Just now'
             if (diffMins < 60) return `${diffMins}m ago`
             if (diffHours < 24) return `${diffHours}h ago`
             if (diffDays < 7) return `${diffDays}d ago`
-            
+
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
         }
 
         function formatActivityData(data) {
             if (!data || typeof data !== 'object') return ''
-            
+
             const important = []
             if (data.senderName && data.recipientNames) {
                 important.push(`From: ${data.senderName} → ${data.recipientNames}`)
@@ -6247,7 +6602,7 @@
             if (data.title) important.push(`"${data.title}"`)
             if (data.count !== undefined) important.push(`(${data.count} items)`)
             if (data.deptId || data.name) important.push(data.name || data.deptId)
-            
+
             return important.slice(0, 2).join(', ')
         }
 
@@ -6257,15 +6612,15 @@
                 const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
                 const res = await fetch(firebaseUrl)
                 const logsData = await res.json()
-                
+
                 // Convert Firebase object to array of log entries
                 let logs = []
                 if (logsData && typeof logsData === 'object') {
-                    logs = Object.values(logsData).sort((a, b) => 
+                    logs = Object.values(logsData).sort((a, b) =>
                         new Date(b.timestamp) - new Date(a.timestamp)
                     )
                 }
-                
+
                 const logCount = logs.length
                 document.getElementById('logsCount').textContent = `${logCount} entries`
                 renderLogs(logs, 'logsViewer')
@@ -6333,7 +6688,27 @@
         // ── Memo Detail Modal ────────────────────
         let currentMemoDetail = null
 
-        function openMemoDetail(memo) {
+        // Store the sender's info for approval/rejection (for pending approvals view)
+        let currentMemoDetailSenderId = null
+
+        async function openMemoDetail(memo) {
+                    // Make showMemoDetail globally available for HTML onclick
+                    window.showMemoDetail = function(memoId, memoObj) {
+                        // If memoObj is a string, parse it
+                        let memo = memoObj
+                        if (typeof memoObj === 'string') {
+                            try { memo = JSON.parse(memoObj) } catch (e) { memo = {} }
+                        }
+                        openMemoDetail(memo)
+                    }
+            console.log('🔓 openMemoDetail called with memo:', {
+                memoId: memo?.memoId,
+                title: memo?.title,
+                status: memo?.status,
+                type: memo?.type,
+                approvalPending: memo?.approvalPending,
+                hasContent: !!memo?.content
+            })
             currentMemoDetail = memo
             document.getElementById('memoDetailTitle').textContent = memo.title
             document.getElementById('memoDetailTitleValue').textContent = memo.title
@@ -6374,15 +6749,247 @@
             document.getElementById('memoDetailDate').textContent = `${dateStr} ${timeStr}`
             document.getElementById('memoDetailContent').textContent = memo.content
 
+            // Hide approval sections by defaultb
+            document.getElementById('memoApprovalStatusSection').style.display = 'none'
+            document.getElementById('memoApprovalActionsSection').style.display = 'none'
+            document.getElementById('memoRejectionInputSection').style.display = 'none'
+
+            // Show approval status based on memo status
+            if (memo.status === 'pending_approval') {
+                // For pending approval memos, show awaiting approval status
+                document.getElementById('memoApprovalStatusSection').style.display = 'block'
+                document.getElementById('memoStatusIcon').textContent = 'schedule'
+                document.getElementById('memoStatusIcon').style.color = 'var(--blue)'
+                document.getElementById('memoStatusText').textContent = 'Awaiting Approval'
+                document.getElementById('memoApprovalBy').textContent = 'Pending'
+                document.getElementById('memoApprovalDateTime').textContent = 'Awaiting approver action'
+                document.getElementById('memoRejectionReasonSection').style.display = 'none'
+                
+                // Show approval actions if user is an authorized approver
+                if (currentUser && authToken) {
+                    const isApprover = await checkIfUserIsApproverForMemo(memo)
+                    if (isApprover) {
+                        document.getElementById('memoApprovalActionsSection').style.display = 'block'
+                    }
+                }
+            }
+            // Show approval status if memo is approved or rejected
+            else if (memo.status === 'approved' || memo.status === 'rejected') {
+                document.getElementById('memoApprovalStatusSection').style.display = 'block'
+                
+                if (memo.status === 'approved') {
+                    document.getElementById('memoStatusIcon').textContent = 'check_circle'
+                    document.getElementById('memoStatusIcon').style.color = 'var(--green)'
+                    document.getElementById('memoStatusText').textContent = 'Approved'
+                    document.getElementById('memoApprovalBy').textContent = memo.approvedByName || 'Unknown'
+                    const approvalDate = new Date(memo.approvedAt)
+                    document.getElementById('memoApprovalDateTime').textContent = approvalDate.toLocaleString('th-TH')
+                    document.getElementById('memoRejectionReasonSection').style.display = 'none'
+                } else if (memo.status === 'rejected') {
+                    document.getElementById('memoStatusIcon').textContent = 'cancel'
+                    document.getElementById('memoStatusIcon').style.color = 'var(--red)'
+                    document.getElementById('memoStatusText').textContent = 'Rejected'
+                    document.getElementById('memoApprovalBy').textContent = memo.rejectedByName || 'Unknown'
+                    const rejectionDate = new Date(memo.rejectedAt)
+                    document.getElementById('memoApprovalDateTime').textContent = rejectionDate.toLocaleString('th-TH')
+                    document.getElementById('memoRejectionReason').textContent = memo.rejectionReason || 'No reason provided'
+                    document.getElementById('memoRejectionReasonSection').style.display = 'block'
+                }
+            }
+            // Also show approval status for received memos that have approvedByName
+            else if (memo.approvedByName && memo.approvedAt) {
+                document.getElementById('memoApprovalStatusSection').style.display = 'block'
+                document.getElementById('memoStatusIcon').textContent = 'check_circle'
+                document.getElementById('memoStatusIcon').style.color = 'var(--green)'
+                document.getElementById('memoStatusText').textContent = 'Approved'
+                document.getElementById('memoApprovalBy').textContent = memo.approvedByName || 'Unknown'
+                const approvalDate = new Date(memo.approvedAt)
+                document.getElementById('memoApprovalDateTime').textContent = approvalDate.toLocaleString('th-TH')
+                document.getElementById('memoRejectionReasonSection').style.display = 'none'
+            }
+
             document.getElementById('memoDetailOverlay').classList.add('show')
+        }
+
+        async function checkIfUserIsApproverForMemo(memo) {
+            try {
+                // Check if current user is an authorized approver
+                const approversRes = await fetch('/admin/memo-approvers', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                
+                if (!approversRes.ok) return false
+
+                const approversData = await approversRes.json()
+                const approvers = approversData.approvers || []
+
+                // Get the sender info (we need their department and subdepartment)
+                // For now, we'll assume memo has senderDepartment info, or we can extract it
+                // Since we're viewing from pending approvals, we should have the sender's department
+                
+                // Check if current user is an approver for any matching department
+                for (const approver of approvers) {
+                    if (approver.approverId === currentUser.userId) {
+                        // This user is an approver - they can approve/reject
+                        // Ideally we'd also check if their department matches the sender's
+                        return true
+                    }
+                }
+                
+                return false
+            } catch (err) {
+                console.error('Error checking approver status:', err)
+                return false
+            }
         }
 
         function closeMemoDetail() {
             document.getElementById('memoDetailOverlay').classList.remove('show')
+            document.getElementById('memoRejectionInputSection').style.display = 'none'
             currentMemoDetail = null
+            currentMemoDetailSenderId = null
+        }
+
+        function showApprovalConfirm(action) {
+            if (action === 'approve') {
+                // Direct approval without reason
+                submitMemoApproval()
+            } else if (action === 'reject') {
+                // Show rejection reason input
+                document.getElementById('memoApprovalActionsSection').style.display = 'none'
+                document.getElementById('memoRejectionInputSection').style.display = 'block'
+                document.getElementById('rejectionReasonInput').focus()
+            }
+        }
+
+        function cancelApprovalAction() {
+            document.getElementById('memoRejectionInputSection').style.display = 'none'
+            document.getElementById('memoApprovalActionsSection').style.display = 'block'
+            document.getElementById('rejectionReasonInput').value = ''
+        }
+
+        async function submitMemoApproval() {
+            if (!currentMemoDetail || (!currentMemoDetail.id && !currentMemoDetail.memoId)) {
+                console.error('No memo to approve')
+                return
+            }
+
+            const memoId = currentMemoDetail.memoId || currentMemoDetail.id
+
+            try {
+                const res = await fetch(`/memo/approve/${memoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+
+                if (res.ok) {
+                    setStatus('memoDetailStatus', 'success', 'check_circle', 'Memo approved successfully!')
+                    document.getElementById('memoDetailStatus').style.display = 'flex'
+
+                    // Update memo object to reflect approved status
+                    currentMemoDetail.status = 'approved'
+                    currentMemoDetail.approvedByName = `${currentUser.name} ${currentUser.surname}`
+                    currentMemoDetail.approvedAt = new Date().toISOString()
+
+                    // Refresh the display
+                    document.getElementById('memoApprovalActionsSection').style.display = 'none'
+                    document.getElementById('memoApprovalStatusSection').style.display = 'block'
+                    document.getElementById('memoStatusIcon').textContent = 'check_circle'
+                    document.getElementById('memoStatusIcon').style.color = 'var(--green)'
+                    document.getElementById('memoStatusText').textContent = 'Approved'
+                    document.getElementById('memoApprovalBy').textContent = currentMemoDetail.approvedByName
+                    document.getElementById('memoApprovalDateTime').textContent = new Date(currentMemoDetail.approvedAt).toLocaleString('th-TH')
+                    document.getElementById('memoRejectionReasonSection').style.display = 'none'
+
+                    // ลบ notification "Memo Requires Approval" ที่เกี่ยวข้องกับ memo นี้
+                    const approvedMemoId = memoId;
+                    notifications
+                      .filter(n => n.type === 'pending_approval' && String(n.memoId) === String(approvedMemoId))
+                      .forEach(n => removeNotification(n.id));
+
+                    // Reload pending approvals list if it's visible
+                    if (document.getElementById('view-pending-approvals').style.display !== 'none') {
+                        setTimeout(() => loadPendingApprovals(), 2000)
+                    }
+                } else {
+                    const error = await res.json()
+                    setStatus('memoDetailStatus', 'error', 'error', `Failed: ${error.error || 'Unknown error'}`)
+                    document.getElementById('memoDetailStatus').style.display = 'flex'
+                }
+            } catch (err) {
+                console.error('Error approving memo:', err)
+                setStatus('memoDetailStatus', 'error', 'error', 'Error approving memo')
+                document.getElementById('memoDetailStatus').style.display = 'flex'
+            }
+        }
+
+        async function submitMemoRejection() {
+            if (!currentMemoDetail || (!currentMemoDetail.id && !currentMemoDetail.memoId)) {
+                console.error('No memo to reject')
+                return
+            }
+
+            const memoId = currentMemoDetail.memoId || currentMemoDetail.id
+            const reason = document.getElementById('rejectionReasonInput').value.trim()
+            if (!reason) {
+                setStatus('memoDetailStatus', 'error', 'error', 'Please enter a rejection reason')
+                document.getElementById('memoDetailStatus').style.display = 'flex'
+                return
+            }
+
+            try {
+                const res = await fetch(`/memo/reject/${memoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason })
+                })
+
+                if (res.ok) {
+                    setStatus('memoDetailStatus', 'success', 'check_circle', 'Memo rejected successfully!')
+                    document.getElementById('memoDetailStatus').style.display = 'flex'
+                    
+                    // Update memo object to reflect rejected status
+                    currentMemoDetail.status = 'rejected'
+                    currentMemoDetail.rejectedByName = `${currentUser.name} ${currentUser.surname}`
+                    currentMemoDetail.rejectionReason = reason
+                    currentMemoDetail.rejectedAt = new Date().toISOString()
+                    
+                    // Refresh the display
+                    document.getElementById('memoRejectionInputSection').style.display = 'none'
+                    document.getElementById('memoApprovalStatusSection').style.display = 'block'
+                    document.getElementById('memoStatusIcon').textContent = 'cancel'
+                    document.getElementById('memoStatusIcon').style.color = 'var(--red)'
+                    document.getElementById('memoStatusText').textContent = 'Rejected'
+                    document.getElementById('memoApprovalBy').textContent = currentMemoDetail.rejectedByName
+                    document.getElementById('memoApprovalDateTime').textContent = new Date(currentMemoDetail.rejectedAt).toLocaleString('th-TH')
+                    document.getElementById('memoRejectionReason').textContent = reason
+                    document.getElementById('memoRejectionReasonSection').style.display = 'block'
+
+                    // Reload pending approvals list if it's visible
+                    if (document.getElementById('view-pending-approvals').style.display !== 'none') {
+                        setTimeout(() => loadPendingApprovals(), 2000)
+                    }
+                } else {
+                    const error = await res.json()
+                    setStatus('memoDetailStatus', 'error', 'error', `Failed: ${error.error || 'Unknown error'}`)
+                    document.getElementById('memoDetailStatus').style.display = 'flex'
+                }
+            } catch (err) {
+                console.error('Error rejecting memo:', err)
+                setStatus('memoDetailStatus', 'error', 'error', 'Error rejecting memo')
+                document.getElementById('memoDetailStatus').style.display = 'flex'
+            }
         }
 
         function showViewAndMemoDetail(viewName, memo) {
+            console.log('📋 showViewAndMemoDetail called:', { viewName, memoId: memo?.memoId })
             // Navigate to the specified view
             showView(viewName)
             // Small delay to ensure view is rendered before opening modal
@@ -6461,28 +7068,81 @@
             }
         })
 
-        async function refreshDashboard() {
-            // Fetch sent memos count for current user
+        // ── Load Dashboard Stats for User ──────────────
+        async function loadDashboardStats() {
+            if (!authToken) {
+                console.warn('⚠️ No auth token available for dashboard stats')
+                return
+            }
+            
             try {
-                const res = await fetch('/sent-memos', {
+                console.log('🔍 Fetching dashboard stats')
+                console.log('🔑 Auth token:', authToken.substring(0, 20) + '...')
+                console.log('🔗 API Call: GET /memos/user-stats')
+                
+                const res = await fetch('/memos/user-stats', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
-                if (res.ok) {
-                    const data = await res.json()
-                    document.getElementById('stat-sent').textContent = data.count || 0
+                
+                console.log('📡 API Response Status:', res.status, res.statusText)
+                
+                if (!res.ok) {
+                    const errorData = await res.json()
+                    console.error('❌ API Error:', errorData)
+                    return
                 }
-            } catch (e) { }
+                
+                const stats = await res.json()
+                console.log('📊 Dashboard stats loaded:', stats)
+                console.log('   - Sent Count:', stats.sentCount)
+                console.log('   - Received Count:', stats.receivedCount)
+                console.log('   - Approved Count:', stats.approvedCount)
+                console.log('   - Pending Approvals:', stats.pendingApprovalCount)
+                
+                // Update stat cards
+                const sentEl = document.getElementById('stat-memos-sent')
+                const receivedEl = document.getElementById('stat-memos-received')
+                const approvedEl = document.getElementById('stat-memos-approved')
+                const pendingEl = document.getElementById('stat-pending-approvals')
+                
+                console.log('🎯 Updating DOM elements...')
+                console.log('   - Sent element:', sentEl)
+                console.log('   - Received element:', receivedEl)
+                console.log('   - Approved element:', approvedEl)
+                console.log('   - Pending element:', pendingEl)
+                
+                if (sentEl) {
+                    sentEl.textContent = stats.sentCount || '0'
+                    console.log('✅ Sent count updated to:', stats.sentCount)
+                }
+                if (receivedEl) {
+                    receivedEl.textContent = stats.receivedCount || '0'
+                    console.log('✅ Received count updated to:', stats.receivedCount)
+                }
+                if (approvedEl) {
+                    approvedEl.textContent = stats.approvedCount || '0'
+                    console.log('✅ Approved count updated to:', stats.approvedCount)
+                }
+                if (pendingEl) {
+                    pendingEl.textContent = stats.pendingApprovalCount || '0'
+                    console.log('✅ Pending approvals updated to:', stats.pendingApprovalCount)
+                }
+                
+                console.log('✅ Dashboard stats displayed successfully')
+            } catch (err) {
+                console.error('❌ Error loading dashboard stats:', err)
+                console.error('   Stack:', err.stack)
+            }
+        }
 
+        async function refreshDashboard() {
+            // Call the new loadDashboardStats function
+            loadDashboardStats()
+            
             // Check for received memos
             checkReceivedMemos()
 
             loadLogs()
-            // followers count
-            try {
-                const res = await fetch('/followers')
-                const data = await res.json()
-                document.getElementById('stat-followers').textContent = data.count
-            } catch (e) { }
         }
 
         // ── Utilities ───────────────────────────────
@@ -6555,14 +7215,14 @@
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
                 const data = await res.json()
-                
+
                 // Load dropdown options
                 let users = await fetch('/admin/users', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 }).then(r => r.json())
-                
+
                 let depts = await fetch('/departments', {}).then(r => r.json())
-                
+
                 // Populate dropdowns
                 const userSelect = document.getElementById('approverUserId')
                 userSelect.innerHTML = '<option value="">-- Select user --</option>'
@@ -6574,7 +7234,7 @@
                         userSelect.appendChild(opt)
                     })
                 }
-                
+
                 const deptSelect = document.getElementById('approverDepartmentId')
                 deptSelect.innerHTML = '<option value="">-- Select department --</option>'
                 if (depts.departments) {
@@ -6583,20 +7243,20 @@
                         opt.value = d.id
                         opt.textContent = d.name
                         deptSelect.appendChild(opt)
-                        
-                        deptSelect.onchange = async function() {
+
+                        deptSelect.onchange = async function () {
                             // Load sub-departments for selected department
                             const subDeptSelect = document.getElementById('approverSubDepartmentId')
                             if (this.value) {
                                 const link = await fetch('/department-links-public')
                                 const linkData = await link.json()
                                 subDeptSelect.innerHTML = '<option value="">-- All Sub-Departments --</option>'
-                                
+
                                 const relatedSubDepts = linkData.links
                                     .filter(l => l.departmentId === this.value)
                                     .map(l => l.subDepartmentName)
                                     .filter((v, i, a) => a.indexOf(v) === i)
-                                
+
                                 if (depts.departments2) {
                                     depts.departments2.forEach(sd => {
                                         if (relatedSubDepts.includes(sd.name)) {
@@ -6613,7 +7273,7 @@
                         }
                     })
                 }
-                
+
                 // Render approvers list
                 const list = document.getElementById('approversList')
                 if (data.approvers && data.approvers.length > 0) {
@@ -6640,18 +7300,18 @@
                 document.getElementById('approversList').innerHTML = '<div style="color: red; padding: 16px;">Error loading approvers</div>'
             }
         }
-        
+
         async function addMemoApprover() {
             try {
                 const approverId = document.getElementById('approverUserId').value
                 const departmentId = document.getElementById('approverDepartmentId').value
                 const subDepartmentId = document.getElementById('approverSubDepartmentId').value
-                
+
                 if (!approverId || !departmentId) {
                     setStatus('statusAddApprover', 'error', 'error', 'Please select user and department')
                     return
                 }
-                
+
                 const res = await fetch('/admin/memo-approvers/add', {
                     method: 'POST',
                     headers: {
@@ -6664,7 +7324,7 @@
                         subDepartmentId: subDepartmentId || null
                     })
                 })
-                
+
                 const data = await res.json()
                 if (res.ok) {
                     setStatus('statusAddApprover', 'success', 'check_circle', 'Approver assigned successfully!')
@@ -6679,17 +7339,17 @@
                 setStatus('statusAddApprover', 'error', 'error', err.message)
             }
         }
-        
+
         async function deleteMemoApprover(approverId) {
             const confirmed = await showConfirmModal('Remove this approver assignment?', 'Confirm')
             if (!confirmed) return
-            
+
             try {
                 const res = await fetch(`/admin/memo-approvers/${approverId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
-                
+
                 if (res.ok) {
                     loadMemoApprovers()
                 } else {
@@ -6707,7 +7367,7 @@
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
                 const data = await res.json()
-                
+
                 const list = document.getElementById('tabAccessList')
                 if (data.users && data.users.length > 0) {
                     list.innerHTML = data.users.map(u => `
@@ -6733,17 +7393,17 @@
                 document.getElementById('tabAccessList').innerHTML = '<div style="color: red; padding: 16px;">Error loading tab access</div>'
             }
         }
-        
+
         function openTabAccessModal(userId, username, currentTabs) {
             document.getElementById('tabAccessModal').style.display = 'flex'
             document.getElementById('tabAccessModalUsername').textContent = username
-            
+
             // Store userId for saving later
             document.getElementById('tabAccessModal').dataset.userId = userId
-            
+
             // Uncheck all first
             document.querySelectorAll('.tab-checkbox').forEach(cb => cb.checked = false)
-            
+
             // Check current tabs
             if (Array.isArray(currentTabs)) {
                 document.querySelectorAll('.tab-checkbox').forEach(cb => {
@@ -6753,21 +7413,21 @@
                 })
             }
         }
-        
+
         function closeTabAccessModal() {
             document.getElementById('tabAccessModal').style.display = 'none'
         }
-        
+
         async function saveTabAccess() {
             try {
                 const userId = document.getElementById('tabAccessModal').dataset.userId
                 const selectedTabs = Array.from(document.querySelectorAll('.tab-checkbox:checked')).map(cb => cb.value)
-                
+
                 if (selectedTabs.length === 0) {
                     await showAlertModal('Select at least one tab', 'Validation Error')
                     return
                 }
-                
+
                 const res = await fetch('/admin/user-tabs/set', {
                     method: 'POST',
                     headers: {
@@ -6779,7 +7439,7 @@
                         tabs: selectedTabs
                     })
                 })
-                
+
                 const data = await res.json()
                 if (res.ok) {
                     closeTabAccessModal()
@@ -6792,7 +7452,7 @@
                 await showAlertModal(err.message, 'Error')
             }
         }
-        
+
         // ── Initialize Tab Access on Page Load ────
         async function initializeTabAccess() {
             try {
@@ -6800,38 +7460,38 @@
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
                 const data = await res.json()
-                
+
                 // Determine if user is admin
                 const userRes = await fetch('/user/me', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
                 const userMe = await userRes.json()
                 const isAdmin = userMe.role === 'admin'
-                
+
                 // Hide/show admin nav
                 const adminNav = document.getElementById('adminNav')
                 if (adminNav) {
                     adminNav.style.display = isAdmin ? 'block' : 'none'
                 }
-                
+
                 // Check if user is a memo approver and show pending approvals tab
                 const approverRes = await fetch('/user/is-approver', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 }).catch(() => ({ json: () => ({ isApprover: false }) }))
                 const approverData = await approverRes.json()
-                
+
                 const navPending = document.getElementById('navPendingApprovals')
                 if (navPending) {
                     navPending.style.display = approverData.isApprover ? 'block' : 'none'
                 }
-                
+
                 // Store allowed tabs globally for showView() to check
                 window.userAllowedTabs = data.tabs
-                
+
                 // Update nav items visibility based on allowed tabs
                 document.querySelectorAll('[data-view]', '.nav-item').forEach(el => {
                     const view = el.dataset.view || el.textContent.toLowerCase()
-                    const isAllowed = data.tabs.includes(view) || data.tabs.some(t => 
+                    const isAllowed = data.tabs.includes(view) || data.tabs.some(t =>
                         el.textContent.toLowerCase().includes(t)
                     )
                     if (!isAllowed) {
@@ -6853,9 +7513,9 @@
                 })
                 const data = await res.json()
                 const pendingMemos = data.pendingMemos || []
-                
+
                 console.log('📋 Pending approvals loaded:', pendingMemos.length)
-                
+
                 // Render pending approvals table
                 const tbody = document.getElementById('pendingApprovalsTbody')
                 if (pendingMemos.length > 0) {
@@ -6891,7 +7551,7 @@
                 } else {
                     tbody.innerHTML = '<tr><td colspan="5" style="padding: 32px; text-align: center; color: var(--ink-faint);">No pending approvals</td></tr>'
                 }
-                
+
                 // Update badge
                 const badge = document.getElementById('pendingBadge')
                 if (badge && pendingMemos.length > 0) {
@@ -6905,11 +7565,11 @@
                 document.getElementById('pendingApprovalsTbody').innerHTML = '<tr><td colspan="5" style="padding: 16px; color: red;">Error loading approvals</td></tr>'
             }
         }
-        
+
         async function approveMemo(memoId) {
             try {
                 const notes = await showPromptModal('Add approval notes (optional):', 'Approve Memo')
-                
+
                 const res = await fetch(`/memo/approve/${memoId}`, {
                     method: 'POST',
                     headers: {
@@ -6918,12 +7578,14 @@
                     },
                     body: JSON.stringify({ notes: notes || '' })
                 })
-                
+
                 const data = await res.json()
                 if (res.ok) {
                     await showAlertModal('Memo approved successfully!', 'Success')
                     loadPendingApprovals()
                     loadSentMemos()
+                    // Update badge immediately after approval
+                    await refreshPendingApprovalsBadge()
                 } else {
                     await showAlertModal(data.error || 'Error approving memo', 'Error')
                 }
@@ -6931,12 +7593,12 @@
                 await showAlertModal(err.message, 'Error')
             }
         }
-        
+
         async function rejectMemoDialog(memoId) {
             try {
                 const reason = await showPromptModal('Enter rejection reason:', 'Reject Memo')
                 if (!reason) return
-                
+
                 const res = await fetch(`/memo/reject/${memoId}`, {
                     method: 'POST',
                     headers: {
@@ -6945,12 +7607,14 @@
                     },
                     body: JSON.stringify({ reason })
                 })
-                
+
                 const data = await res.json()
                 if (res.ok) {
                     await showAlertModal('Memo rejected successfully!', 'Success')
                     loadPendingApprovals()
                     loadSentMemos()
+                    // Update badge immediately after rejection
+                    await refreshPendingApprovalsBadge()
                 } else {
                     await showAlertModal(data.error || 'Error rejecting memo', 'Error')
                 }
@@ -6958,7 +7622,7 @@
                 await showAlertModal(err.message, 'Error')
             }
         }
-        
+
         function showPromptModal(message, title = 'Input') {
             return new Promise((resolve) => {
                 const input = prompt(message, '')

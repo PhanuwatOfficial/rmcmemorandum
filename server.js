@@ -126,17 +126,26 @@ function createToken() {
 
 function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization
+  console.log('🔑 [AUTH] Verify token called')
+  console.log('   - Auth header:', authHeader ? authHeader.substring(0, 30) + '...' : 'MISSING')
+  
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log('❌ [AUTH] Invalid or missing token')
     return res.status(401).json({ error: 'No token provided' })
   }
   
   const token = authHeader.substring(7)
+  console.log('   - Token:', token.substring(0, 20) + '...')
+  console.log('   - Token exists in sessions:', !!sessions[token])
+  
   const userId = sessions[token]
   
   if (!userId) {
+    console.log('❌ [AUTH] Token not found in sessions')
     return res.status(401).json({ error: 'Invalid or expired token' })
   }
   
+  console.log('✅ [AUTH] Token verified for userId:', userId)
   req.userId = userId
   next()
 }
@@ -600,6 +609,76 @@ app.get("/user/is-approver", verifyToken, async (req, res) => {
     addLog('info', 'Checked approver status', { userId, isApprover, approvalCount })
     res.json({ isApprover, approvalCount })
   } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Get user stats for dashboard (sent, pending, received, approved memos)
+app.get("/memos/user-stats", verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId
+    console.log('📊 [STATS] Starting stats calculation for userId:', userId)
+    
+    // ========== SENT MEMOS ==========
+    // Path: sent_memos/{userId}/{memoId}
+    let sentCount = 0
+    let sentMemos = null
+    
+    sentMemos = await firebase_get(`sent_memos/${userId}`)
+    console.log('📤 [STATS] Sent memos path (sent_memos/${userId}):', sentMemos && typeof sentMemos === 'object' ? Object.keys(sentMemos).length + ' items' : 'NOT FOUND')
+    
+    sentCount = sentMemos && typeof sentMemos === 'object' ? Object.keys(sentMemos).length : 0
+    console.log('📊 [STATS] Total sent count:', sentCount)
+    
+    // ========== RECEIVED MEMOS ==========
+    // Path: received_memos/{userId}/{memoId}
+    let receivedCount = 0
+    
+    const receivedMemos = await firebase_get(`received_memos/${userId}`)
+    console.log('📥 [STATS] Received memos path (received_memos/${userId}):', receivedMemos && typeof receivedMemos === 'object' ? Object.keys(receivedMemos).length + ' items' : 'NOT FOUND')
+    
+    receivedCount = receivedMemos && typeof receivedMemos === 'object' ? Object.keys(receivedMemos).length : 0
+    console.log('📊 [STATS] Total received count:', receivedCount)
+    
+    // ========== PENDING APPROVALS ==========
+    // Count pending memos this user sent (status = pending_approval)
+    let pendingApprovalCount = 0
+    
+    if (sentMemos && typeof sentMemos === 'object') {
+      for (let memoId in sentMemos) {
+        const memo = sentMemos[memoId]
+        if (memo.status === 'pending_approval') {
+          pendingApprovalCount++
+        }
+      }
+      console.log('👨‍⚖️ [STATS] Pending approvals (sent memos with status=pending_approval):', pendingApprovalCount + ' items')
+    }
+    
+    // ========== APPROVED MEMOS ==========
+    let approvedCount = 0
+    
+    if (sentMemos && typeof sentMemos === 'object') {
+      console.log('✅ [STATS] Checking approved memos in sent_memos...')
+      for (let memoId in sentMemos) {
+        const memo = sentMemos[memoId]
+        if (memo.status === 'approved') {
+          approvedCount++
+        }
+      }
+      console.log('✅ [STATS] Total approved memos:', approvedCount)
+    }
+    
+    const responseData = {
+      sentCount,
+      receivedCount,
+      pendingApprovalCount,
+      approvedCount
+    }
+    
+    console.log('📡 [STATS] Final response:', responseData)
+    res.json(responseData)
+  } catch (err) {
+    console.error('❌ [STATS] Error:', err.message)
     res.status(500).json({ error: err.message })
   }
 })
@@ -1128,6 +1207,20 @@ app.post("/send", async (req, res) => {
       }
     }
 
+    // Check if memo requires approval based on sender's department
+    const sender = senderUserId ? await firebase_get(`users/${senderUserId}`) : null
+    
+    // Get recipient information
+    let recipientName = targetUserId
+    try {
+      const recipient = await firebase_get(`users/${targetUserId}`)
+      if (recipient) {
+        recipientName = `${recipient.name || ''} ${recipient.surname || ''}`.trim() || targetUserId
+      }
+    } catch (err) {
+      addLog('warn', 'Could not fetch recipient info', { targetUserId, error: err.message })
+    }
+
     // Create memo object
     const memoId = `memo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     const memoData = {
@@ -1137,16 +1230,23 @@ app.post("/send", async (req, res) => {
       content,
       docNumber: docNumber || '',
       recipientId: targetUserId,
+      recipientName: recipientName,
       senderId: senderUserId,
+      senderUserId: senderUserId,  // Also include senderUserId for frontend compatibility
+      senderName: senderName,
+      senderObject: sender ? {
+        userId: sender.userId,
+        name: sender.name,
+        surname: sender.surname,
+        username: sender.username,
+        department: sender.department,
+        department2: sender.department2
+      } : null,
       sentAt: new Date().toISOString(),
       status: 'pending',  // Start as pending
       approvalPending: true,
       approvalChain: []  // Track approval history
     }
-
-    // Check if memo requires approval based on sender's department
-    const sender = senderUserId ? await firebase_get(`users/${senderUserId}`) : null
-    let memoApprovers = []
 
     addLog('info', 'Checking approvers for memo', { 
       senderUserId, 
@@ -1221,7 +1321,35 @@ app.post("/send", async (req, res) => {
       // Store pending memo (NOT SENT YET)
       await firebase_set(`sent_memos/${senderUserId}/${memoId}`, memoData)
       
-      // Create notifications for approvers ONLY - do NOT send to recipient yet
+      // Create notification for sender to show memo is pending approval
+      const senderNotification = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        title: 'Memo Awaiting Approval',
+        message: `"${title}" กำลังรอการอนุมัติจาก ${memoApprovers.length} ผู้อนุมัติ`,
+        type: 'pending_approval',
+        read: false,
+        timestamp: new Date().toISOString(),
+        memoId: memoId,
+        memo: memoData,
+        senderId: senderUserId,
+        recipientId: targetUserId
+      }
+      
+      try {
+        console.log('📨 Creating pending_approval notification for sender:', {
+          senderId: senderUserId,
+          memoId: memoData.memoId,
+          memoStatus: memoData.status,
+          notificationType: senderNotification.type,
+          hasMemoData: !!senderNotification.memo
+        })
+        await firebase_set(`notifications/${senderUserId}/${senderNotification.id}`, senderNotification)
+        addLog('info', 'Pending approval notification sent to sender', { senderId: senderUserId, memoId })
+      } catch (err) {
+        addLog('warn', 'Failed to send pending approval notification to sender', { senderId: senderUserId, error: err.message })
+      }
+      
+      // Create notifications for approvers - do NOT send to recipient yet
       for (const approver of memoApprovers) {
         const notification = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -1693,7 +1821,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
         // Add to received_memos
         const approvedMemo = {
           ...memoData,
-          sentAt: new Date().toISOString(),
+          sentAt: memoData.sentAt,
           status: 'sent',
           approvalPending: false
         }
@@ -1729,7 +1857,8 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
       type: 'approved',
       read: false,
       timestamp: new Date().toISOString(),
-      memoId: memoId
+      memoId: memoId,
+      memo: memoData
     }
 
     try {
@@ -1787,20 +1916,47 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
     // Verify authorization
     const sender = await firebase_get(`users/${memoSenderId}`)
     const approvers = await firebase_get('memoApprovers')
+    
+    // Convert sender's department name to UUID for comparison
+    const allDepartments = await firebase_get('departments')
+    let senderDepartmentId = sender.department
+    if (allDepartments && typeof allDepartments === 'object') {
+      for (const [deptId, dept] of Object.entries(allDepartments)) {
+        if (dept.name === sender.department) {
+          senderDepartmentId = deptId
+          break
+        }
+      }
+    }
+
+    addLog('info', 'Checking rejection authorization', {
+      rejectorId: req.userId,
+      senderDepartmentName: sender.department,
+      senderDepartmentId,
+      senderSubDept: sender.department2
+    })
+
     let isAuthorizedApprover = false
 
     if (approvers && typeof approvers === 'object') {
       for (const approver of Object.values(approvers)) {
-        if (approver.approverId === req.userId &&
-            approver.departmentId === sender.department &&
+        if (approver.approverId === req.userId && 
+            approver.departmentId === senderDepartmentId &&
             (!approver.subDepartmentId || approver.subDepartmentId === sender.department2)) {
           isAuthorizedApprover = true
+          addLog('info', 'Rejector authorized', { rejectorId: req.userId, memoId })
           break
         }
       }
     }
 
     if (!isAuthorizedApprover) {
+      addLog('warn', 'Unauthorized rejection attempt', { 
+        userId: req.userId, 
+        memoId,
+        senderDepartmentId,
+        senderSubDept: sender.department2
+      })
       return res.status(403).json({ error: "You are not authorized to reject this memo" })
     }
 
@@ -1822,7 +1978,8 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
       type: 'rejected',
       read: false,
       timestamp: new Date().toISOString(),
-      memoId: memoId
+      memoId: memoId,
+      memo: memoData
     }
 
     try {
@@ -2114,11 +2271,18 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
     const memosArray = Object.values(sentMemos)
     memosArray.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))
     
-    // Enrich each memo with recipient name (user who linked the follower)
+    // Enrich each memo with recipient name
     for (let memo of memosArray) {
       try {
-        // Find the user who linked this follower
-        if (memo.recipientId) {
+        // Handle system user recipient (recipientUserId)
+        if (memo.recipientUserId) {
+          const recipientUser = await firebase_get(`users/${memo.recipientUserId}`)
+          if (recipientUser) {
+            memo.recipientName = `${recipientUser.name} ${recipientUser.surname}`
+          }
+        }
+        // Handle LINE follower recipient (recipientId) - find which user linked this follower
+        else if (memo.recipientId) {
           const allUsers = await firebase_get('users')
           if (allUsers) {
             for (let uid in allUsers) {
@@ -2132,7 +2296,7 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
           }
         }
       } catch (e) {
-        // Could not find user who linked follower
+        // Could not find recipient info
       }
     }
     
