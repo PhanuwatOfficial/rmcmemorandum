@@ -447,14 +447,312 @@ app.post("/user/unlink-follower", verifyToken, async (req, res) => {
     addLog('info', 'Unlinking follower from user', { userId: req.userId, followerId })
     
     const user = await firebase_get(`users/${req.userId}`)
-    if (user.linkedFollowers && user.linkedFollowers[followerId]) {
-      delete user.linkedFollowers[followerId]
-      await firebase_set(`users/${req.userId}`, user)
+    if (!user || !user.linkedFollowers || !user.linkedFollowers[followerId]) {
+      return res.status(404).json({ error: "Linked follower not found" })
+    }
+
+    const linkedFollowerInfo = user.linkedFollowers[followerId]
+    const senderName = `${user.name || ''} ${user.surname || ''}`.trim()
+
+    // Remove the link
+    delete user.linkedFollowers[followerId]
+    await firebase_set(`users/${req.userId}`, user)
+    addLog('info', 'Follower unlinked from user account', { userId: req.userId, followerId })
+
+    // Send memo to the unlinked follower
+    const memoTitle = '📝 บันทึกข้อความ - ยกเลิกการเชื่อมโยง'
+    const memoContent = `สวัสดี ${linkedFollowerInfo.displayName},\n\n${senderName} ได้ยกเลิกการเชื่อมโยงโปรไฟล์ LINE ของพวกเขาไปแล้ว\n\nหากนี่เป็นการดำเนินการอย่างผิดพลาด โปรดติดต่อ ${senderName} อีกครั้ง\n\nขอบคุณ`
+
+    const memoId = `memo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const memoData = {
+      memoId,
+      title: memoTitle,
+      type: 'System Notification',
+      content: memoContent,
+      docNumber: '',
+      recipientId: followerId,
+      recipientName: linkedFollowerInfo.displayName,
+      followerId: followerId,
+      senderId: req.userId,
+      senderUserId: req.userId,
+      senderName: senderName,
+      senderObject: {
+        userId: user.userId,
+        name: user.name,
+        surname: user.surname,
+        username: user.username,
+        department: user.department || '',
+        department2: user.department2 || ''
+      },
+      sentAt: new Date().toISOString(),
+      status: 'sent',
+      approvalPending: false,
+      isSystemMessage: true
+    }
+
+    // Store the memo
+    await firebase_set(`sent_memos/${req.userId}/${memoId}`, memoData)
+    addLog('info', 'Unlink notification memo created', { userId: req.userId, memoId, followerId })
+
+    // Send LINE notification to the unlinked follower
+    const lineMessage = {
+      type: "flex",
+      altText: memoTitle,
+      contents: {
+        type: "bubble",
+        header: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "text",
+              text: "📝 บันทึกข้อความ",
+              weight: "bold",
+              color: "#182034",
+              size: "xl"
+            }
+          ]
+        },
+        body: {
+          type: "box",
+          layout: "vertical",
+          spacing: "md",
+          contents: [
+            {
+              type: "text",
+              text: memoTitle,
+              weight: "bold",
+              size: "lg",
+              wrap: true,
+              color: "#182034"
+            },
+            {
+              type: "text",
+              text: `From: ${senderName}`,
+              size: "sm",
+              color: "#c8a96e",
+              weight: "bold",
+              margin: "md"
+            },
+            {
+              type: "text",
+              text: "Type: System Notification",
+              size: "sm",
+              color: "#1a2740",
+              weight: "bold",
+              margin: "md"
+            },
+            {
+              type: "separator",
+              margin: "md"
+            },
+            {
+              type: "text",
+              text: memoContent,
+              size: "sm",
+              color: "#666666",
+              wrap: true,
+              margin: "md"
+            }
+          ]
+        },
+        footer: {
+          type: "box",
+          layout: "vertical",
+          spacing: "sm",
+          contents: [
+            {
+              type: "button",
+              action: {
+                type: "uri",
+                label: "View Details",
+                uri: "https://rmcmemorandum.up.railway.app/"
+              },
+              style: "primary",
+              color: "#1a2740"
+            }
+          ]
+        }
+      }
+    }
+
+    try {
+      await client.pushMessage(followerId, lineMessage)
+      addLog('info', 'LINE notification sent after unlink', { followerId, memoId })
+    } catch (lineErr) {
+      addLog('error', 'Failed to send LINE notification after unlink', { followerId, error: lineErr.message })
     }
     
-    addLog('info', 'Follower unlinked successfully', { userId: req.userId, followerId })
-    res.json({ status: "Follower unlinked successfully" })
+    addLog('info', 'Follower unlinked successfully with notification', { userId: req.userId, followerId })
+    res.json({ status: "Follower unlinked successfully", memoId, message: `ได้ส่งการแจ้งเตือนไปยัง ${linkedFollowerInfo.displayName}` })
   } catch (err) {
+    addLog('error', 'Error in unlink-follower', { userId: req.userId, followerId: req.body.followerId, error: err.message })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Unlink user profile with memo and LINE notification
+app.post("/user/unlink-profile", verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId
+    const user = await firebase_get(`users/${userId}`)
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    // Get first linked follower ID (or the main linked profile)
+    const linkedFollowers = user.linkedFollowers || {}
+    const followerIds = Object.keys(linkedFollowers)
+    
+    if (followerIds.length === 0) {
+      return res.status(400).json({ error: "No linked profile to unlink" })
+    }
+
+    const followerId = followerIds[0]  // Get the first/main linked follower
+    const linkedFollowerInfo = linkedFollowers[followerId]
+
+    addLog('info', 'Starting unlink profile process', { userId, followerId, followerName: linkedFollowerInfo.displayName })
+
+    // 1. Remove the link from user's account
+    delete user.linkedFollowers[followerId]
+    await firebase_set(`users/${userId}`, user)
+    addLog('info', 'Profile unlinked from user account', { userId, followerId })
+
+    // 2. Send memo to the linked follower notifying them of the unlink
+    const senderName = `${user.name || ''} ${user.surname || ''}`.trim()
+    const memoTitle = '📝 บันทึกข้อความ - ยกเลิกการเชื่อมโยง'
+    const memoContent = `สวัสดี ${linkedFollowerInfo.displayName},\n\n${senderName} ได้ยกเลิกการเชื่อมโยงโปรไฟล์ LINE ของพวกเขาไปแล้ว\n\nหากนี่เป็นการดำเนินการอย่างผิดพลาด โปรดติดต่อ ${senderName} อีกครั้ง\n\nขอบคุณ`
+
+    const memoId = `memo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const memoData = {
+      memoId,
+      title: memoTitle,
+      type: 'System Notification',
+      content: memoContent,
+      docNumber: '',
+      recipientId: followerId,
+      recipientName: linkedFollowerInfo.displayName,
+      followerId: followerId,
+      senderId: userId,
+      senderUserId: userId,
+      senderName: senderName,
+      senderObject: {
+        userId: user.userId,
+        name: user.name,
+        surname: user.surname,
+        username: user.username,
+        department: user.department || '',
+        department2: user.department2 || ''
+      },
+      sentAt: new Date().toISOString(),
+      status: 'sent',
+      approvalPending: false,
+      isSystemMessage: true
+    }
+
+    // Store the memo
+    await firebase_set(`sent_memos/${userId}/${memoId}`, memoData)
+    addLog('info', 'Unlink notification memo created and stored', { userId, memoId, followerId })
+
+    // 3. Send LINE notification to the linked follower
+    const lineMessage = {
+      type: "flex",
+      altText: memoTitle,
+      contents: {
+        type: "bubble",
+        header: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "text",
+              text: "📝 บันทึกข้อความ",
+              weight: "bold",
+              color: "#182034",
+              size: "xl"
+            }
+          ]
+        },
+        body: {
+          type: "box",
+          layout: "vertical",
+          spacing: "md",
+          contents: [
+            {
+              type: "text",
+              text: memoTitle,
+              weight: "bold",
+              size: "lg",
+              wrap: true,
+              color: "#182034"
+            },
+            {
+              type: "text",
+              text: `From: ${senderName}`,
+              size: "sm",
+              color: "#c8a96e",
+              weight: "bold",
+              margin: "md"
+            },
+            {
+              type: "text",
+              text: "Type: System Notification",
+              size: "sm",
+              color: "#1a2740",
+              weight: "bold",
+              margin: "md"
+            },
+            {
+              type: "separator",
+              margin: "md"
+            },
+            {
+              type: "text",
+              text: memoContent,
+              size: "sm",
+              color: "#666666",
+              wrap: true,
+              margin: "md"
+            }
+          ]
+        },
+        footer: {
+          type: "box",
+          layout: "vertical",
+          spacing: "sm",
+          contents: [
+            {
+              type: "button",
+              action: {
+                type: "uri",
+                label: "View Details",
+                uri: "https://rmcmemorandum.up.railway.app/"
+              },
+              style: "primary",
+              color: "#1a2740"
+            }
+          ]
+        }
+      }
+    }
+
+    try {
+      await client.pushMessage(followerId, lineMessage)
+      addLog('info', 'LINE notification sent successfully after unlink', { followerId, memoId })
+    } catch (lineErr) {
+      addLog('error', 'Failed to send LINE notification after unlink', { followerId, error: lineErr.message })
+      // Don't fail the unlink if LINE notification fails
+    }
+
+    res.json({ 
+      status: "Profile unlinked successfully", 
+      followerId,
+      memoId,
+      message: `ได้ส่งการแจ้งเตือนไปยัง ${linkedFollowerInfo.displayName}` 
+    })
+  } catch (err) {
+    addLog('error', 'Error in unlink-profile', { userId: req.userId, error: err.message })
     res.status(500).json({ error: err.message })
   }
 })
@@ -525,9 +823,23 @@ app.get("/user/followers", verifyToken, async (req, res) => {
     }
     
     const linkedFollowers = user.linkedFollowers || {}
+    
+    // Fetch LINE profile pictures for each follower
+    const followersRes = await firebase_get('followers')
+    const followerProfiles = followersRes || {}
+    
+    // Enrich linkedFollowers with pictureUrl from followers collection
+    const enrichedFollowers = {}
+    for (let followerId in linkedFollowers) {
+      enrichedFollowers[followerId] = {
+        ...linkedFollowers[followerId],
+        pictureUrl: followerProfiles[followerId]?.pictureUrl || null
+      }
+    }
+    
     res.json({
-      followerCount: Object.keys(linkedFollowers).length,
-      followers: linkedFollowers
+      followerCount: Object.keys(enrichedFollowers).length,
+      followers: enrichedFollowers
     })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -1766,8 +2078,28 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
     // Send to recipient (LINE follower or system user)
     const recipientId = memoData.recipientId || memoData.recipientUserId
     
+    // Get recipient user to find linked followers
+    const recipientUser = recipientId ? await firebase_get(`users/${recipientId}`) : null
+    let lineFollowerIds = []
+    
+    // Collect all linked followers of the recipient
+    if (recipientUser && recipientUser.linkedFollowers) {
+      lineFollowerIds = Object.keys(recipientUser.linkedFollowers)
+    }
+    
+    // If memo has explicit followerId, add it to the list
+    if (memoData.followerId && !lineFollowerIds.includes(memoData.followerId)) {
+      lineFollowerIds.push(memoData.followerId)
+    }
+    
+    addLog('info', 'Found linked followers for approval notification', { 
+      recipientId, 
+      followerId: memoData.followerId,
+      linkedFollowers: lineFollowerIds 
+    })
+    
     // If this is a LINE recipient (followerId exists), send LINE message
-    if (memoData.followerId) {
+    if (memoData.followerId || lineFollowerIds.length > 0) {
       const lineMessage = {
         type: "flex",
         altText: `Approved Memorandum: ${memoData.title}`,
@@ -1874,9 +2206,25 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
       }
 
       try {
-        addLog('info', 'Attempting to send LINE message to approved memo recipient', { followerId: memoData.followerId, memoId })
-        await client.pushMessage(memoData.followerId, lineMessage)
-        addLog('info', 'LINE message sent successfully to approved memo recipient', { followerId: memoData.followerId, memoId })
+        // Send to explicit follower ID
+        if (memoData.followerId) {
+          addLog('info', 'Attempting to send LINE message to approved memo recipient (direct followerId)', { followerId: memoData.followerId, memoId })
+          await client.pushMessage(memoData.followerId, lineMessage)
+          addLog('info', 'LINE message sent successfully to approved memo recipient (direct followerId)', { followerId: memoData.followerId, memoId })
+        }
+        
+        // Also send to all linked followers of the recipient user
+        for (const linkedFollowerId of lineFollowerIds) {
+          if (linkedFollowerId !== memoData.followerId) {  // Don't send twice to the same person
+            try {
+              addLog('info', 'Attempting to send LINE message to linked follower', { followerId: linkedFollowerId, recipientId, memoId })
+              await client.pushMessage(linkedFollowerId, lineMessage)
+              addLog('info', 'LINE message sent successfully to linked follower', { followerId: linkedFollowerId, memoId })
+            } catch (linkedErr) {
+              addLog('error', 'Failed to send LINE message to linked follower', { followerId: linkedFollowerId, error: linkedErr.message })
+            }
+          }
+        }
       } catch (err) {
         addLog('error', 'Failed to send LINE message on approval', { followerId: memoData.followerId, error: err.message })
       }
