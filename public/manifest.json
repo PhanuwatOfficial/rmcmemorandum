@@ -1,6 +1,6 @@
 {
-  "name": "RMCGuardtour",
-  "short_name": "RMCGuardtour",
+  "name": "E-Memo",
+  "short_name": "E-Memo",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
