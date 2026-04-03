@@ -1191,7 +1191,8 @@ app.delete("/admin/memo-approvers/:approverId", verifyToken, async (req, res) =>
 // Send memo (now with approval workflow)
 app.post("/send", async (req, res) => {
   const { userId, recipientUserId, title, type, content, senderUserId, docNumber } = req.body
-  const targetUserId = userId
+  const targetUserId = userId  // This is the followerId (LINE user ID)
+  // recipientUserId is the system user ID (used for approval workflow)
 
   try {
     // Get sender information if senderUserId is provided
@@ -1210,15 +1211,16 @@ app.post("/send", async (req, res) => {
     // Check if memo requires approval based on sender's department
     const sender = senderUserId ? await firebase_get(`users/${senderUserId}`) : null
     
-    // Get recipient information
-    let recipientName = targetUserId
+    // Get recipient information - use recipientUserId (system user ID) if provided, otherwise use targetUserId
+    let recipientName = recipientUserId || targetUserId
+    let actualRecipientUserId = recipientUserId || targetUserId
     try {
-      const recipient = await firebase_get(`users/${targetUserId}`)
+      const recipient = await firebase_get(`users/${actualRecipientUserId}`)
       if (recipient) {
-        recipientName = `${recipient.name || ''} ${recipient.surname || ''}`.trim() || targetUserId
+        recipientName = `${recipient.name || ''} ${recipient.surname || ''}`.trim() || recipientName
       }
     } catch (err) {
-      addLog('warn', 'Could not fetch recipient info', { targetUserId, error: err.message })
+      addLog('warn', 'Could not fetch recipient info', { actualRecipientUserId, error: err.message })
     }
 
     // Create memo object
@@ -1229,8 +1231,9 @@ app.post("/send", async (req, res) => {
       type,
       content,
       docNumber: docNumber || '',
-      recipientId: targetUserId,
+      recipientId: actualRecipientUserId,  // Use system user ID, not followerId
       recipientName: recipientName,
+      followerId: targetUserId,  // Store the LINE followerId separately for reference
       senderId: senderUserId,
       senderUserId: senderUserId,  // Also include senderUserId for frontend compatibility
       senderName: senderName,
@@ -1253,6 +1256,9 @@ app.post("/send", async (req, res) => {
       senderDepartmentName: sender?.department,
       senderSubDepartmentName: sender?.department2 
     })
+
+    // Initialize approvers array
+    let memoApprovers = []
 
     // Look for approvers for this sender's department
     if (sender && sender.department) {
@@ -1332,7 +1338,7 @@ app.post("/send", async (req, res) => {
         memoId: memoId,
         memo: memoData,
         senderId: senderUserId,
-        recipientId: targetUserId
+        recipientId: actualRecipientUserId
       }
       
       try {
@@ -1361,18 +1367,18 @@ app.post("/send", async (req, res) => {
           memoId: memoId,
           memo: memoData,
           senderId: senderUserId,
-          recipientId: targetUserId
+          recipientId: actualRecipientUserId
         }
         
         try {
           await firebase_set(`notifications/${approver.approverId}/${notification.id}`, notification)
-          addLog('info', 'Approval notification sent to approver', { approverId: approver.approverId, memoId, senderUserId, recipientId: targetUserId })
+          addLog('info', 'Approval notification sent to approver', { approverId: approver.approverId, memoId, senderUserId, recipientId: actualRecipientUserId })
         } catch (err) {
           addLog('warn', 'Failed to send approval notification', { approverId: approver.approverId, error: err.message })
         }
       }
 
-      addLog('info', 'Memo created - pending approval', { memoId, senderId: senderUserId, recipientId: targetUserId, approverCount: memoApprovers.length })
+      addLog('info', 'Memo created - pending approval', { memoId, senderId: senderUserId, recipientId: actualRecipientUserId, followerId: targetUserId, approverCount: memoApprovers.length })
       return res.json({ status: "Memo created - pending approval", memoId, approverCount: memoApprovers.length })
     }
 
@@ -1470,21 +1476,20 @@ app.post("/send", async (req, res) => {
       }
     }
 
-    // Send to recipient
-    await client.pushMessage(targetUserId, lineMessage)
-
-    let recipientNames = []
-    if (recipientUserId) {
-      try {
-        const recipient = await firebase_get(`users/${recipientUserId}`)
-        if (recipient) {
-          recipientNames.push(`${recipient.name || ''} ${recipient.surname || ''}`.trim())
-        }
-      } catch (err) { }
+    // Send to recipient via LINE
+    try {
+      addLog('info', 'Attempting to send LINE message', { followerId: targetUserId, recipientUserId: actualRecipientUserId, memoId })
+      await client.pushMessage(targetUserId, lineMessage)
+      addLog('info', 'LINE message sent successfully', { followerId: targetUserId, memoId })
+    } catch (lineErr) {
+      addLog('error', 'Failed to send LINE message', { followerId: targetUserId, error: lineErr.message })
+      // Don't throw - store the memo anyway with a note that LINE delivery failed
+      memoData.lineDeliveryFailed = true
+      memoData.lineDeliveryError = lineErr.message
     }
 
     await firebase_set(`sent_memos/${senderUserId}/${memoId}`, memoData)
-    addLog('info', 'Send message request (no approval required)', { title, type, userId: targetUserId, senderName })
+    addLog('info', 'Send message request (no approval required)', { title, type, followerId: targetUserId, recipientUserId: actualRecipientUserId, senderName })
 
     const notification = {
       id: Date.now().toString(),
@@ -1497,18 +1502,25 @@ app.post("/send", async (req, res) => {
       memoObject: memoData,
       memoType: 'received',
       senderId: senderUserId,
-      recipientId: recipientUserId,
+      recipientId: actualRecipientUserId,
       followerId: targetUserId
     }
     
-    if (recipientUserId) {
-      await firebase_set(`notifications/${recipientUserId}/${notification.id}`, notification)
+    if (recipientUserId || actualRecipientUserId) {
+      await firebase_set(`notifications/${actualRecipientUserId}/${notification.id}`, notification)
     }
 
-    addLog('info', 'Message sent successfully (direct - no approval needed)', { userId: targetUserId, memoId, senderUserId })
+    addLog('info', 'Message sent successfully (direct - no approval needed)', { followerId: targetUserId, recipientUserId: actualRecipientUserId, memoId, senderUserId })
     res.json({ status: "sent", memoId })
 
   } catch(err) {
+    addLog('error', 'Error in /send endpoint', { 
+      error: err.message, 
+      stack: err.stack,
+      followerId: targetUserId, 
+      recipientUserId: actualRecipientUserId,
+      senderUserId 
+    })
     res.status(500).json({ error: err.message })
   }
 })
@@ -1754,8 +1766,8 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
     // Send to recipient (LINE follower or system user)
     const recipientId = memoData.recipientId || memoData.recipientUserId
     
-    if (memoData.recipientId) {
-      // Send LINE message to LINE follower
+    // If this is a LINE recipient (followerId exists), send LINE message
+    if (memoData.followerId) {
       const lineMessage = {
         type: "flex",
         altText: `Approved Memorandum: ${memoData.title}`,
@@ -1767,9 +1779,9 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
             contents: [
               {
                 type: "text",
-                text: "✅ Approved Memorandum",
+                text: "📋 New Memorandum",
                 weight: "bold",
-                color: "#1a5c3a",
+                color: "#182034",
                 size: "xl"
               }
             ]
@@ -1797,11 +1809,64 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
               },
               {
                 type: "text",
+                text: `Type: ${memoData.type || 'Announcement'}`,
+                size: "sm",
+                color: "#1a2740",
+                weight: "bold",
+                margin: "md"
+              },
+              ...(memoData.docNumber ? [{
+                type: "text",
+                text: `Doc #: ${memoData.docNumber}`,
+                size: "sm",
+                color: "#1a2740",
+                weight: "bold",
+                margin: "md"
+              }] : []),
+              {
+                type: "text",
+                text: `Status: ✅ Approved`,
+                size: "sm",
+                color: "#1a5c3a",
+                weight: "bold",
+                margin: "md"
+              },
+              {
+                type: "text",
                 text: `Approved by: ${currentUser.name} ${currentUser.surname}`,
                 size: "sm",
                 color: "#1a5c3a",
                 weight: "bold",
                 margin: "md"
+              },
+              {
+                type: "separator",
+                margin: "md"
+              },
+              {
+                type: "text",
+                text: memoData.content.substring(0, 200) + (memoData.content.length > 200 ? '...' : ''),
+                size: "sm",
+                color: "#666666",
+                wrap: true,
+                margin: "md"
+              }
+            ]
+          },
+          footer: {
+            type: "box",
+            layout: "vertical",
+            spacing: "sm",
+            contents: [
+              {
+                type: "button",
+                action: {
+                  type: "uri",
+                  label: "View Details",
+                  uri: "https://rmcmemorandum.up.railway.app/"
+                },
+                style: "primary",
+                color: "#1a2740"
               }
             ]
           }
@@ -1809,14 +1874,17 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
       }
 
       try {
-        await client.pushMessage(memoData.recipientId, lineMessage)
-        addLog('info', 'LINE message sent to approved memo recipient', { recipientId: memoData.recipientId, memoId })
+        addLog('info', 'Attempting to send LINE message to approved memo recipient', { followerId: memoData.followerId, memoId })
+        await client.pushMessage(memoData.followerId, lineMessage)
+        addLog('info', 'LINE message sent successfully to approved memo recipient', { followerId: memoData.followerId, memoId })
       } catch (err) {
-        addLog('warn', 'Failed to send LINE message', { error: err.message })
+        addLog('error', 'Failed to send LINE message on approval', { followerId: memoData.followerId, error: err.message })
       }
-    } else if (memoData.recipientUserId) {
-      // Send notification to system user recipient
-      const recipient = await firebase_get(`users/${memoData.recipientUserId}`)
+    }
+    
+    // Also handle system user recipient (if exists)
+    if (memoData.recipientId) {
+      const recipient = await firebase_get(`users/${memoData.recipientId}`)
       if (recipient) {
         // Add to received_memos
         const approvedMemo = {
@@ -1826,8 +1894,8 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
           approvalPending: false
         }
         
-        await firebase_set(`received_memos/${memoData.recipientUserId}/${memoId}`, approvedMemo)
-        addLog('info', 'Approved memo added to received_memos', { recipientUserId: memoData.recipientUserId, memoId })
+        await firebase_set(`received_memos/${memoData.recipientId}/${memoId}`, approvedMemo)
+        addLog('info', 'Approved memo added to received_memos', { recipientUserId: memoData.recipientId, memoId })
         
         // Create notification
         const memoNotification = {
@@ -1837,15 +1905,15 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
           memoType: 'received',
           message: `"${memoData.title}" จาก ${senderUser.name} ${senderUser.surname}`,
           read: false,
-          recipientId: memoData.recipientUserId,
+          recipientId: memoData.recipientId,
           senderId: memoSenderId,
           timestamp: new Date().toISOString(),
           title: 'ได้รับ Memo ใหม่',
           type: 'info'
         }
         
-        await firebase_set(`notifications/${memoData.recipientUserId}/${memoNotification.id}`, memoNotification)
-        addLog('info', 'Notification created for approved memo', { recipientUserId: memoData.recipientUserId, notificationId: memoNotification.id })
+        await firebase_set(`notifications/${memoData.recipientId}/${memoNotification.id}`, memoNotification)
+        addLog('info', 'Notification created for approved memo', { recipientUserId: memoData.recipientId, notificationId: memoNotification.id })
       }
     }
 
