@@ -823,23 +823,9 @@ app.get("/user/followers", verifyToken, async (req, res) => {
     }
     
     const linkedFollowers = user.linkedFollowers || {}
-    
-    // Fetch LINE profile pictures for each follower
-    const followersRes = await firebase_get('followers')
-    const followerProfiles = followersRes || {}
-    
-    // Enrich linkedFollowers with pictureUrl from followers collection
-    const enrichedFollowers = {}
-    for (let followerId in linkedFollowers) {
-      enrichedFollowers[followerId] = {
-        ...linkedFollowers[followerId],
-        pictureUrl: followerProfiles[followerId]?.pictureUrl || null
-      }
-    }
-    
     res.json({
-      followerCount: Object.keys(enrichedFollowers).length,
-      followers: enrichedFollowers
+      followerCount: Object.keys(linkedFollowers).length,
+      followers: linkedFollowers
     })
   } catch (err) {
     res.status(500).json({ error: err.message })
