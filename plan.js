@@ -231,5 +231,9 @@ approve user✓
 2.บัคเมื่อ unlink user ส่ง memo ไปยัง link user จะไม่แจ้งเตือน line
 3.เมื่อส่ง memo ต้องส่งแจ้งเตือน line ให้ผู้ที่ต้อง approve แล้วเมื่อทำการ approve แล้วค่อยแจ้งเตือน line ไปยังผู้รับ memo
 
+
+4/4
+เพิ่ม log เมื่อ ส่ง memo
+
 */
 
