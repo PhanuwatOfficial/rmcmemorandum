@@ -1268,7 +1268,7 @@
             box-shadow: var(--shadow-lg);
             max-width: 680px;
             width: 90%;
-            max-height: 85vh;
+            max-height: 100vh;
             overflow-y: auto;
             animation: slideUp 0.25s ease;
             border: 1px solid var(--border);
@@ -2646,7 +2646,22 @@
                     </div>
                 </div>
             </div>
+<!--
+prompt:
+flow ตอนนี้คือ
+1.user ส่ง memo ไปยัง recipient 
+2.รอ approve memo จาก user ที่กำหนดใน memoApprovers ตาม department
+3.เมื่อ approve จะส่งแจ้งเตือนไปยัง line ของ recipient ว่ามี memo ใหม่ที่ได้รับการอนุมัติแล้ว และส่ง memo
 
+
+อยากให้เพิ่มการแจ้งเตือน line อีก 1 step ดังนี้
+1.user ส่ง memo ไปยัง recipient 
+2.รอ approve memo จาก user ที่กำหนดใน memoApprovers ตาม department
+3.ส่งแจ้งเตือนไปยัง approve user ว่ามี memo รอการอนุมัติ และส่ง memo ให้ approve user พิจารณา approve หรือ reject
+4.เมื่อ approve จะส่งแจ้งเตือนไปยัง line ของ recipient ว่ามี memo ใหม่ที่ได้รับการอนุมัติแล้ว และส่ง memo
+
+ก็คือส่งแจ้งเตือนไปยัง 1.approve user 2.recipient user เลย แทนที่จะส่งแค่ recipient user อย่างเดียว
+-->
 
             <!-- ── SENT MEMOS VIEW ────────────────── -->
             <div id="view-sent-memos" class="view" style="display:none;">
