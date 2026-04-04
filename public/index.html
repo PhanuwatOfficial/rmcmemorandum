@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="ICON.png" />
-    <title>Executive Memorandum Suite</title>
+    <title>RMC E-MEMO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
@@ -2569,6 +2569,13 @@
                                     <span>เพื่อโปรดพิจารณา</span>
                                 </label>
                             </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Filter by Department</label>
+                            <select id="depFilterSelect" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit; cursor: pointer;" onchange="filterRecipientsByDepartment()">
+                                <option value="">— All Departments —</option>
+                            </select>
                         </div>
 
                         <div class="field">
@@ -5767,6 +5774,9 @@
         // ── Load Recipients for Compose ──────────
         // Global variable to store current document number
         let currentDocNumber = ''
+        // Store full recipients data for filtering
+        let allLinkedFollowers = []
+        let allUsersWithoutFollowers = []
 
         async function loadMemoDocNumber() {
             try {
@@ -5840,31 +5850,14 @@
 
                     console.log('👑 Admin loaded linkedFollowers:', linkedFollowers.length, 'usersWithout:', usersWithoutFollowers.length)
                 } else {
-                    // Regular users see their own linked followers + all other users as notification recipients
-                    const res = await fetch('/user/followers', {
+                    // Regular users: get all linked followers from all users + show users without linked followers
+                    const res = await fetch('/user/linked-followers-with-pictures', {
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     })
-                    const userFollowerData = await res.json()
+                    const linkedData = await res.json()
+                    linkedFollowers = linkedData.linkedFollowers || []
 
-                    if (userFollowerData.followerCount > 0) {
-                        for (let uid in userFollowerData.followers) {
-                            const follower = userFollowerData.followers[uid]
-                            linkedFollowers.push({
-                                userId: currentUser.userId,
-                                username: currentUser.username,
-                                name: currentUser.name,
-                                surname: currentUser.surname,
-                                followerId: uid,
-                                followerName: follower.displayName || 'Unknown',
-                                pictureUrl: follower.pictureUrl,
-                                linkedAt: follower.linkedAt || new Date().toISOString(),
-                                department: currentUser.department || '—',
-                                department2: currentUser.department2 || '—'
-                            })
-                        }
-                    }
-
-                    // Fetch all users to show as notification recipients
+                    // Fetch all users
                     try {
                         const usersRes = await fetch('/admin/users', {
                             headers: { 'Authorization': `Bearer ${authToken}` }
@@ -5873,8 +5866,14 @@
                             const usersData = await usersRes.json()
                             const allUsers = usersData.users || []
 
-                            // Show all users except current user as notification recipients
-                            usersWithoutFollowers = allUsers.filter(user => user.userId !== currentUser.userId)
+                            // Get set of user IDs that are already in linkedFollowers (have linked followers)
+                            const usersWithLinkedSet = new Set(linkedFollowers.map(link => link.userId))
+
+                            // Show only users who don't have linked followers
+                            usersWithoutFollowers = allUsers.filter(user => 
+                                !usersWithLinkedSet.has(user.userId) && 
+                                user.userId !== currentUser.userId
+                            )
                         }
                     } catch (err) {
                         console.warn('Could not fetch other users for notification recipients:', err.message)
@@ -5883,6 +5882,13 @@
                     console.log('👤 Regular user loaded linkedFollowers:', linkedFollowers.length, 'usersWithout:', usersWithoutFollowers.length)
                 }
 
+                // Store full data for filtering
+                allLinkedFollowers = linkedFollowers
+                allUsersWithoutFollowers = usersWithoutFollowers
+
+                // Load departments for filter dropdown
+                await loadDepartmentsForFilter(linkedFollowers, usersWithoutFollowers)
+
                 const container = document.getElementById('recipientsList')
 
                 if (linkedFollowers.length === 0 && usersWithoutFollowers.length === 0) {
@@ -5890,7 +5896,70 @@
                     return
                 }
 
-                let html = `
+                // Render recipients
+                renderRecipientsList(linkedFollowers, usersWithoutFollowers)
+            } catch (e) {
+                console.error('Error loading compose recipients:', e.message)
+                document.getElementById('recipientsList').innerHTML = '<div style="text-align: center; color: var(--red); padding: 20px;">Error loading recipients</div>'
+            }
+        }
+
+        // ── Load Departments for Filter Dropdown ──────────
+        async function loadDepartmentsForFilter(linkedFollowers, usersWithoutFollowers) {
+            const departments = new Set()
+            
+            // Collect all unique departments from both groups
+            for (let link of linkedFollowers) {
+                if (link.department && link.department !== '—') {
+                    departments.add(link.department)
+                }
+            }
+            for (let user of usersWithoutFollowers) {
+                if (user.department && user.department !== '—') {
+                    departments.add(user.department)
+                }
+            }
+
+            // Sort departments
+            const deptArray = Array.from(departments).sort()
+
+            // Update select dropdown
+            const select = document.getElementById('depFilterSelect')
+            let html = '<option value="">— All Departments —</option>'
+            for (let dept of deptArray) {
+                html += `<option value="${escHtml(dept)}">${escHtml(dept)}</option>`
+            }
+            select.innerHTML = html
+            select.value = '' // Reset to all departments
+        }
+
+        // ── Filter Recipients by Department ──────────
+        async function filterRecipientsByDepartment() {
+            const selectedDept = document.getElementById('depFilterSelect').value
+
+            // Filter the data
+            let filteredLinkedFollowers = allLinkedFollowers
+            let filteredUsersWithout = allUsersWithoutFollowers
+
+            if (selectedDept) {
+                filteredLinkedFollowers = allLinkedFollowers.filter(link => link.department === selectedDept)
+                filteredUsersWithout = allUsersWithoutFollowers.filter(user => user.department === selectedDept)
+            }
+
+            // Render filtered recipients
+            renderRecipientsList(filteredLinkedFollowers, filteredUsersWithout)
+        }
+
+        // ── Render Recipients List ──────────
+        function renderRecipientsList(linkedFollowers, usersWithoutFollowers) {
+            const container = document.getElementById('recipientsList')
+
+            if (linkedFollowers.length === 0 && usersWithoutFollowers.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--ink-faint); padding: 20px;">No recipients available</div>'
+                return
+            }
+
+            let html = `
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="border-bottom: 1px solid var(--border);">
@@ -5959,10 +6028,6 @@
                 // Debug: Verify all checkboxes
                 const checkboxes = container.querySelectorAll('.recipient-checkbox')
                 console.log(`✅ Generated ${checkboxes.length} checkboxes (${linkedFollowers.length} LINE, ${usersWithoutFollowers.length} Notification)`)
-            } catch (e) {
-                console.error('Error loading compose recipients:', e.message)
-                document.getElementById('recipientsList').innerHTML = '<div style="text-align: center; color: var(--red); padding: 20px;">Error loading recipients</div>'
-            }
         }
 
 
@@ -5972,6 +6037,7 @@
             document.querySelectorAll('.memo-type-checkbox').forEach(cb => {
                 cb.checked = false
             })
+            document.getElementById('depFilterSelect').value = ''
             document.getElementById('msg').value = ''
             document.querySelectorAll('.recipient-checkbox').forEach(cb => {
                 cb.checked = false

@@ -832,6 +832,77 @@ app.get("/user/followers", verifyToken, async (req, res) => {
   }
 })
 
+// Get user's linked followers with LINE profile pictures
+app.get("/user/linked-followers-with-pictures", verifyToken, async (req, res) => {
+  try {
+    const user = await firebase_get(`users/${req.userId}`)
+    if (!user) {
+      return res.status(404).json({ error: "User not found" })
+    }
+    
+    // Get followers database
+    const followersData = await firebase_get('followers')
+    const followerProfiles = followersData || {}
+    
+    // Get all users to find who has linked followers
+    const allUsersData = await firebase_get('users')
+    
+    const linkedFollowers = []
+    
+    // For current user: get their own linked followers with pictures
+    const userLinkedFollowers = user.linkedFollowers || {}
+    for (let followerId in userLinkedFollowers) {
+      const linkedInfo = userLinkedFollowers[followerId]
+      const followerProfile = followerProfiles[followerId]
+      
+      linkedFollowers.push({
+        userId: user.userId,
+        username: user.username,
+        name: user.name,
+        surname: user.surname,
+        followerId: followerId,
+        followerName: linkedInfo.displayName || 'Unknown',
+        pictureUrl: followerProfile?.pictureUrl || null,
+        linkedAt: linkedInfo.linkedAt || new Date().toISOString(),
+        department: user.department || '—',
+        department2: user.department2 || '—'
+      })
+    }
+    
+    // For other users: find those who have linked followers and add them too
+    for (let userId in allUsersData) {
+      const otherUser = allUsersData[userId]
+      if (userId === req.userId) continue // Skip current user
+      
+      const otherUserLinkedFollowers = otherUser.linkedFollowers || {}
+      if (Object.keys(otherUserLinkedFollowers).length > 0) {
+        // This user has linked followers - add them with their first linked follower's picture
+        for (let followerId in otherUserLinkedFollowers) {
+          const linkedInfo = otherUserLinkedFollowers[followerId]
+          const followerProfile = followerProfiles[followerId]
+          
+          linkedFollowers.push({
+            userId: otherUser.userId,
+            username: otherUser.username,
+            name: otherUser.name,
+            surname: otherUser.surname,
+            followerId: followerId,
+            followerName: linkedInfo.displayName || 'Unknown',
+            pictureUrl: followerProfile?.pictureUrl || null,
+            linkedAt: linkedInfo.linkedAt || new Date().toISOString(),
+            department: otherUser.department || '—',
+            department2: otherUser.department2 || '—'
+          })
+        }
+      }
+    }
+    
+    res.json({ linkedFollowers })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Get departments for autocomplete (accessible to all authenticated users)
 // Get next document number (format: YY-0001)
 app.get("/next-doc-number", verifyToken, async (req, res) => {
