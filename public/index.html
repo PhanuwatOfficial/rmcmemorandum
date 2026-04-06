@@ -3152,12 +3152,12 @@
                             </div>
                         </div>
                         <div class="section-body" style="display: flex; flex-direction: column; gap: 10px;">
-                            <button class="btn btn-primary" onclick="showView('memo-approvers'); loadMemoApprovers()"
+                            <button class="btn btn-primary" onclick="openMemoApproversModal(); loadMemoApprovers()"
                                 style="width: 100%; justify-content: flex-start;">
                                 <span class="material-symbols-outlined">verified_user</span>
                                 Memo Approvers
                             </button>
-                            <button class="btn btn-primary" onclick="showView('tab-access'); loadTabAccess()"
+                            <button class="btn btn-primary" onclick="openTabAccessModal(); loadTabAccess()"
                                 style="width: 100%; justify-content: flex-start;">
                                 <span class="material-symbols-outlined">security</span>
                                 Tab Access Control
@@ -3542,11 +3542,18 @@
             </div>
 
             <!-- ── MEMO APPROVERS MANAGEMENT ───── -->
-            <div id="view-memo-approvers" class="view" style="display:none;">
-                <div class="page-header">
-                    <h2>Memo Approvers Management</h2>
-                    <p>Assign users who can approve memorandums by department.</p>
-                </div>
+            <div id="view-memo-approvers" class="view" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 500; overflow-y: auto; padding: 20px;">
+                <div style="background: white; border-radius: var(--radius); max-width: 900px; margin: 20px auto; box-shadow: var(--shadow-lg);">
+                    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border);">
+                        <div>
+                            <h2>Memo Approvers Management</h2>
+                            <p>Assign users who can approve memorandums by department.</p>
+                        </div>
+                        <button class="btn btn-ghost" onclick="closeMemoApproversModal()" style="position: relative; width: auto; padding: 8px 12px;">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div style="padding: 20px; max-height: 70vh; overflow-y: auto;">
 
                 <div class="section-card" style="max-width: 800px;">
                     <div class="section-header">
@@ -3607,14 +3614,23 @@
                         </div>
                     </div>
                 </div>
+                    </div>
+                </div>
             </div>
 
             <!-- ── TAB ACCESS CONTROL ──────────── -->
-            <div id="view-tab-access" class="view" style="display:none;">
-                <div class="page-header">
-                    <h2>Tab Access Control</h2>
-                    <p>Configure which tabs each user can access.</p>
-                </div>
+            <div id="view-tab-access" class="view" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 500; overflow-y: auto; padding: 20px;">
+                <div style="background: white; border-radius: var(--radius); max-width: 900px; margin: 20px auto; box-shadow: var(--shadow-lg);">
+                    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border);">
+                        <div>
+                            <h2>Tab Access Control</h2>
+                            <p>Configure which tabs each user can access.</p>
+                        </div>
+                        <button class="btn btn-ghost" onclick="closeTabAccessModal()" style="position: relative; width: auto; padding: 8px 12px;">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div style="padding: 20px; max-height: 70vh; overflow-y: auto;">
 
                 <div class="section-card">
                     <div class="section-header">
@@ -3696,6 +3712,8 @@
                             <button class="btn btn-ghost" onclick="closeTabAccessModal()">Cancel</button>
                             <button class="btn btn-primary" onclick="saveTabAccess()">Save</button>
                         </div>
+                    </div>
+                </div>
                     </div>
                 </div>
             </div>
@@ -8049,7 +8067,7 @@
                                     ${u.isCustom ? `Tabs: ${u.tabs.join(', ')}` : 'Using default access'}
                                 </div>
                             </div>
-                            <button class="btn btn-primary btn-sm" onclick="openTabAccessModal('${u.userId}', '${u.username}', ${JSON.stringify(u.tabs).replace(/"/g, '&quot;')})">
+                            <button class="btn btn-primary btn-sm" onclick="openTabAccessEditor('${u.userId}', '${u.username}', ${JSON.stringify(u.tabs).replace(/"/g, '&quot;')})">
                                 <span class="material-symbols-outlined">edit</span>
                                 Edit
                             </button>
@@ -8064,7 +8082,7 @@
             }
         }
 
-        function openTabAccessModal(userId, username, currentTabs) {
+        function openTabAccessEditor(userId, username, currentTabs) {
             document.getElementById('tabAccessModal').style.display = 'flex'
             document.getElementById('tabAccessModalUsername').textContent = username
 
@@ -8084,7 +8102,20 @@
             }
         }
 
+        function closeMemoApproversModal() {
+            document.getElementById('view-memo-approvers').style.display = 'none'
+        }
+
+        function openMemoApproversModal() {
+            document.getElementById('view-memo-approvers').style.display = 'block'
+        }
+
+        function openTabAccessModal() {
+            document.getElementById('view-tab-access').style.display = 'block'
+        }
+
         function closeTabAccessModal() {
+            document.getElementById('view-tab-access').style.display = 'none'
             document.getElementById('tabAccessModal').style.display = 'none'
         }
 
