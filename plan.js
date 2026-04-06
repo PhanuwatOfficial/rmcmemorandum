@@ -235,17 +235,11 @@ approve user✓
 4/4/26
 เพิ่ม log เมื่อ ส่ง memo
 
-แก้ส่วน Administration ใน tab user management
-เมื่อเปิด
--Memo Approvers
--Tab Access Control
 
 
-        function getEventTypeAndIcon(message, data) {
-            const msg = message.toLowerCase()
 
-     
-    title: 'User Registered' ✓
+06/04
+    title: 'User egistered' ✓
     title: 'User Approved' ✓
     title: 'User Rejected' ✓
     title: 'Login' ✓
@@ -253,11 +247,18 @@ approve user✓
     title: 'Sent Memo' ✓
     title: 'Approved Memo'  ✓
     title: 'Rejected Memo' ✓
-    title: 'New Follower'
+    title: 'New Follower' ✓
     title: 'Follower Linked'
     title: 'Follower Unlinked'
     title: 'Department Deleted'
 
+-แก้ส่วน Administration ใน tab user management
+  เมื่อเปิด tab
+  Memo Approvers
+  Tab Access Control
 
+-แก้ layout หน้า mobile
+-add function | search box
+-add function | icon setting topbar
 */
 
