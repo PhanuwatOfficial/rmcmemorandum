@@ -684,6 +684,34 @@
             background: #253556;
         }
 
+        .btn-app {
+            background: #eaf5ef;
+            color: #1a5c3a;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: 1px solid #1a5c3a34;
+        }
+
+        .btn-app:hover {
+            background: #218060;
+            color: #fff;
+        }
+
+        .btn-reject {
+            background: #fdf0f0;
+            color: #8b1a1a;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: 1px solid #8b1a1a25;
+        }
+
+        .btn-reject:hover {
+            background: #8b1a1a;
+            color: #fff;
+        }
+        
+
+
         .btn-ghost {
             background: var(--surface);
             color: var(--ink-muted);
@@ -768,7 +796,7 @@
         #memoApprovalActionsSection {
             background: linear-gradient(135deg, var(--green-bg) 0%, rgba(26, 92, 58, 0.05) 100%);
             border: 1px solid rgba(26, 92, 58, 0.2);
-            border-left: 4px solid var(--green);
+            border-left: 4px solid var(--accent-2);
         }
 
         #memoRejectionInputSection {
@@ -1417,7 +1445,7 @@
         }
 
         .memo-detail-header {
-            padding: 28px 32px;
+            padding: 20px 32px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
@@ -3130,7 +3158,7 @@ flow ตอนนี้คือ
                 </div>
 
                 <!-- Admin Navigation -->
-                <div id="adminNav" style="display: none; max-width: 680px; padding: 20px 0;">
+                <div id="adminNav" style="display: none; max-width: 680px;">
                     <div class="section-card">
                         <div class="section-header">
                             <div class="section-title">
@@ -3767,12 +3795,12 @@ flow ตอนนี้คือ
                             </div>
                         </div>
                         <div style="flex: 1; min-width: 200px;">
-                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;">Approved/Rejected By</div>
+                            <div class="memo-detail-label" style=" font-size: 12px; margin-bottom: 6px;">Approved/Rejected By</div>
                             <div class="memo-detail-value" id="memoApprovalBy" style="padding: 8px 12px; background: transparent; color: var(--ink); font-weight: 500;">—</div>
                         </div>
                         <div style="flex: 1; min-width: 200px;">
                             <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;">Date & Time</div>
-                            <div class="memo-detail-value" id="memoApprovalDateTime" style="padding: 8px 12px; background: transparent; color: var(--ink-muted); font-size: 13px;">—</div>
+                            <div class="memo-detail-value" id="memoApprovalDateTime" style="padding: 8px 12px; background: transparent; color: var(--ink); font-weight: 500;">—</div>
                         </div>
                     </div>
                     <div id="memoRejectionReasonSection" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.08);">
@@ -3786,11 +3814,11 @@ flow ตอนนี้คือ
                     <div style="margin-bottom: 16px;">
                         <p style="margin: 0 0 12px 0; font-weight: 500; color: var(--ink);">This memo requires your approval</p>
                         <div style="display: flex; gap: 12px;">
-                            <button class="btn btn-sm" style="background: var(--green); color: white; flex: 1;" onclick="showApprovalConfirm('approve')">
+                            <button class="btn btn-app" style=" flex: 1;" onclick="showApprovalConfirm('approve')">
                                 <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
                                 Approve
                             </button>
-                            <button class="btn btn-sm btn-danger" style="background: var(--red); color: white; flex: 1;" onclick="showApprovalConfirm('reject')">
+                            <button class="btn btn-reject" style=" flex: 1;" onclick="showApprovalConfirm('reject')">
                                 <span class="material-symbols-outlined" style="font-size: 18px;">cancel</span>
                                 Reject
                             </button>
@@ -5050,7 +5078,7 @@ flow ตอนนี้คือ
                 setStatus('statusChangePassword', 'error', 'error', err.message)
             }
         }
-
+//แก้ไขเมื่อ change password แล้วไม่บันทึก log
         function clearPasswordForm() {
             document.getElementById('currentPassword').value = ''
             document.getElementById('newPassword').value = ''
@@ -6648,11 +6676,11 @@ flow ตอนนี้คือ
                     // Determine status badge
                     let statusBadge = '<span class="badge badge-pending">Sent</span>'
                     if (memo.status === 'pending_approval') {
-                        statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">Pending Approval</span>'
+                        statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">รอการอนุมัติ</span>'
                     } else if (memo.status === 'approved') {
-                        statusBadge = '<span class="badge" style="background: var(--green-bg); color: var(--green); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">Approved</span>'
+                        statusBadge = '<span class="badge" style="background: var(--green-bg); color: var(--green); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">อนุมัติ</span>'
                     } else if (memo.status === 'rejected') {
-                        statusBadge = '<span class="badge" style="background: var(--red-bg); color: var(--red); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">Rejected</span>'
+                        statusBadge = '<span class="badge" style="background: var(--red-bg); color: var(--red); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">ปฏิเสธ</span>'
                     }
 
                     rows += `<tr>
@@ -6911,23 +6939,47 @@ flow ตอนนี้คือ
         function getEventTypeAndIcon(message, data) {
             const msg = message.toLowerCase()
 
-            if (msg.includes('registered successfully')) return { type: 'approval', icon: '✓', title: 'User Registered', color: 'green' }
-            if (msg.includes('user approved')) return { type: 'approval', icon: '✓', title: 'User Approved', color: 'green' }
-            if (msg.includes('login successful')) return { type: 'login', icon: '→', title: 'Login', color: 'green' }
-            if (msg.includes('logout successful')) return { type: 'logout', icon: '✕', title: 'Logout', color: 'amber' }
-            if (msg.includes('pending user rejected')) return { type: 'logout', icon: '✕', title: 'User Rejected', color: 'amber' }
-            if (msg.includes('linking follower')) return { type: 'follower', icon: '✆', title: 'Follower Linked', color: 'green' }
-            if (msg.includes('follower linked successfully')) return { type: 'follower', icon: '✆', title: 'Follower Connected', color: 'green' }
-            if (msg.includes('follower unlinked')) return { type: 'follower', icon: '✕', title: 'Follower Unlinked', color: 'amber' }
-            if (msg.includes('send message request') || msg.includes('sent to')) return { type: 'send', icon: '↑', title: 'Memo Sent', color: 'blue' }
-            if (msg.includes('received memos')) return { type: 'receive', icon: '↓', title: 'Memo Received', color: 'blue' }
-            if (msg.includes('department added') || msg.includes('sub-department added')) return { type: 'system', icon: '⚙', title: 'Department Added', color: 'blue' }
-            if (msg.includes('department deleted')) return { type: 'system', icon: '⚙', title: 'Department Deleted', color: 'amber' }
-            if (msg.includes('password changed')) return { type: 'system', icon: '🔒', title: 'Password Changed', color: 'blue' }
-            if (msg.includes('error')) return { type: 'error', icon: '⚠', title: 'Error', color: 'red' }
+            // New user registration
+            if (msg.includes('new user register')) return { type: 'approval', icon: 'person_add', title: 'User Registered', color: 'green' }
+            // User approval
+            if (msg.includes('approved user register')) return { type: 'approval', icon: 'person_check', title: 'User Approved', color: 'green' }
+            // Rejected user
+            if (msg.includes('rejected user')) return { type: 'error', icon: 'person_remove', title: 'User Rejected', color: 'red' }
+            // Login
+            if (msg.includes('login')) return { type: 'login', icon: 'login', title: 'Login', color: 'green' }
+            // Logout
+            if (msg.includes('logout')) return { type: 'logout', icon: 'logout', title: 'Logout', color: 'amber' }
+            // Send memo
+            if (msg.includes('send memo')) return { type: 'send', icon: 'mail_outline', title: 'Sent Memo', color: 'blue' }
+            // Approved memo
+            if (msg.includes('approved memo')) {
+                return { type: 'approval', icon: 'check_circle', title: 'Approved Memo', color: 'green' };
+            }
+            // Rejected memo
+            if (msg.includes('rejected memo')) return { type: 'error', icon: 'cancel', title: 'Rejected Memo', color: 'red' }
+            // New followers
+            if (msg.includes('new followers')) return { type: 'follower', icon: 'person_add', title: 'New Follower', color: 'blue' }
+            // Legacy patterns
+            if (msg.includes('linking follower') || msg.includes('follower linked')) return { type: 'follower', icon: 'group_add', title: 'Follower Linked', color: 'green' }
+            if (msg.includes('follower unlinked')) return { type: 'error', icon: 'group_remove', title: 'Follower Unlinked', color: 'amber' }
+            if (msg.includes('department added') || msg.includes('sub-department added')) return { type: 'system', icon: 'domain_add', title: 'Department Added', color: 'blue' }
+            if (msg.includes('department deleted')) return { type: 'system', icon: 'domain_disabled', title: 'Department Deleted', color: 'amber' }
+            if (msg.includes('error')) return { type: 'error', icon: 'error_outline', title: 'Error', color: 'red' }
 
-            return { type: 'system', icon: '●', title: 'Activity', color: 'blue' }
+            return { type: 'system', icon: 'info', title: 'Activity', color: 'blue' }
         }
+
+        /*
+        prompt:
+        ลองทดสอบแล้ว
+        ตอนนี้ที่บันทึก log ได้มี
+        login,logout,User Registered,User Approved
+
+        ที่ยังไม่ได้มี
+        send memo,approved memo,rejected memo,rejected user
+
+        แก้ไขที
+        */
 
         function renderLogs(logs, containerId) {
             const el = document.getElementById(containerId)
@@ -6945,11 +6997,26 @@ flow ตอนนี้คือ
                 const fullDateStr = formatFullDateTime(timestamp)
                 const dataStr = log.data ? formatActivityData(log.data) : ''
 
+                // เพิ่มรายละเอียด approved memo ใน log.message
+                let message = log.message;
+                if (
+                    log.message &&
+                    log.message.toLowerCase().includes('approved memo') &&
+                    log.data && (log.data.docNumber || log.data.approvedByName)
+                ) {
+                    message = 'approved memo';
+                    if (log.data.docNumber) message += ` ${log.data.docNumber}`;
+                    if (log.data.approvedByName) message += ` by ${log.data.approvedByName}`;
+                }
                 return `<div class="activity-event event-${eventInfo.type}">
-                    <div class="activity-event-icon">${eventInfo.icon}</div>
+                    <div class="activity-event-icon">
+                        <span class="material-symbols-outlined" style="font-size: 24px; color: inherit;">
+                            ${eventInfo.icon}
+                        </span>
+                    </div>
                     <div class="activity-event-content">
                         <div class="activity-event-title">${eventInfo.title}</div>
-                        <div class="activity-event-description">${escHtml(log.message)}${dataStr ? ' — ' + dataStr : ''}</div>
+                        <div class="activity-event-description">${escHtml(message)}${dataStr ? ' — ' + dataStr : ''}</div>
                         <div class="activity-event-time">${timeStr} <span style="color: var(--ink-faint); font-size: 11px;">(${fullDateStr})</span></div>
                     </div>
                 </div>`
@@ -6967,8 +7034,6 @@ flow ตอนนี้คือ
                 second: '2-digit'
             })
         }
-
-        //ตอนนี้บอกแค่เวลาที่ผ่านไปแบบคร่าวๆ (activity-event-time) อยากให้เพิ่มระบุเป็นวันที่ logs แบบเต็มๆ
 
         function formatActivityTime(date) {
             const now = new Date()
@@ -7029,6 +7094,223 @@ flow ตอนนี้คือ
                 console.warn('Could not load from Firebase:', e)
             }
         }
+
+        /* 
+                    <div id="view-logs" class="view" style="display:none;">
+                <div class="page-header">
+                    <h2>Activity Log</h2>
+                    <p>Live activity trail from the LINE Bot server.</p>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">event_note</span>
+                            System Activities
+                        </div>
+                        <div class="logs-toolbar">
+                            <div class="logs-toolbar-left">
+                                <button class="btn btn-ghost btn-sm" onclick="loadLogs()">
+                                    <span class="material-symbols-outlined">refresh</span>
+                                    Refresh
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="clearLogs()">
+                                    <span class="material-symbols-outlined">delete_sweep</span>
+                                    Clear
+                                </button>
+                            </div>
+
+
+
+                            <label class="auto-refresh-toggle">
+                                <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
+                                Auto-refresh (2s)
+                            </label>
+                            <div class="logs-counter" id="logsCount">0 entries</div>
+                        </div>
+                    </div>
+                    <div class="section-body" style="padding: 0;">
+                        <div class="activity-log" id="logsViewer">
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">No activity logged yet.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        function getEventTypeAndIcon(message, data) {
+            const msg = message.toLowerCase()
+
+            // New user registration
+            if (msg.includes('new user register')) return { type: 'approval', icon: 'person_add_alt_1', title: 'User Registered', color: 'green' }
+            // User approval
+            if (msg.includes('approved user register')) return { type: 'approval', icon: 'person_check', title: 'User Approved', color: 'green' }
+            // Rejected user
+            if (msg.includes('rejected user')) return { type: 'error', icon: 'person_remove_alt_1', title: 'User Rejected', color: 'red' }
+            // Login
+            if (msg.includes('login')) return { type: 'login', icon: 'login', title: 'Login', color: 'green' }
+            // Logout
+            if (msg.includes('logout')) return { type: 'logout', icon: 'logout', title: 'Logout', color: 'amber' }
+            // Send memo
+            if (msg.includes('send memo')) return { type: 'send', icon: 'mail_outline', title: 'Sent Memo', color: 'blue' }
+            // Approved memo
+            if (msg.includes('approved memo')) return { type: 'approval', icon: 'check_circle', title: 'Approved Memo', color: 'green' }
+            // Rejected memo
+            if (msg.includes('rejected memo')) return { type: 'error', icon: 'cancel', title: 'Rejected Memo', color: 'red' }
+            // New followers
+            if (msg.includes('new followers')) return { type: 'follower', icon: 'person_add', title: 'New Follower', color: 'blue' }
+            // Legacy patterns
+            if (msg.includes('linking follower') || msg.includes('follower linked')) return { type: 'follower', icon: 'group_add', title: 'Follower Linked', color: 'green' }
+            if (msg.includes('follower unlinked')) return { type: 'error', icon: 'group_remove', title: 'Follower Unlinked', color: 'amber' }
+            if (msg.includes('department added') || msg.includes('sub-department added')) return { type: 'system', icon: 'domain_add', title: 'Department Added', color: 'blue' }
+            if (msg.includes('department deleted')) return { type: 'system', icon: 'domain_disabled', title: 'Department Deleted', color: 'amber' }
+            if (msg.includes('error')) return { type: 'error', icon: 'error_outline', title: 'Error', color: 'red' }
+
+            return { type: 'system', icon: 'info', title: 'Activity', color: 'blue' }
+        }
+
+                async function doLogin() {
+                    const username = document.getElementById('loginUsername').value.trim()
+                    const password = document.getElementById('loginPassword').value.trim()
+        
+                    if (!username || !password) {
+                        setStatus('statusLogin', 'error', 'error', 'Username and password required.')
+                        return
+                    }
+        
+                    setStatus('statusLogin', 'loading', 'hourglass_empty', 'Signing in...')
+                    try {
+                        const res = await fetch('/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username, password })
+                        })
+                        const data = await res.json()
+                        if (!res.ok) {
+                            // Show pending message if user is waiting for approval
+                            if (res.status === 403 && data.error && data.error.includes('pending')) {
+                                setStatus('statusLogin', 'warn', 'schedule', data.error)
+                            } else {
+                                setStatus('statusLogin', 'error', 'error', data.error || 'Login failed.')
+                            }
+                            return
+                        }
+                        // Save token and user data
+                        authToken = data.token
+                        currentUser = data.user
+                        localStorage.setItem('authToken', authToken)
+        
+                        setStatus('statusLogin', 'success', 'check_circle', 'Login successful!')
+        
+                        setTimeout(async () => {
+                            document.getElementById('loginUsername').value = ''
+                            document.getElementById('loginPassword').value = ''
+                            updateUIForLoggedIn()
+                            // Load user data and linked profile after successful login
+                            await loadUserData()
+                            await initializeTabAccess()
+                            showView('dashboard')
+                        }, 1000)
+                    } catch (err) {
+                        setStatus('statusLogin', 'error', 'error', err.message)
+                    }
+                }
+
+                function shouldLogMessage(message) {
+                  const importantKeywords = [
+                    'login successful',
+                    'logout successful',
+                    'user registered',
+                    'user approved',
+                    'user rejected',
+                    'followers follow',
+                    'followers unfollow',
+                    'send message request',
+                    'password changed',
+                    'approver',
+                    'line message',
+                    'memo',
+                    'approval'
+                  ]
+                
+                  const msg = message.toLowerCase()
+                  return importantKeywords.some(keyword => msg.includes(keyword))
+                }
+
+                app.post("/login", async (req, res) => {
+                  try {
+                    const { username, password } = req.body
+                
+                    if (!username || !password) {
+                      return res.status(400).json({ error: "Username and password required" })
+                    }
+                
+                    // หา user ด้วย username
+                    const userRef = await firebase_get(`users_by_username/${username}`)
+                    if (!userRef) {
+                      addLog('warn', 'Login failed - user not found', { username })
+                      return res.status(401).json({ error: "Invalid credentials" })
+                    }
+                
+                    const userId = userRef.userId
+                    const user = await firebase_get(`users/${userId}`)
+                
+                    // Check if user is pending approval
+                    if (user.status === 'pending') {
+                      addLog('warn', 'Login blocked - user pending approval', { username })
+                      return res.status(403).json({ error: "Your account is pending admin approval. Please wait for approval to access the system." })
+                    }
+                
+                    // เช็คพาสเวิร์ด
+                    if (user.password !== password) {
+                      addLog('warn', 'Login failed - invalid password', { username })
+                      return res.status(401).json({ error: "Invalid credentials" })
+                    }
+                
+                    // สร้าง token
+                    const token = createToken()
+                    sessions[token] = userId
+                
+                    addLog('info', 'Login successful', { userId, username })
+                    res.json({
+                      status: "Login successful",
+                      token,
+                      user: {
+                        userId,
+                        username,
+                        name: user.name,
+                        surname: user.surname,
+                        role: user.role || 'user'
+                      }
+                    })
+                  } catch (err) {
+                    res.status(500).json({ error: err.message })
+                  }
+                })
+                
+                function shouldLogMessage(message) {
+                  const importantKeywords = [
+                    'login successful',
+                    'logout successful',
+                    'user registered',
+                    'user approved',
+                    'user rejected',
+                    'followers follow',
+                    'followers unfollow',
+                    'send message request',
+                    'password changed',
+                    'approver',
+                    'line message',
+                    'memo',
+                    'approval'
+                  ]
+                
+                  const msg = message.toLowerCase()
+                  return importantKeywords.some(keyword => msg.includes(keyword))
+                }
+
+       prompt: แก้ไขตอนนี้ใน view-logs แสดงผล log แค่ login/logout เท่านั้น ให้แสดง log อื่นด้วย 
+        */
 
         async function clearLogs() {
             const confirmed = await showConfirmModal('Clear all system logs? They will be backed up to Firebase.', 'Clear Logs')

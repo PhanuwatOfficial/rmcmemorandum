@@ -232,8 +232,32 @@ approve user✓
 3.เมื่อส่ง memo ต้องส่งแจ้งเตือน line ให้ผู้ที่ต้อง approve แล้วเมื่อทำการ approve แล้วค่อยแจ้งเตือน line ไปยังผู้รับ memo
 
 
-4/4
+4/4/26
 เพิ่ม log เมื่อ ส่ง memo
+
+แก้ส่วน Administration ใน tab user management
+เมื่อเปิด
+-Memo Approvers
+-Tab Access Control
+
+
+        function getEventTypeAndIcon(message, data) {
+            const msg = message.toLowerCase()
+
+     
+    title: 'User Registered' ✓
+    title: 'User Approved' ✓
+    title: 'User Rejected' ✓
+    title: 'Login' ✓
+    title: 'Logout' ✓
+    title: 'Sent Memo' ✓
+    title: 'Approved Memo'  ✓
+    title: 'Rejected Memo' ✓
+    title: 'New Follower'
+    title: 'Follower Linked'
+    title: 'Follower Unlinked'
+    title: 'Department Deleted'
+
 
 */
 

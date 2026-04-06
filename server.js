@@ -18,28 +18,6 @@ app.use(express.static("public"))
 let logs = [] // เก็บ logs ชั่วคราว
 const MAX_LOGS = 1000 // เก็บ max 1000 logs
 
-// Determine if a message should be logged (filtering important events only)
-function shouldLogMessage(message) {
-  const importantKeywords = [
-    'login successful',
-    'logout successful',
-    'user registered',
-    'user approved',
-    'user rejected',
-    'followers follow',
-    'followers unfollow',
-    'send message request',
-    'password changed',
-    'approver',
-    'line message',
-    'memo',
-    'approval'
-  ]
-
-  const msg = message.toLowerCase()
-  return importantKeywords.some(keyword => msg.includes(keyword))
-}
-
 function addLog(level, message, data = null) {
   const timestamp = new Date().toISOString()
   const logEntry = {
@@ -49,20 +27,21 @@ function addLog(level, message, data = null) {
     data
   }
 
-  // Only log if message contains important keywords
-  if (shouldLogMessage(message)) {
-    logs.push(logEntry)
+  // บันทึก log ในหน่วยความจำ
+  logs.push(logEntry)
 
-    // เก็บ max 1000 logs
-    if (logs.length > MAX_LOGS) {
-      logs.shift()
-    }
-
-    // บันทึก log ลงใน Firebase
-    firebase_set(`logs/${Date.now()}`, logEntry).catch(err => {
-      // ถ้า Firebase error ก็ไม่ต้อง crash
-    })
+  // เก็บ max 1000 logs
+  if (logs.length > MAX_LOGS) {
+    logs.shift()
   }
+
+  // บันทึก log ลงใน Firebase
+  firebase_set(`logs/${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, logEntry).catch(err => {
+    console.error('❌ [LOGS] Firebase write failed:', err.message)
+    console.error('   Timestamp:', timestamp)
+    console.error('   Level:', level)
+    console.error('   Message:', message)
+  })
 }
 
 const config = {
@@ -167,12 +146,9 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" })
     }
 
-    addLog('info', 'Register attempt', { username })
-
     // เช็คว่า username มีอยู่แล้วหรือไม่
     const existingUser = await firebase_get(`users_by_username/${username}`)
     if (existingUser) {
-      addLog('warn', 'Username already exists', { username })
       return res.status(400).json({ error: "Username already exists" })
     }
 
@@ -201,10 +177,9 @@ app.post("/register", async (req, res) => {
     await firebase_set(`users/${userId}`, userData)
     await firebase_set(`users_by_username/${username}`, { userId })
 
-    addLog('info', 'User registered successfully', { userId, username })
+    addLog('info', 'New user register', { userId, username })
     res.json({ status: "User registered successfully", userId })
   } catch (err) {
-    addLog('error', 'Register error', { message: err.message })
     res.status(500).json({ error: err.message })
   }
 })
@@ -221,7 +196,6 @@ app.post("/login", async (req, res) => {
     // หา user ด้วย username
     const userRef = await firebase_get(`users_by_username/${username}`)
     if (!userRef) {
-      addLog('warn', 'Login failed - user not found', { username })
       return res.status(401).json({ error: "Invalid credentials" })
     }
 
@@ -230,13 +204,11 @@ app.post("/login", async (req, res) => {
 
     // Check if user is pending approval
     if (user.status === 'pending') {
-      addLog('warn', 'Login blocked - user pending approval', { username })
       return res.status(403).json({ error: "Your account is pending admin approval. Please wait for approval to access the system." })
     }
 
     // เช็คพาสเวิร์ด
     if (user.password !== password) {
-      addLog('warn', 'Login failed - invalid password', { username })
       return res.status(401).json({ error: "Invalid credentials" })
     }
 
@@ -244,7 +216,7 @@ app.post("/login", async (req, res) => {
     const token = createToken()
     sessions[token] = userId
 
-    addLog('info', 'Login successful', { userId, username })
+    addLog('info', 'Login', { userId, username })
     res.json({
       status: "Login successful",
       token,
@@ -270,7 +242,7 @@ app.post("/logout", verifyToken, async (req, res) => {
     if (userId) {
       const user = await firebase_get(`users/${userId}`)
       delete sessions[token]
-      addLog('info', 'Logout successful', { userId, username: user?.username })
+      addLog('info', 'Logout', { userId, username: user?.username })
     }
 
     res.json({ status: "Logout successful" })
@@ -307,7 +279,6 @@ app.get("/pending-users", verifyToken, async (req, res) => {
       }
     }
 
-    addLog('info', 'Pending users fetched', { count: pendingUsers.length })
     res.json({ pendingUsers })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -344,8 +315,8 @@ app.put("/approve-user/:userId", verifyToken, async (req, res) => {
 
     await firebase_set(`users/${targetUserId}`, targetUser)
     const approverName = admin && admin.username ? admin.username : 'Unknown'
-    addLog('info', 'User approved', { userId: targetUserId, username: targetUser.username, approvedBy: adminId, approverUsername: approverName })
 
+    addLog('info', 'Approved user register', { userId: targetUserId, username: targetUser.username, approvedBy: adminId })
     res.json({ status: "User approved successfully" })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -379,8 +350,7 @@ app.delete("/reject-user/:userId", verifyToken, async (req, res) => {
     await firebase_delete(`users/${targetUserId}`)
     await firebase_delete(`users_by_username/${targetUser.username}`)
 
-    addLog('warn', 'Pending user rejected and deleted', { userId: targetUserId, username: targetUser.username, rejectedBy: adminId })
-
+    addLog('info', 'Rejected user', { userId: targetUserId, username: targetUser.username, rejectedBy: adminId })
     res.json({ status: "User rejected and deleted successfully" })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -412,8 +382,6 @@ app.post("/user/link-follower", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "followerId required" })
     }
 
-    addLog('info', 'Linking follower to user', { userId: req.userId, followerId })
-
     // เช็คว่า follower มีอยู่หรือไม่
     const follower = await firebase_get(`followers/${followerId}`)
     if (!follower) {
@@ -432,7 +400,6 @@ app.post("/user/link-follower", verifyToken, async (req, res) => {
 
     await firebase_set(`users/${req.userId}`, user)
 
-    addLog('info', 'Follower linked successfully', { userId: req.userId, followerId })
     res.json({ status: "Follower linked successfully" })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -448,8 +415,6 @@ app.post("/user/unlink-follower", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "followerId required" })
     }
 
-    addLog('info', 'Unlinking follower from user', { userId: req.userId, followerId })
-
     const user = await firebase_get(`users/${req.userId}`)
     if (!user || !user.linkedFollowers || !user.linkedFollowers[followerId]) {
       return res.status(404).json({ error: "Linked follower not found" })
@@ -461,7 +426,6 @@ app.post("/user/unlink-follower", verifyToken, async (req, res) => {
     // Remove the link
     delete user.linkedFollowers[followerId]
     await firebase_set(`users/${req.userId}`, user)
-    addLog('info', 'Follower unlinked from user account', { userId: req.userId, followerId })
 
     // Send memo to the unlinked follower
     const memoTitle = '📝 บันทึกข้อความ - ยกเลิกการเชื่อมโยง'
@@ -496,7 +460,6 @@ app.post("/user/unlink-follower", verifyToken, async (req, res) => {
 
     // Store the memo
     await firebase_set(`sent_memos/${req.userId}/${memoId}`, memoData)
-    addLog('info', 'Unlink notification memo created', { userId: req.userId, memoId, followerId })
 
     // Send LINE notification to the unlinked follower
     const lineMessage = {
@@ -582,15 +545,11 @@ app.post("/user/unlink-follower", verifyToken, async (req, res) => {
 
     try {
       await client.pushMessage(followerId, lineMessage)
-      addLog('info', 'LINE notification sent after unlink', { followerId, memoId })
     } catch (lineErr) {
-      addLog('error', 'Failed to send LINE notification after unlink', { followerId, error: lineErr.message })
+      // Silent error
     }
-
-    addLog('info', 'Follower unlinked successfully with notification', { userId: req.userId, followerId })
     res.json({ status: "Follower unlinked successfully", memoId, message: `ได้ส่งการแจ้งเตือนไปยัง ${linkedFollowerInfo.displayName}` })
   } catch (err) {
-    addLog('error', 'Error in unlink-follower', { userId: req.userId, followerId: req.body.followerId, error: err.message })
     res.status(500).json({ error: err.message })
   }
 })
@@ -616,12 +575,9 @@ app.post("/user/unlink-profile", verifyToken, async (req, res) => {
     const followerId = followerIds[0]  // Get the first/main linked follower
     const linkedFollowerInfo = linkedFollowers[followerId]
 
-    addLog('info', 'Starting unlink profile process', { userId, followerId, followerName: linkedFollowerInfo.displayName })
-
     // 1. Remove the link from user's account
     delete user.linkedFollowers[followerId]
     await firebase_set(`users/${userId}`, user)
-    addLog('info', 'Profile unlinked from user account', { userId, followerId })
 
     // 2. Send memo to the linked follower notifying them of the unlink
     const senderName = `${user.name || ''} ${user.surname || ''}`.trim()
@@ -657,7 +613,6 @@ app.post("/user/unlink-profile", verifyToken, async (req, res) => {
 
     // Store the memo
     await firebase_set(`sent_memos/${userId}/${memoId}`, memoData)
-    addLog('info', 'Unlink notification memo created and stored', { userId, memoId, followerId })
 
     // 3. Send LINE notification to the linked follower
     const lineMessage = {
@@ -743,9 +698,7 @@ app.post("/user/unlink-profile", verifyToken, async (req, res) => {
 
     try {
       await client.pushMessage(followerId, lineMessage)
-      addLog('info', 'LINE notification sent successfully after unlink', { followerId, memoId })
     } catch (lineErr) {
-      addLog('error', 'Failed to send LINE notification after unlink', { followerId, error: lineErr.message })
       // Don't fail the unlink if LINE notification fails
     }
 
@@ -756,7 +709,6 @@ app.post("/user/unlink-profile", verifyToken, async (req, res) => {
       message: `ได้ส่งการแจ้งเตือนไปยัง ${linkedFollowerInfo.displayName}`
     })
   } catch (err) {
-    addLog('error', 'Error in unlink-profile', { userId: req.userId, error: err.message })
     res.status(500).json({ error: err.message })
   }
 })
@@ -770,8 +722,6 @@ app.post("/user/change-password", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Current password and new password are required" })
     }
 
-    addLog('info', 'Change password attempt', { userId: req.userId })
-
     const user = await firebase_get(`users/${req.userId}`)
     if (!user) {
       return res.status(404).json({ error: "User not found" })
@@ -779,7 +729,6 @@ app.post("/user/change-password", verifyToken, async (req, res) => {
 
     // Verify current password
     if (user.password !== currentPassword) {
-      addLog('warn', 'Change password failed - incorrect current password', { userId: req.userId })
       return res.status(401).json({ error: "Current password is incorrect" })
     }
 
@@ -787,7 +736,6 @@ app.post("/user/change-password", verifyToken, async (req, res) => {
     user.password = newPassword
     await firebase_set(`users/${req.userId}`, user)
 
-    addLog('info', 'Password changed successfully', { userId: req.userId })
     res.json({ status: "Password changed successfully" })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -799,8 +747,6 @@ app.post("/user/update-departments", verifyToken, async (req, res) => {
   try {
     const { department, department2 } = req.body
 
-    addLog('info', 'Update departments attempt', { userId: req.userId, department, department2 })
-
     const user = await firebase_get(`users/${req.userId}`)
     if (!user) {
       return res.status(404).json({ error: "User not found" })
@@ -811,7 +757,6 @@ app.post("/user/update-departments", verifyToken, async (req, res) => {
     user.department2 = department2 || ''
     await firebase_set(`users/${req.userId}`, user)
 
-    addLog('info', 'Departments updated successfully', { userId: req.userId, department, department2 })
     res.json({ status: "Departments updated successfully" })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -979,7 +924,6 @@ app.get("/user/is-approver", verifyToken, async (req, res) => {
       }
     }
 
-    addLog('info', 'Checked approver status', { userId, isApprover, approvalCount })
     res.json({ isApprover, approvalCount })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -1111,8 +1055,6 @@ app.post("/admin/link-follower-to-user", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Admin access required" })
     }
 
-    addLog('info', 'Admin linking follower to user', { adminId: req.userId, userId, followerId })
-
     // เช็คว่า follower มีอยู่หรือไม่
     const follower = await firebase_get(`followers/${followerId}`)
     if (!follower) {
@@ -1136,7 +1078,6 @@ app.post("/admin/link-follower-to-user", verifyToken, async (req, res) => {
 
     await firebase_set(`users/${userId}`, targetUser)
 
-    addLog('info', 'Follower linked successfully', { adminId: req.userId, userId, followerId })
     res.json({ status: "Follower linked successfully" })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -1196,8 +1137,6 @@ app.post("/admin/unlink-follower-from-user", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Admin access required" })
     }
 
-    addLog('info', 'Admin unlinking follower from user', { adminId: req.userId, userId, followerId })
-
     const targetUser = await firebase_get(`users/${userId}`)
     if (!targetUser) {
       return res.status(404).json({ error: "User not found" })
@@ -1208,7 +1147,6 @@ app.post("/admin/unlink-follower-from-user", verifyToken, async (req, res) => {
       await firebase_set(`users/${userId}`, targetUser)
     }
 
-    addLog('info', 'Follower unlinked successfully', { adminId: req.userId, userId, followerId })
     res.json({ status: "Follower unlinked successfully" })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -1245,8 +1183,6 @@ app.post("/admin/departments/add", verifyToken, async (req, res) => {
     }
 
     await firebase_set(`departments/${deptId}`, departmentData)
-
-    addLog('info', 'Department added successfully', { adminId: req.userId, deptId, name })
 
     res.json({ status: "Department added successfully", department: departmentData })
 
@@ -1286,8 +1222,6 @@ app.post("/admin/departments2/add", verifyToken, async (req, res) => {
 
     await firebase_set(`departments2/${deptId}`, departmentData)
 
-    addLog('info', 'Sub-department added successfully', { adminId: req.userId, deptId, name })
-
     res.json({ status: "Sub-department added successfully", department: departmentData })
 
   } catch (err) {
@@ -1310,7 +1244,6 @@ app.delete("/admin/departments/:deptId", verifyToken, async (req, res) => {
     const path = isSubDept ? `departments2/${deptId}` : `departments/${deptId}`
 
     await firebase_delete(path)
-    addLog('info', 'Department deleted', { adminId: req.userId, deptId })
     res.json({ status: "Department deleted successfully" })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -1432,7 +1365,6 @@ app.post("/admin/department-links/add", verifyToken, async (req, res) => {
     }
 
     await firebase_set(`departmentLinks/${linkId}`, newLink)
-    addLog('info', 'Department link created', { adminId: req.userId, linkId, departmentId, subDepartmentId })
 
     res.json({ status: "Link created successfully", linkId, link: newLink })
   } catch (err) {
@@ -1451,7 +1383,6 @@ app.delete("/admin/department-links/:linkId", verifyToken, async (req, res) => {
     const linkId = req.params.linkId
 
     await firebase_delete(`departmentLinks/${linkId}`)
-    addLog('info', 'Department link deleted', { adminId: req.userId, linkId })
 
     res.json({ status: "Link deleted successfully" })
   } catch (err) {
@@ -1497,7 +1428,6 @@ app.post("/admin/memo-approvers/add", verifyToken, async (req, res) => {
     }
 
     await firebase_set(`memoApprovers/${approverId_db}`, approverData)
-    addLog('info', 'Memo approver added', { adminId: req.userId, approverId, departmentId, subDepartmentId })
 
     res.json({ status: "Approver assigned successfully", approverId: approverId_db })
   } catch (err) {
@@ -1553,7 +1483,6 @@ app.delete("/admin/memo-approvers/:approverId", verifyToken, async (req, res) =>
 
     const approverId = req.params.approverId
     await firebase_delete(`memoApprovers/${approverId}`)
-    addLog('info', 'Memo approver removed', { adminId: req.userId, approverId })
 
     res.json({ status: "Approver removed successfully" })
   } catch (err) {
@@ -1577,7 +1506,7 @@ app.post("/send", async (req, res) => {
           senderName = `${sender.name || ''} ${sender.surname || ''}`.trim()
         }
       } catch (err) {
-        addLog('warn', 'Could not fetch sender info', { senderUserId, error: err.message })
+        // Silent error
       }
     }
 
@@ -1593,7 +1522,7 @@ app.post("/send", async (req, res) => {
         recipientName = `${recipient.name || ''} ${recipient.surname || ''}`.trim() || recipientName
       }
     } catch (err) {
-      addLog('warn', 'Could not fetch recipient info', { actualRecipientUserId, error: err.message })
+      // Silent error
     }
 
     // Create memo object
@@ -1624,12 +1553,6 @@ app.post("/send", async (req, res) => {
       approvalChain: []  // Track approval history
     }
 
-    addLog('info', 'Checking approvers for memo', {
-      senderUserId,
-      senderDepartmentName: sender?.department,
-      senderSubDepartmentName: sender?.department2
-    })
-
     // Initialize approvers array
     let memoApprovers = []
 
@@ -1649,25 +1572,10 @@ app.post("/send", async (req, res) => {
         }
       }
 
-      addLog('info', 'Department conversion', {
-        departmentName: sender.department,
-        departmentId: senderDepartmentId
-      })
-
       const approvers = await firebase_get('memoApprovers')
-      addLog('info', 'Approvers data fetched', { approverId: approvers ? Object.keys(approvers).length : 0 })
 
       if (approvers && typeof approvers === 'object') {
         for (const [approverKey, approver] of Object.entries(approvers)) {
-          addLog('info', 'Checking approver match', {
-            approverKey,
-            approverDepartmentId: approver.departmentId,
-            senderDepartmentId: senderDepartmentId,
-            approverSubDeptId: approver.subDepartmentId,
-            senderSubDeptId: sender.department2,
-            departmentMatch: approver.departmentId === senderDepartmentId
-          })
-
           // Check if approver can approve for this department
           if (approver.departmentId === senderDepartmentId) {
             // Either approves entire department or this specific sub-department
@@ -1675,7 +1583,6 @@ app.post("/send", async (req, res) => {
             const subDeptMatch = !approver.subDepartmentId ? true : (approver.subDepartmentId === sender.department2)
 
             if (subDeptMatch) {
-              addLog('info', 'Approver matched', { approverKey, approverId: approver.approverId })
               memoApprovers.push({
                 approverId: approver.approverId,
                 approverName: approver.approverName,
@@ -1685,18 +1592,7 @@ app.post("/send", async (req, res) => {
           }
         }
       }
-    } else {
-      addLog('info', 'Sender has no department assigned', { senderUserId, senderDepartment: sender?.department })
     }
-
-    addLog('info', 'Approvers check complete', {
-      approversFound: memoApprovers.length > 0,
-      count: memoApprovers.length,
-      senderUserId,
-      senderDepartment: sender?.department,
-      recipientUserId: actualRecipientUserId,
-      approverIds: memoApprovers.map(a => a.approverId)
-    })
 
     // If approvers found, require approval before sending
     if (memoApprovers.length > 0) {
@@ -1730,9 +1626,8 @@ app.post("/send", async (req, res) => {
           hasMemoData: !!senderNotification.memo
         })
         await firebase_set(`notifications/${senderUserId}/${senderNotification.id}`, senderNotification)
-        addLog('info', 'Pending approval notification sent to sender', { senderId: senderUserId, memoId })
       } catch (err) {
-        addLog('warn', 'Failed to send pending approval notification to sender', { senderId: senderUserId, error: err.message })
+        // Silent error
       }
 
       // Create notifications for approvers and send LINE messages
@@ -1752,36 +1647,16 @@ app.post("/send", async (req, res) => {
 
         try {
           await firebase_set(`notifications/${approver.approverId}/${notification.id}`, notification)
-          addLog('info', 'Approval notification sent to approver', { approverId: approver.approverId, memoId, senderUserId, recipientId: actualRecipientUserId })
         } catch (err) {
-          addLog('warn', 'Failed to send approval notification', { approverId: approver.approverId, error: err.message })
+          // Silent error
         }
 
         // Send LINE message to approver
         try {
-          addLog('info', 'Starting LINE message process for approver', {
-            approverId: approver.approverId,
-            approverName: approver.approverName,
-            memoId
-          })
-
           const approverUser = await firebase_get(`users/${approver.approverId}`)
-          addLog('info', 'Fetched approver user', {
-            approverId: approver.approverId,
-            approverExists: !!approverUser,
-            approverDepartment: approverUser?.department,
-            hasLinkedFollowers: !!(approverUser?.linkedFollowers),
-            linkedFollowersCount: approverUser?.linkedFollowers ? Object.keys(approverUser.linkedFollowers).length : 0
-          })
 
           if (approverUser) {
             const approverFollowerIds = approverUser.linkedFollowers ? Object.keys(approverUser.linkedFollowers) : []
-
-            addLog('info', 'Approver follower IDs', {
-              approverId: approver.approverId,
-              followerIds: approverFollowerIds,
-              count: approverFollowerIds.length
-            })
 
             // Create LINE message for approver (with approval request)
             const approverLineMessage = {
@@ -1797,7 +1672,7 @@ app.post("/send", async (req, res) => {
                       type: "text",
                       text: "⏳ Memo Requires Approval",
                       weight: "bold",
-                      color: "#d17700",
+                      color: "#e2ac36",
                       size: "xl"
                     }
                   ]
@@ -1819,7 +1694,7 @@ app.post("/send", async (req, res) => {
                       type: "text",
                       text: `From: ${senderName}`,
                       size: "sm",
-                      color: "#c8a96e",
+                      color: "#e2ac36",
                       weight: "bold",
                       margin: "md"
                     },
@@ -1843,7 +1718,7 @@ app.post("/send", async (req, res) => {
                       type: "text",
                       text: `Status: ⏳ Pending Approval`,
                       size: "sm",
-                      color: "#d17700",
+                      color: "#e2ac36",
                       weight: "bold",
                       margin: "md"
                     },
@@ -1882,7 +1757,7 @@ app.post("/send", async (req, res) => {
                         uri: "https://rmcmemorandum.up.railway.app/"
                       },
                       style: "primary",
-                      color: "#d17700"
+                      color: "#ecb744"
                     }
                   ]
                 }
@@ -1893,25 +1768,18 @@ app.post("/send", async (req, res) => {
               // Send to all linked followers of the approver
               for (const approverFollowerId of approverFollowerIds) {
                 try {
-                  addLog('info', 'Attempting to send LINE message to approver', { approverId: approver.approverId, followerId: approverFollowerId, memoId })
                   await client.pushMessage(approverFollowerId, approverLineMessage)
-                  addLog('info', 'LINE message sent successfully to approver', { approverId: approver.approverId, followerId: approverFollowerId, memoId })
                 } catch (lineErr) {
-                  addLog('error', 'Failed to send LINE message to approver', { approverId: approver.approverId, followerId: approverFollowerId, error: lineErr.message })
+                  // Silent error
                 }
               }
-            } else {
-              addLog('warn', 'Approver has no linked LINE followers - notification only', { approverId: approver.approverId, approverName: approverUser.name })
             }
-          } else {
-            addLog('error', 'Approver user not found', { approverId: approver.approverId })
           }
         } catch (err) {
-          addLog('error', 'Error sending LINE message to approver', { approverId: approver.approverId, error: err.message, stack: err.stack })
+          // Silent error
         }
       }
 
-      addLog('info', 'Memo created - pending approval', { memoId, senderId: senderUserId, recipientId: actualRecipientUserId, followerId: targetUserId, approverCount: memoApprovers.length })
       return res.json({ status: "Memo created - pending approval", memoId, approverCount: memoApprovers.length })
     }
 
@@ -2011,18 +1879,14 @@ app.post("/send", async (req, res) => {
 
     // Send to recipient via LINE
     try {
-      addLog('info', 'Attempting to send LINE message', { followerId: targetUserId, recipientUserId: actualRecipientUserId, memoId })
       await client.pushMessage(targetUserId, lineMessage)
-      addLog('info', 'LINE message sent successfully', { followerId: targetUserId, memoId })
     } catch (lineErr) {
-      addLog('error', 'Failed to send LINE message', { followerId: targetUserId, error: lineErr.message })
       // Don't throw - store the memo anyway with a note that LINE delivery failed
       memoData.lineDeliveryFailed = true
       memoData.lineDeliveryError = lineErr.message
     }
 
     await firebase_set(`sent_memos/${senderUserId}/${memoId}`, memoData)
-    addLog('info', 'Send message request (no approval required)', { title, type, followerId: targetUserId, recipientUserId: actualRecipientUserId, senderName })
 
     const notification = {
       id: Date.now().toString(),
@@ -2043,17 +1907,10 @@ app.post("/send", async (req, res) => {
       await firebase_set(`notifications/${actualRecipientUserId}/${notification.id}`, notification)
     }
 
-    addLog('info', 'Message sent successfully (direct - no approval needed)', { followerId: targetUserId, recipientUserId: actualRecipientUserId, memoId, senderUserId })
+    addLog('info', 'Send memo', { title, type, recipientUserId: actualRecipientUserId, senderName })
     res.json({ status: "sent", memoId })
 
   } catch (err) {
-    addLog('error', 'Error in /send endpoint', {
-      error: err.message,
-      stack: err.stack,
-      followerId: targetUserId,
-      recipientUserId: actualRecipientUserId,
-      senderUserId
-    })
     res.status(500).json({ error: err.message })
   }
 })
@@ -2068,13 +1925,6 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "User not found" })
     }
 
-    addLog('info', 'Getting pending approvals for approver', {
-      userId,
-      username: currentUser.username,
-      department: currentUser.department,
-      department2: currentUser.department2
-    })
-
     // Get all approver assignments for this user
     const approversData = await firebase_get('memoApprovers')
     const userApprovals = []
@@ -2086,8 +1936,6 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
         }
       }
     }
-
-    addLog('info', 'User is assigned to approve', { userId, approvalCount: userApprovals.length, approvals: userApprovals })
 
     // If user is not an approver, return empty list
     if (userApprovals.length === 0) {
@@ -2104,8 +1952,6 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
         }
       }
     }
-
-    addLog('info', 'Department mapping loaded', { mappingCount: Object.keys(departmentNameToId).length })
 
     // Get all users and their sent_memos to find pending_approval ones
     const allUsers = await firebase_get('users')
@@ -2126,22 +1972,11 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
 
           // Check if memo is pending approval
           if (memo.status === 'pending_approval') {
-            addLog('info', 'Found pending_approval memo', {
-              memoId,
-              senderId,
-              senderDept: sender.department,
-              senderDept2: sender.department2,
-              memoTitle: memo.title
-            })
 
             // Convert sender's department name to UUID
             let senderDepartmentId = sender.department
             if (departmentNameToId[sender.department]) {
               senderDepartmentId = departmentNameToId[sender.department]
-              addLog('info', 'Converted sender department', {
-                departmentName: sender.department,
-                departmentId: senderDepartmentId
-              })
             }
 
             // Verify this user is one of the approvers for this sender
@@ -2150,20 +1985,12 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
                 (!approval.subDepartmentId || approval.subDepartmentId === sender.department2)
 
               if (!match) {
-                addLog('info', 'Approval no match', {
-                  approvalDept: approval.departmentId,
-                  approvalSubDept: approval.subDepartmentId,
-                  senderDeptId: senderDepartmentId,
-                  senderDept: sender.department,
-                  senderSubDept: sender.department2
-                })
               }
               return match
             })
 
             if (canApprove) {
               foundCount++
-              addLog('info', 'Memo can be approved by this user', { memoId })
               pendingMemos.push({
                 ...memo,
                 senderObject: {
@@ -2184,7 +2011,6 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
     // Sort by sentAt descending (newest first)
     pendingMemos.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))
 
-    addLog('info', 'Pending approvals retrieved', { userId, checkedCount, foundCount, count: pendingMemos.length })
     res.json({ pendingMemos, count: pendingMemos.length })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -2242,13 +2068,6 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
       }
     }
 
-    addLog('info', 'Checking approval authorization', {
-      approverId: req.userId,
-      senderDepartmentName: sender.department,
-      senderDepartmentId,
-      senderSubDept: sender.department2
-    })
-
     let isAuthorizedApprover = false
 
     if (approvers && typeof approvers === 'object') {
@@ -2257,19 +2076,12 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
           approver.departmentId === senderDepartmentId &&
           (!approver.subDepartmentId || approver.subDepartmentId === sender.department2)) {
           isAuthorizedApprover = true
-          addLog('info', 'Approver authorized', { approverId: req.userId, memoId })
           break
         }
       }
     }
 
     if (!isAuthorizedApprover) {
-      addLog('warn', 'Unauthorized approval attempt', {
-        userId: req.userId,
-        memoId,
-        senderDepartmentId,
-        senderSubDept: sender.department2
-      })
       return res.status(403).json({ error: "You are not authorized to approve this memo" })
     }
 
@@ -2312,12 +2124,6 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
     if (memoData.followerId && !lineFollowerIds.includes(memoData.followerId)) {
       lineFollowerIds.push(memoData.followerId)
     }
-
-    addLog('info', 'Found linked followers for approval notification', {
-      recipientId,
-      followerId: memoData.followerId,
-      linkedFollowers: lineFollowerIds
-    })
 
     // If this is a LINE recipient (followerId exists), send LINE message
     if (memoData.followerId || lineFollowerIds.length > 0) {
@@ -2429,25 +2235,21 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
       try {
         // Send to explicit follower ID
         if (memoData.followerId) {
-          addLog('info', 'Attempting to send LINE message to approved memo recipient (direct followerId)', { followerId: memoData.followerId, memoId })
           await client.pushMessage(memoData.followerId, lineMessage)
-          addLog('info', 'LINE message sent successfully to approved memo recipient (direct followerId)', { followerId: memoData.followerId, memoId })
         }
 
         // Also send to all linked followers of the recipient user
         for (const linkedFollowerId of lineFollowerIds) {
           if (linkedFollowerId !== memoData.followerId) {  // Don't send twice to the same person
             try {
-              addLog('info', 'Attempting to send LINE message to linked follower', { followerId: linkedFollowerId, recipientId, memoId })
               await client.pushMessage(linkedFollowerId, lineMessage)
-              addLog('info', 'LINE message sent successfully to linked follower', { followerId: linkedFollowerId, memoId })
             } catch (linkedErr) {
-              addLog('error', 'Failed to send LINE message to linked follower', { followerId: linkedFollowerId, error: linkedErr.message })
+              // Silent error
             }
           }
         }
       } catch (err) {
-        addLog('error', 'Failed to send LINE message on approval', { followerId: memoData.followerId, error: err.message })
+        // Silent error
       }
     }
 
@@ -2464,7 +2266,6 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
         }
 
         await firebase_set(`received_memos/${memoData.recipientId}/${memoId}`, approvedMemo)
-        addLog('info', 'Approved memo added to received_memos', { recipientUserId: memoData.recipientId, memoId })
 
         // Create notification
         const memoNotification = {
@@ -2482,7 +2283,6 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
         }
 
         await firebase_set(`notifications/${memoData.recipientId}/${memoNotification.id}`, memoNotification)
-        addLog('info', 'Notification created for approved memo', { recipientUserId: memoData.recipientId, notificationId: memoNotification.id })
       }
     }
 
@@ -2501,10 +2301,16 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
     try {
       await firebase_set(`notifications/${memoSenderId}/${notification.id}`, notification)
     } catch (err) {
-      addLog('warn', 'Failed to create approval notification', { error: err.message })
+      // Silent error
     }
 
-    addLog('info', 'Memo approved and sent to recipient', { approverId: req.userId, memoId, senderId: memoSenderId, recipientId })
+    addLog('info', 'Approved memo', {
+      memoId,
+      senderId: memoSenderId,
+      approvedBy: req.userId,
+      approvedByName: `${currentUser.name} ${currentUser.surname}`,
+      docNumber: memoData.docNumber || ''
+    });
     res.json({ status: "Memo approved successfully", memoId })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -2566,13 +2372,6 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
       }
     }
 
-    addLog('info', 'Checking rejection authorization', {
-      rejectorId: req.userId,
-      senderDepartmentName: sender.department,
-      senderDepartmentId,
-      senderSubDept: sender.department2
-    })
-
     let isAuthorizedApprover = false
 
     if (approvers && typeof approvers === 'object') {
@@ -2581,19 +2380,12 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
           approver.departmentId === senderDepartmentId &&
           (!approver.subDepartmentId || approver.subDepartmentId === sender.department2)) {
           isAuthorizedApprover = true
-          addLog('info', 'Rejector authorized', { rejectorId: req.userId, memoId })
           break
         }
       }
     }
 
     if (!isAuthorizedApprover) {
-      addLog('warn', 'Unauthorized rejection attempt', {
-        userId: req.userId,
-        memoId,
-        senderDepartmentId,
-        senderSubDept: sender.department2
-      })
       return res.status(403).json({ error: "You are not authorized to reject this memo" })
     }
 
@@ -2622,10 +2414,10 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
     try {
       await firebase_set(`notifications/${memoSenderId}/${notification.id}`, notification)
     } catch (err) {
-      addLog('warn', 'Failed to create rejection notification', { error: err.message })
+      // Silent error
     }
 
-    addLog('info', 'Memo rejected', { approverId: req.userId, memoId, reason })
+    addLog('info', 'Rejected memo', { memoId, rejectedBy: req.userId, reason })
     res.json({ status: "Memo rejected", memoId })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -2666,7 +2458,6 @@ app.post("/admin/user-tabs/set", verifyToken, async (req, res) => {
     }
 
     await firebase_set(`tabAccess/${userId}`, tabConfig)
-    addLog('info', 'User tab access updated', { adminId: req.userId, userId, tabs })
 
     res.json({ status: "Tab access updated", tabConfig })
   } catch (err) {
@@ -2754,18 +2545,14 @@ app.post("/webhook", async (req, res) => {
     const hash = hmac.digest('base64')
 
     if (signature !== hash) {
-      addLog('warn', 'Signature validation failed', { expected: hash, got: signature })
       return res.status(403).json({ error: 'Invalid signature' })
     }
 
-    addLog('info', 'Webhook received - Signature valid')
     // parse JSON body
     const events = JSON.parse(bodyString).events
-    addLog('info', 'Events received', { count: events.length })
 
     await Promise.all(events.map(handleEvent))
 
-    addLog('info', 'Webhook processed successfully')
     res.status(200).json({ ok: true })
   } catch (err) {
     res.status(200).json({ ok: true, error: err.message })
@@ -2795,7 +2582,7 @@ async function handleEvent(event) {
           followedAt: new Date().toISOString(),
           status: 'active'
         })
-        addLog('info', 'followers follow', { userId, displayName: profile.displayName })
+        addLog('info', 'New followers', { userId, displayName: profile.displayName })
       } catch (fbErr) {
         // Silent error handling
       }
@@ -2806,7 +2593,6 @@ async function handleEvent(event) {
       const userId = event.source.userId
       try {
         await firebase_delete(`followers/${userId}`)
-        addLog('info', 'followers unfollow', { userId })
       } catch (fbErr) {
         // Silent error handling
       }
@@ -2853,13 +2639,10 @@ app.post("/broadcast", async (req, res) => {
     return res.status(400).json({ error: "text is required" })
   }
 
-  addLog('info', 'Broadcast request', { text })
-
   try {
     const followers = await firebase_get("followers")
 
     if (!followers || typeof followers !== 'object') {
-      addLog('warn', 'Broadcast - no followers')
       return res.json({ status: "no followers", successCount: 0, errorCount: 0, totalFollowers: 0 })
     }
 
@@ -2874,12 +2657,10 @@ app.post("/broadcast", async (req, res) => {
         })
         successCount++
       } catch (err) {
-        addLog('error', `Broadcast error to user`, { userId, message: err.message })
         errorCount++
       }
     }
 
-    addLog('info', `Broadcast complete`, { successCount, errorCount, totalFollowers: Object.keys(followers).length })
     res.json({
       status: "broadcast sent",
       successCount: successCount,
@@ -2895,12 +2676,10 @@ app.post("/broadcast", async (req, res) => {
 app.get("/sent-memos", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
-    addLog('info', 'Fetching sent memos', { userId })
 
     const sentMemos = await firebase_get(`sent_memos/${userId}`)
 
     if (!sentMemos || typeof sentMemos !== 'object') {
-      addLog('info', 'Get sent memos - empty', { userId })
       return res.json({ memos: [], count: 0 })
     }
 
@@ -2937,7 +2716,6 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
       }
     }
 
-    addLog('info', 'Sent memos retrieved successfully', { userId, count: memosArray.length })
     res.json({ memos: memosArray, count: memosArray.length })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -2948,7 +2726,6 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
 app.get("/received-memos", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
-    addLog('info', 'Fetching received memos', { userId })
 
     // Get current user to access linked followers
     const currentUser = await firebase_get(`users/${userId}`)
@@ -2994,7 +2771,6 @@ app.get("/received-memos", verifyToken, async (req, res) => {
     // Sort by sentAt descending (newest first)
     receivedMemos.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))
 
-    addLog('info', 'Received memos retrieved successfully', { userId, count: receivedMemos.length })
     res.json({ memos: receivedMemos, count: receivedMemos.length })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -3006,12 +2782,10 @@ app.get("/received-memos", verifyToken, async (req, res) => {
 app.get("/notifications", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
-    addLog('info', 'Fetching notifications', { userId })
 
     const notificationsData = await firebase_get(`notifications/${userId}`)
 
     if (!notificationsData || typeof notificationsData !== 'object') {
-      addLog('info', 'Get notifications - empty', { userId })
       return res.json({ notifications: [], count: 0 })
     }
 
@@ -3019,7 +2793,6 @@ app.get("/notifications", verifyToken, async (req, res) => {
     const notificationsArray = Object.values(notificationsData)
     notificationsArray.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
 
-    addLog('info', 'Notifications retrieved', { userId, count: notificationsArray.length })
     res.json({ notifications: notificationsArray, count: notificationsArray.length })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -3047,7 +2820,6 @@ app.post("/notifications", verifyToken, async (req, res) => {
     }
 
     await firebase_set(`notifications/${userId}/${notificationId}`, notification)
-    addLog('info', 'Notification created', { userId, notificationId })
 
     res.json({ status: 'Notification saved', notification })
   } catch (err) {
@@ -3080,7 +2852,6 @@ app.post("/notifications/send/:targetUserId", verifyToken, async (req, res) => {
     }
 
     await firebase_set(`notifications/${targetUserId}/${notificationId}`, notification)
-    addLog('info', 'Notification sent to user', { targetUserId, senderUserId, notificationId })
 
     res.json({ status: 'Notification sent', notification })
   } catch (err) {
@@ -3134,12 +2905,6 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
     let memoApprovers = []
     const senderName = `${sender.name} ${sender.surname}`
 
-    addLog('info', 'Checking approvers for system memo', {
-      senderUserId,
-      senderDepartmentName: sender?.department,
-      senderSubDepartmentName: sender?.department2
-    })
-
     // Look for approvers for this sender's department
     if (sender && sender.department) {
       // First, convert department name to departmentId by looking in departments
@@ -3156,11 +2921,6 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
         }
       }
 
-      addLog('info', 'Department conversion (system memo)', {
-        departmentName: sender.department,
-        departmentId: senderDepartmentId
-      })
-
       const approvers = await firebase_get('memoApprovers')
 
       if (approvers && typeof approvers === 'object') {
@@ -3171,7 +2931,6 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
             const subDeptMatch = !approver.subDepartmentId ? true : (approver.subDepartmentId === sender.department2)
 
             if (subDeptMatch) {
-              addLog('info', 'Approver matched (system memo)', { approverKey, approverId: approver.approverId })
               memoApprovers.push({
                 approverId: approver.approverId,
                 approverName: approver.approverName,
@@ -3181,11 +2940,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
           }
         }
       }
-    } else {
-      addLog('info', 'Sender has no department assigned (system memo)', { senderUserId, senderDepartment: sender?.department })
     }
-
-    addLog('info', 'Approvers check complete (system memo)', { memoApprovers: memoApprovers.length > 0 ? 'Found' : 'Not found', count: memoApprovers.length })
 
     // If approvers found, require approval before sending
     if (memoApprovers.length > 0) {
@@ -3213,36 +2968,16 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
 
         try {
           await firebase_set(`notifications/${approver.approverId}/${notification.id}`, notification)
-          addLog('info', 'Approval notification sent to approver (system memo)', { approverId: approver.approverId, memoId, senderUserId, recipientId: targetUserId })
         } catch (err) {
-          addLog('warn', 'Failed to send approval notification (system memo)', { approverId: approver.approverId, error: err.message })
+          // Silent error
         }
 
         // Send LINE message to approver
         try {
-          addLog('info', 'Starting LINE message process for approver (system memo)', {
-            approverId: approver.approverId,
-            approverName: approver.approverName,
-            memoId
-          })
-
           const approverUser = await firebase_get(`users/${approver.approverId}`)
-          addLog('info', 'Fetched approver user (system memo)', {
-            approverId: approver.approverId,
-            approverExists: !!approverUser,
-            approverDepartment: approverUser?.department,
-            hasLinkedFollowers: !!(approverUser?.linkedFollowers),
-            linkedFollowersCount: approverUser?.linkedFollowers ? Object.keys(approverUser.linkedFollowers).length : 0
-          })
 
           if (approverUser) {
             const approverFollowerIds = approverUser.linkedFollowers ? Object.keys(approverUser.linkedFollowers) : []
-
-            addLog('info', 'Approver follower IDs (system memo)', {
-              approverId: approver.approverId,
-              followerIds: approverFollowerIds,
-              count: approverFollowerIds.length
-            })
 
             // Create LINE message for approver (with approval request)
             const approverLineMessage = {
@@ -3354,25 +3089,20 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
               // Send to all linked followers of the approver
               for (const approverFollowerId of approverFollowerIds) {
                 try {
-                  addLog('info', 'Attempting to send LINE message to approver (system memo)', { approverId: approver.approverId, followerId: approverFollowerId, memoId })
                   await client.pushMessage(approverFollowerId, approverLineMessage)
-                  addLog('info', 'LINE message sent successfully to approver (system memo)', { approverId: approver.approverId, followerId: approverFollowerId, memoId })
                 } catch (lineErr) {
-                  addLog('error', 'Failed to send LINE message to approver (system memo)', { approverId: approver.approverId, followerId: approverFollowerId, error: lineErr.message })
+                  // Silent error
                 }
               }
-            } else {
-              addLog('warn', 'Approver has no linked LINE followers - notification only (system memo)', { approverId: approver.approverId, approverName: approverUser.name })
             }
-          } else {
-            addLog('error', 'Approver user not found (system memo)', { approverId: approver.approverId })
           }
         } catch (err) {
-          addLog('error', 'Error sending LINE message to approver (system memo)', { approverId: approver.approverId, error: err.message, stack: err.stack })
+          // Silent error
         }
       }
 
-      addLog('info', 'System memo created - pending approval', { memoId, senderId: senderUserId, recipientId: targetUserId, approverCount: memoApprovers.length })
+      // Log pending approval memo
+      addLog('info', 'Send memo (pending approval)', { title, type, recipientUserId: targetUserId, senderName, approverCount: memoApprovers.length })
       return res.json({ status: "Memo created - pending approval", memoId, approverCount: memoApprovers.length })
     }
 
@@ -3404,7 +3134,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
 
     await firebase_set(`notifications/${targetUserId}/${notification.id}`, notification)
 
-    addLog('info', 'System memo sent successfully (direct - no approval needed)', { senderUserId, targetUserId, memoId, docNumber })
+    addLog('info', 'Send memo', { title, type, recipientUserId: targetUserId, senderName })
     res.json({ status: 'Memo sent successfully', memoId })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -3427,7 +3157,6 @@ app.put("/notifications/:id", verifyToken, async (req, res) => {
       read: true
     })
 
-    addLog('info', 'Notification marked as read', { userId, notificationId })
     res.json({ status: 'Notification updated', notification: { ...notification, read: true } })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -3441,7 +3170,6 @@ app.delete("/notifications/:id", verifyToken, async (req, res) => {
     const notificationId = req.params.id
 
     await firebase_delete(`notifications/${userId}/${notificationId}`)
-    addLog('info', 'Notification deleted', { userId, notificationId })
 
     res.json({ status: 'Notification deleted' })
   } catch (err) {
@@ -3455,7 +3183,6 @@ app.delete("/notifications", verifyToken, async (req, res) => {
     const userId = req.userId
 
     await firebase_delete(`notifications/${userId}`)
-    addLog('info', 'All notifications deleted', { userId })
 
     res.json({ status: 'All notifications cleared' })
   } catch (err) {
@@ -3469,14 +3196,12 @@ app.get("/followers", async (req, res) => {
     const followers = await firebase_get("followers")
 
     if (!followers || typeof followers !== 'object') {
-      addLog('info', 'Get followers - empty')
       return res.json({
         followers: {},
         count: 0
       })
     }
 
-    addLog('info', 'Get followers', { count: Object.keys(followers).length })
     res.json({
       followers: followers,
       count: Object.keys(followers).length
@@ -3490,11 +3215,8 @@ app.get("/followers", async (req, res) => {
 app.post("/refresh-profile/:userId", async (req, res) => {
   const userId = req.params.userId
   try {
-    addLog('info', 'Attempting to refresh profile', { userId })
-
     // ดึง profile จาก LINE
     const profile = await client.getProfile(userId)
-    addLog('info', 'Profile fetched successfully', { userId, displayName: profile.displayName })
 
     // อัปเดต Firebase
     const followerData = await firebase_get(`followers/${userId}`)
@@ -3521,11 +3243,8 @@ app.post("/refresh-profile/:userId", async (req, res) => {
 // Refresh all profiles
 app.post("/refresh-all-profiles", async (req, res) => {
   try {
-    addLog('info', 'Starting refresh all profiles')
-
     const followers = await firebase_get("followers")
     if (!followers || typeof followers !== 'object') {
-      addLog('info', 'No followers to refresh')
       return res.json({ status: "no followers", refreshed: 0 })
     }
 
@@ -3545,14 +3264,11 @@ app.post("/refresh-all-profiles", async (req, res) => {
         })
 
         refreshed++
-        addLog('info', 'Profile refreshed', { userId, displayName: profile.displayName })
       } catch (err) {
         failed++
-        addLog('warn', 'Failed to refresh profile', { userId, error: err.message })
       }
     }
 
-    addLog('info', 'Refresh all profiles complete', { refreshed, failed })
     res.json({
       status: "Refresh complete",
       refreshed: refreshed,
@@ -3568,7 +3284,6 @@ app.post("/refresh-all-profiles", async (req, res) => {
 app.post("/test-add-follower", async (req, res) => {
   try {
     const testUserId = "Ue78fdf247dea19fe8ef461f8645ef746"
-    addLog('info', 'Adding test follower', { userId: testUserId })
 
     const result = await firebase_set(`followers/${testUserId}`, {
       userId: testUserId,
@@ -3576,7 +3291,6 @@ app.post("/test-add-follower", async (req, res) => {
       status: 'active'
     })
 
-    addLog('info', 'Test follower added successfully', { userId: testUserId })
     res.json({ status: "Test follower added", userId: testUserId, firebaseResponse: result })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -3586,7 +3300,6 @@ app.post("/test-add-follower", async (req, res) => {
 // Debug endpoint - ตรวจสอบ Firebase
 app.get("/debug", async (req, res) => {
   try {
-    addLog('info', 'Debug endpoint called')
     const followers = await firebase_get("followers")
 
     res.json({
@@ -3694,7 +3407,6 @@ app.get("/logs", (req, res) => {
 // Get all logs from Firebase
 app.get("/logs-history", async (req, res) => {
   try {
-    addLog('info', 'Fetching logs history from Firebase')
     const allLogs = await firebase_get("logs")
 
     res.json({
@@ -3709,8 +3421,6 @@ app.get("/logs-history", async (req, res) => {
 // Clear logs - ลบ logs ทั้งหมด และ Backup ใน Firebase
 app.post("/clear-logs", async (req, res) => {
   try {
-    addLog('info', 'Starting logs backup and clear process')
-
     // สร้าง backup object ด้วย timestamp
     const backupData = {
       backupDate: new Date().toISOString(),
@@ -3720,7 +3430,6 @@ app.post("/clear-logs", async (req, res) => {
 
     // บันทึก logs ลงใน logs_Backup ใน Firebase
     await firebase_set(`logs_Backup/${Date.now()}`, backupData)
-    addLog('info', 'Logs backed up to Firebase', { backupCount: logs.length })
 
     // ลบ logs จาก memory
     logs = []
@@ -3728,7 +3437,6 @@ app.post("/clear-logs", async (req, res) => {
     // ลบ logs จาก Firebase
     await firebase_delete("logs")
 
-    addLog('info', 'Logs cleared successfully after backup')
     res.json({
       status: "Logs cleared and backed up",
       backupCount: backupData.logsCount,
@@ -3768,5 +3476,5 @@ app.get("/info", (req, res) => {
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, () => {
-  addLog('info', 'Server started successfully', { port: PORT, nodeEnv: process.env.NODE_ENV })
+  console.log(`Server started on port ${PORT}`)
 })
