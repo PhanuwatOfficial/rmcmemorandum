@@ -2804,17 +2804,17 @@
                     </div>
                     <div class="section-body">
                         <div class="field">
-                            <label>Document Number</label>
+                            <label><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">article</span>Document Number</label>
                             <div style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-weight: 600; color: var(--accent); font-family: 'Courier New', monospace;"
                                 id="memoDocNumber">—</div>
                         </div>
                         <div class="field">
-                            <label>Memorandum Title</label>
+                            <label><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">edit_note</span>Memorandum Title</label>
                             <input id="memoTitle" type="text" placeholder="Enter memorandum title...">
                         </div>
 
                         <div class="field">
-                            <label>Type</label>
+                            <label><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">category</span>Type</label>
                             <div class="memo-type-container">
                                 <label class="memo-type-label">
                                     <input type="radio" name="memo-type-radio" class="memo-type-checkbox"
@@ -2844,14 +2844,14 @@
                         </div>
 
                         <div class="field">
-                            <label>Filter by Department</label>
+                            <label><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">filter_list</span>Filter by Department</label>
                             <select id="depFilterSelect" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit; cursor: pointer;" onchange="filterRecipientsByDepartment()">
                                 <option value="">— All Departments —</option>
                             </select>
                         </div>
 
                         <div class="field">
-                            <label>Recipients</label>
+                            <label><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">people</span>Recipients</label>
                             <div class="recipients-multiselect-wrapper" style="position: relative;">
                                 <button type="button" id="recipientsSelectBtn" class="recipients-select-btn"
                                     style="width: 100%; padding: 11px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease;"
@@ -2869,7 +2869,7 @@
                         </div>
 
                         <div class="field">
-                            <label>Message Body</label>
+                            <label><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">message</span>Message Body</label>
                             <textarea id="msg" placeholder="Type your memorandum content here..." rows="6"></textarea>
                         </div>
 
@@ -2892,22 +2892,7 @@
                     </div>
                 </div>
             </div>
-<!--
-prompt:
-flow ตอนนี้คือ
-1.user ส่ง memo ไปยัง recipient 
-2.รอ approve memo จาก user ที่กำหนดใน memoApprovers ตาม department
-3.เมื่อ approve จะส่งแจ้งเตือนไปยัง line ของ recipient ว่ามี memo ใหม่ที่ได้รับการอนุมัติแล้ว และส่ง memo
 
-
-อยากให้เพิ่มการแจ้งเตือน line อีก 1 step ดังนี้
-1.user ส่ง memo ไปยัง recipient 
-2.รอ approve memo จาก user ที่กำหนดใน memoApprovers ตาม department
-3.ส่งแจ้งเตือนไปยัง approve user ว่ามี memo รอการอนุมัติ และส่ง memo ให้ approve user พิจารณา approve หรือ reject
-4.เมื่อ approve จะส่งแจ้งเตือนไปยัง line ของ recipient ว่ามี memo ใหม่ที่ได้รับการอนุมัติแล้ว และส่ง memo
-
-ก็คือส่งแจ้งเตือนไปยัง 1.approve user 2.recipient user เลย แทนที่จะส่งแค่ recipient user อย่างเดียว
--->
 
             <!-- ── SENT MEMOS VIEW ────────────────── -->
             <div id="view-sent-memos" class="view" style="display:none;">
