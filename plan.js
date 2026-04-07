@@ -260,5 +260,9 @@ approve user✓
 -แก้ layout หน้า mobile
 -add function | search box
 -add function | icon setting topbar
+
+
+Bug 
+-DocNumber ซ้ำกัน (ตอนนี้เมื่อ send memo แล้ว docNumber ไม่ gen ใหม่)
 */
 

@@ -326,8 +326,13 @@
             padding: 40px 20px;
         }
 
+        .view {
+            animation: fadeIn 0.4s ease-out;
+        }
+
         .page-header {
             margin-bottom: 30px;
+            animation: slideUp 0.5s ease-out backwards;
         }
 
         .page-header h2 {
@@ -376,6 +381,18 @@
             border-radius: var(--radius);
             padding: 22px 24px;
             box-shadow: var(--shadow);
+            animation: slideUp 0.5s ease-out backwards;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(15, 17, 23, 0.12);
         }
 
         .stat-card.accent-card {
@@ -426,6 +443,7 @@
             box-shadow: var(--shadow);
             margin-bottom: 24px;
             overflow: visible;
+            animation: fadeIn 0.5s ease-out;
         }
 
         .auth-center .section-card {
@@ -668,7 +686,11 @@
             font-weight: 600;
             letter-spacing: 0.05em;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
         }
 
         .btn .material-symbols-outlined {
@@ -682,6 +704,8 @@
 
         .btn-primary:hover {
             background: #253556;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 39, 64, 0.2);
         }
 
         .btn-app {
@@ -722,6 +746,7 @@
             border-color: var(--accent);
             color: var(--ink);
             background: rgba(26, 39, 64, 0.04);
+            transform: translateY(-2px);
         }
 
         .btn-danger {
@@ -914,6 +939,7 @@
 
         .status-msg.show {
             display: flex;
+            animation: slideUp 0.3s ease-out;
         }
 
         .status-msg.success {
@@ -958,7 +984,7 @@
         thead th {
             padding: 12px 16px;
             text-align: left;
-            font-size: 9px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.18em;
             text-transform: uppercase;
@@ -970,14 +996,28 @@
         tbody tr {
             border-bottom: 1px solid var(--border);
             transition: background 0.1s;
+            animation: slideUpIn 0.4s ease-out backwards;
         }
+
+        tbody tr:nth-child(1) { animation-delay: 0.05s; }
+        tbody tr:nth-child(2) { animation-delay: 0.1s; }
+        tbody tr:nth-child(3) { animation-delay: 0.15s; }
+        tbody tr:nth-child(4) { animation-delay: 0.2s; }
+        tbody tr:nth-child(5) { animation-delay: 0.25s; }
+        tbody tr:nth-child(n+6) { animation-delay: 0.3s; }
 
         tbody tr:last-child {
             border-bottom: none;
         }
 
+        tbody tr:nth-child(odd) {
+            background: #f1f1f170;
+        }
+
         tbody tr:hover {
-            background: var(--surface);
+            background: #e2e8f088;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
         }
 
         tbody td {
@@ -1026,8 +1066,8 @@
             align-items: center;
             padding: 3px 10px;
             border-radius: 2px;
-            font-size: 9px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 600;
             letter-spacing: 0.12em;
             text-transform: uppercase;
         }
@@ -1040,6 +1080,7 @@
         .badge-pending {
             background: var(--amber-bg);
             color: var(--amber);
+            
         }
 
         .empty-state {
@@ -1582,6 +1623,18 @@
         @keyframes slideUp {
             from {
                 transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUpIn {
+            from {
+                transform: translateY(12px);
                 opacity: 0;
             }
 
@@ -2296,11 +2349,11 @@
                     <span class="material-symbols-outlined">edit_note</span>
                     Compose Memo
                 </a>
-                <a class="nav-item" onclick="showView('sent-memos'); loadSentMemos()">
+                <a class="nav-item" onclick="showView('sent-memos')">
                     <span class="material-symbols-outlined">send</span>
                     Sent Memos
                 </a>
-                <a class="nav-item" onclick="showView('received-memos'); loadReceivedMemos()">
+                <a class="nav-item" onclick="showView('received-memos')">
                     <span class="material-symbols-outlined">inbox</span>
                     Received Memos
                 </a>
@@ -2528,7 +2581,6 @@
                 </div>
             </div>
 
-
             <!-- ── MANAGE USER VIEW ───────────────── -->
             <div id="view-manage-user" class="view" style="display:none;">
                 <div class="page-header">
@@ -2702,11 +2754,7 @@
                         </div>
                     </div>
                 </div>
-
-
-
             </div>
-
 
             <!-- ── DASHBOARD VIEW ─────────────────── -->
             <div id="view-dashboard" class="view">
@@ -2787,7 +2835,6 @@
                 </div>
             </div>
 
-
             <!-- ── COMPOSE VIEW ───────────────────── -->
             <div id="view-compose" class="view" style="display:none;">
                 <div class="page-header">
@@ -2795,7 +2842,7 @@
                     <p>Create and dispatch formal memorandums to selected recipients.</p>
                 </div>
 
-                <div class="section-card" style="max-width: 720px;">
+                <div class="section-card" style="max-width: 840px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">edit_note</span>
@@ -2893,7 +2940,6 @@
                 </div>
             </div>
 
-
             <!-- ── SENT MEMOS VIEW ────────────────── -->
             <div id="view-sent-memos" class="view" style="display:none;">
                 <div class="page-header">
@@ -2927,6 +2973,7 @@
                             <thead>
                                 <tr>
                                     <th>Date</th>
+                                    <th>DocNumber</th>
                                     <th>Title</th>
                                     <th>Type</th>
                                     <th>Recipient</th>
@@ -2937,7 +2984,7 @@
                             </thead>
                             <tbody id="sentMemosTbody">
                                 <tr>
-                                    <td colspan="6">
+                                    <td colspan="8">
                                         <div class="empty-state"><span class="material-symbols-outlined">send</span>
                                             <p>No sent memos yet.</p>
                                         </div>
@@ -2982,6 +3029,7 @@
                             <thead>
                                 <tr>
                                     <th>Date</th>
+                                    <th>DocNumber</th>
                                     <th>Title</th>
                                     <th>Type</th>
                                     <th>From</th>
@@ -2991,7 +3039,7 @@
                             </thead>
                             <tbody id="receivedMemosTbody">
                                 <tr>
-                                    <td colspan="6">
+                                    <td colspan="7">
                                         <div class="empty-state"><span class="material-symbols-outlined">inbox</span>
                                             <p>No received memos yet.</p>
                                         </div>
@@ -3015,44 +3063,38 @@
                         <div class="section-title">
                             <span class="material-symbols-outlined">pending_actions</span>
                             Memos Awaiting Your Approval
+                            <span id="pendingApprovalsCountBadge"
+                                style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
                         </div>
                         <button class="btn btn-ghost btn-sm" onclick="loadPendingApprovals()">
                             <span class="material-symbols-outlined">refresh</span>
                             Refresh
                         </button>
                     </div>
-                    <div class="section-body" style="padding: 0;">
+                    
+                    <div id="pendingApprovalsStatus" class="status-msg" style="margin:16px 28px 0; display:none;">
+                        <span class="material-symbols-outlined"></span>
+                        <span class="msg-text"></span>
+                    </div>
+                    <div class="table-wrap" style="padding: 0;">
                         <div style="overflow-x: auto;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <thead
                                     style="background: var(--surface); border-bottom: 2px solid var(--border); position: sticky; top: 0;">
                                     <tr>
-                                        <th
-                                            style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
-                                            Date</th>
-                                        <th
-                                            style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
-                                            Title</th>
-                                        <th
-                                            style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
-                                            Content</th>
-                                        <th
-                                            style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
-                                            From</th>
-                                        <th
-                                            style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
-                                            To</th>
-                                        <th
-                                            style="padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
-                                            Department</th>
-                                        <th
-                                            style="padding: 12px; text-align: center; font-size: 11px; text-transform: uppercase; color: var(--ink-faint); font-weight: 600;">
-                                            Action</th>
+                                        <th>Date</th>
+                                        <th>DocNumber</th>
+                                        <th>Title</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Department</th>
+                                        <th>Content</th>
+                                        <th style="text-align: center;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pendingApprovalsTbody">
                                     <tr>
-                                            <td colspan="7" style="padding: 32px; text-align: center;">
+                                            <td colspan="8" style="padding: 32px; text-align: center;">
                                             <div style="color: var(--ink-faint);">
                                                 <span class="material-symbols-outlined"
                                                     style="font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.3;">inbox</span>
@@ -3066,7 +3108,6 @@
                     </div>
                 </div>
             </div>
-<!--prompt:หน้ารอการอนุมัติตอนนี้มี From (ผู้ส่ง) ให้เพิ่ม To (ผู้รับ)-->
 
             <!-- ── BROADCAST VIEW ─────────────────── -->
             <div id="view-broadcast" class="view" style="display:none;">
@@ -3075,7 +3116,7 @@
                     <p>Dispatch a message to all active followers simultaneously.</p>
                 </div>
 
-                <div class="section-card" style="max-width: 680px;">
+                <div class="section-card" style="max-width: 840px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">campaign</span>
@@ -3166,8 +3207,6 @@
                     </div>
                 </div>
 
-                <!--prompt: 
-                -->
 
                 <!-- Admin-Only: Linked Followers Management -->
                 <div id="adminOnlyFollowerMgmt" style="display: none;">
@@ -3497,7 +3536,6 @@
 
             </div>
 
-
             <!-- ── LOGS VIEW ──────────────────────── -->
             <div id="view-logs" class="view" style="display:none;">
                 <div class="page-header">
@@ -3544,7 +3582,7 @@
             <!-- ── MEMO APPROVERS MANAGEMENT ───── -->
             <div id="view-memo-approvers" class="view" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 500; overflow-y: auto; padding: 20px;">
                 <div style="background: white; border-radius: var(--radius); max-width: 900px; margin: 20px auto; box-shadow: var(--shadow-lg);">
-                    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border);">
+                    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); margin-bottom: 0;">
                         <div>
                             <h2>Memo Approvers Management</h2>
                             <p>Assign users who can approve memorandums by department.</p>
@@ -3555,7 +3593,7 @@
                     </div>
                     <div style="padding: 20px; max-height: 70vh; overflow-y: auto;">
 
-                <div class="section-card" style="max-width: 800px;">
+                <div class="section-card" style="max-width: 100%;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">person_add</span>
@@ -3621,7 +3659,7 @@
             <!-- ── TAB ACCESS CONTROL ──────────── -->
             <div id="view-tab-access" class="view" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 500; overflow-y: auto; padding: 20px;">
                 <div style="background: white; border-radius: var(--radius); max-width: 900px; margin: 20px auto; box-shadow: var(--shadow-lg);">
-                    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border);">
+                    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); margin-bottom: 0;">
                         <div>
                             <h2>Tab Access Control</h2>
                             <p>Configure which tabs each user can access.</p>
@@ -3718,7 +3756,9 @@
                 </div>
             </div>
 
-        </div><!-- /content -->
+        </div>
+
+        <!--prompt: ให้เพิ่ม animation เพื่อความสวยงาม-->
     </div><!-- /main -->
 
     <!-- Mobile Bottom Navigation -->
@@ -3735,12 +3775,12 @@
                 <span>Compose</span>
             </button>
             <button class="mobile-bottom-nav-item" data-view="sent-memos"
-                onclick="showView('sent-memos'); loadSentMemos(); activateMobileNavItem(this)">
+                onclick="showView('sent-memos'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">send</span>
                 <span>Sent</span>
             </button>
             <button class="mobile-bottom-nav-item" data-view="received-memos"
-                onclick="showView('received-memos'); loadReceivedMemos(); activateMobileNavItem(this)">
+                onclick="showView('received-memos'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">inbox</span>
                 <span>Received</span>
             </button>
@@ -3939,7 +3979,7 @@
                 if (authToken && currentUser) {
                     loadNotificationsFromFirebase()
                 }
-            }, 30000) // Refresh every 30 seconds
+            }, 1000) // Refresh every 30 seconds
             console.log('🔄 Notification auto-refresh started')
         }
 
@@ -3990,7 +4030,7 @@
             // Then refresh every 10 seconds for real-time updates
             pendingApprovalsRefreshInterval = setInterval(() => {
                 refreshPendingApprovalsBadge()
-            }, 3000)
+            }, 1000)
             console.log('🔄 Pending approvals badge auto-refresh started (every 3s)')
         }
 
@@ -6569,6 +6609,7 @@
                     )
                     loadNotificationsFromFirebase()
                     clearCompose()
+                    loadMemoDocNumber() // Regenerate DocNumber for next memo
                     sentCount++
                 } else if (totalSuccessCount > 0) {
                     setStatus('statusSingleSend', 'warn', 'warning', `Sent to ${totalSuccessCount} recipients, failed for ${totalFailCount}`)
@@ -6580,6 +6621,8 @@
                         { title: title, recipients: recipientDisplay },
                         'sent'
                     )
+                    clearCompose()
+                    loadMemoDocNumber() // Still regenerate DocNumber even on partial success
                 } else {
                     setStatus('statusSingleSend', 'error', 'error', 'Failed to send to all recipients')
                     addNotification(
@@ -6636,7 +6679,7 @@
             const badge = document.getElementById('sentMemosCountBadge')
             const statusEl = document.getElementById('sentMemosStatus')
 
-            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading sent memos...</p></div></td></tr>`
+            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading sent memos...</p></div></td></tr>`
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
             statusEl.querySelector('.msg-text').textContent = 'Fetching sent memorandums...'
@@ -6670,7 +6713,7 @@
                     const date = new Date(memo.sentAt)
                     const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
                     const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-                    const preview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
+                    const preview = memo.content.substring(0, 15) + (memo.content.length > 15 ? '...' : '')
                     const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
 
                     // Get recipient name
@@ -6679,19 +6722,22 @@
                     // Determine status badge
                     let statusBadge = '<span class="badge badge-pending">Sent</span>'
                     if (memo.status === 'pending_approval') {
-                        statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">รอการอนุมัติ</span>'
+                        statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber);">รอการอนุมัติ</span>'
                     } else if (memo.status === 'approved') {
-                        statusBadge = '<span class="badge" style="background: var(--green-bg); color: var(--green); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">อนุมัติ</span>'
+                        statusBadge = '<span class="badge" style="background: var(--green-bg); color: var(--green);">อนุมัติ</span>'
                     } else if (memo.status === 'rejected') {
-                        statusBadge = '<span class="badge" style="background: var(--red-bg); color: var(--red); font-weight: 600; padding: 4px 8px; border-radius: 2px; font-size: 11px;">ปฏิเสธ</span>'
+                        statusBadge = '<span class="badge" style="background: var(--red-bg); color: var(--red);">ปฏิเสธ</span>'
                     }
 
-                    rows += `<tr>
+                    rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
           <td style="font-size:12px;">
             <span style="color:var(--ink-muted);">
               ${dateStr}<br>
               <span style="font-size:11px;">${timeStr}</span>
             </span>
+          </td>
+          <td style="font-size:12px;font-weight:600;color:var(--accent);">
+            ${memo.docNumber || '—'}
           </td>
           <td>
             <div style="font-weight:500;">${escHtml(memo.title)}</div>
@@ -6709,9 +6755,10 @@
             <span title="${escHtml(memo.content)}">${escHtml(preview)}</span>
           </td>
           <td style="text-align: center;">
-            <button class="btn btn-ghost btn-sm" onclick="openMemoDetail(${memoJson})">
-              <span class="material-symbols-outlined" style="font-size: 16px;">info</span>
-            </button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
+              <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                                    View
+                                </button>
           </td>
         </tr>`
                 }
@@ -6729,7 +6776,7 @@
             const badge = document.getElementById('receivedMemosCountBadge')
             const statusEl = document.getElementById('receivedMemosStatus')
 
-            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading received memos...</p></div></td></tr>`
+            tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading received memos...</p></div></td></tr>`
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
             statusEl.querySelector('.msg-text').textContent = 'Fetching received memorandums...'
@@ -6766,12 +6813,15 @@
                     const preview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
                     const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
                     
-                    rows += `<tr>
+                    rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
           <td style="font-size:12px;">
             <span style="color:var(--ink-muted);">
               ${dateStr}<br>
               <span style="font-size:11px;">${timeStr}</span>
             </span>
+          </td>
+          <td style="font-size:12px;font-weight:600;color:var(--accent);">
+            ${memo.docNumber || '—'}
           </td>
           <td>
             <div style="font-weight:500;">${escHtml(memo.title)}</div>
@@ -6786,9 +6836,10 @@
             <span title="${escHtml(memo.content)}">${escHtml(preview)}</span>
           </td>
           <td style="text-align: center;">
-            <button class="btn btn-ghost btn-sm" onclick="openMemoDetail(${memoJson})">
-              <span class="material-symbols-outlined" style="font-size: 16px;">info</span>
-            </button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
+              <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                                    View
+                                </button>
           </td>
         </tr>`
                 }
@@ -6972,17 +7023,7 @@
             return { type: 'system', icon: 'info', title: 'Activity', color: 'blue' }
         }
 
-        /*
-        prompt:
-        ลองทดสอบแล้ว
-        ตอนนี้ที่บันทึก log ได้มี
-        login,logout,User Registered,User Approved
 
-        ที่ยังไม่ได้มี
-        send memo,approved memo,rejected memo,rejected user
-
-        แก้ไขที
-        */
 
         function renderLogs(logs, containerId) {
             const el = document.getElementById(containerId)
@@ -7098,222 +7139,6 @@
             }
         }
 
-        /* 
-                    <div id="view-logs" class="view" style="display:none;">
-                <div class="page-header">
-                    <h2>Activity Log</h2>
-                    <p>Live activity trail from the LINE Bot server.</p>
-                </div>
-
-                <div class="section-card">
-                    <div class="section-header">
-                        <div class="section-title">
-                            <span class="material-symbols-outlined">event_note</span>
-                            System Activities
-                        </div>
-                        <div class="logs-toolbar">
-                            <div class="logs-toolbar-left">
-                                <button class="btn btn-ghost btn-sm" onclick="loadLogs()">
-                                    <span class="material-symbols-outlined">refresh</span>
-                                    Refresh
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="clearLogs()">
-                                    <span class="material-symbols-outlined">delete_sweep</span>
-                                    Clear
-                                </button>
-                            </div>
-
-
-
-                            <label class="auto-refresh-toggle">
-                                <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
-                                Auto-refresh (2s)
-                            </label>
-                            <div class="logs-counter" id="logsCount">0 entries</div>
-                        </div>
-                    </div>
-                    <div class="section-body" style="padding: 0;">
-                        <div class="activity-log" id="logsViewer">
-                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">No activity logged yet.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        function getEventTypeAndIcon(message, data) {
-            const msg = message.toLowerCase()
-
-            // New user registration
-            if (msg.includes('new user register')) return { type: 'approval', icon: 'person_add_alt_1', title: 'User Registered', color: 'green' }
-            // User approval
-            if (msg.includes('approved user register')) return { type: 'approval', icon: 'person_check', title: 'User Approved', color: 'green' }
-            // Rejected user
-            if (msg.includes('rejected user')) return { type: 'error', icon: 'person_remove_alt_1', title: 'User Rejected', color: 'red' }
-            // Login
-            if (msg.includes('login')) return { type: 'login', icon: 'login', title: 'Login', color: 'green' }
-            // Logout
-            if (msg.includes('logout')) return { type: 'logout', icon: 'logout', title: 'Logout', color: 'amber' }
-            // Send memo
-            if (msg.includes('send memo')) return { type: 'send', icon: 'mail_outline', title: 'Sent Memo', color: 'blue' }
-            // Approved memo
-            if (msg.includes('approved memo')) return { type: 'approval', icon: 'check_circle', title: 'Approved Memo', color: 'green' }
-            // Rejected memo
-            if (msg.includes('rejected memo')) return { type: 'error', icon: 'cancel', title: 'Rejected Memo', color: 'red' }
-            // New followers
-            if (msg.includes('new followers')) return { type: 'follower', icon: 'person_add', title: 'New Follower', color: 'blue' }
-            // Legacy patterns
-            if (msg.includes('linking follower') || msg.includes('follower linked')) return { type: 'follower', icon: 'group_add', title: 'Follower Linked', color: 'green' }
-            if (msg.includes('follower unlinked')) return { type: 'error', icon: 'group_remove', title: 'Follower Unlinked', color: 'amber' }
-            if (msg.includes('department added') || msg.includes('sub-department added')) return { type: 'system', icon: 'domain_add', title: 'Department Added', color: 'blue' }
-            if (msg.includes('department deleted')) return { type: 'system', icon: 'domain_disabled', title: 'Department Deleted', color: 'amber' }
-            if (msg.includes('error')) return { type: 'error', icon: 'error_outline', title: 'Error', color: 'red' }
-
-            return { type: 'system', icon: 'info', title: 'Activity', color: 'blue' }
-        }
-
-                async function doLogin() {
-                    const username = document.getElementById('loginUsername').value.trim()
-                    const password = document.getElementById('loginPassword').value.trim()
-        
-                    if (!username || !password) {
-                        setStatus('statusLogin', 'error', 'error', 'Username and password required.')
-                        return
-                    }
-        
-                    setStatus('statusLogin', 'loading', 'hourglass_empty', 'Signing in...')
-                    try {
-                        const res = await fetch('/login', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ username, password })
-                        })
-                        const data = await res.json()
-                        if (!res.ok) {
-                            // Show pending message if user is waiting for approval
-                            if (res.status === 403 && data.error && data.error.includes('pending')) {
-                                setStatus('statusLogin', 'warn', 'schedule', data.error)
-                            } else {
-                                setStatus('statusLogin', 'error', 'error', data.error || 'Login failed.')
-                            }
-                            return
-                        }
-                        // Save token and user data
-                        authToken = data.token
-                        currentUser = data.user
-                        localStorage.setItem('authToken', authToken)
-        
-                        setStatus('statusLogin', 'success', 'check_circle', 'Login successful!')
-        
-                        setTimeout(async () => {
-                            document.getElementById('loginUsername').value = ''
-                            document.getElementById('loginPassword').value = ''
-                            updateUIForLoggedIn()
-                            // Load user data and linked profile after successful login
-                            await loadUserData()
-                            await initializeTabAccess()
-                            showView('dashboard')
-                        }, 1000)
-                    } catch (err) {
-                        setStatus('statusLogin', 'error', 'error', err.message)
-                    }
-                }
-
-                function shouldLogMessage(message) {
-                  const importantKeywords = [
-                    'login successful',
-                    'logout successful',
-                    'user registered',
-                    'user approved',
-                    'user rejected',
-                    'followers follow',
-                    'followers unfollow',
-                    'send message request',
-                    'password changed',
-                    'approver',
-                    'line message',
-                    'memo',
-                    'approval'
-                  ]
-                
-                  const msg = message.toLowerCase()
-                  return importantKeywords.some(keyword => msg.includes(keyword))
-                }
-
-                app.post("/login", async (req, res) => {
-                  try {
-                    const { username, password } = req.body
-                
-                    if (!username || !password) {
-                      return res.status(400).json({ error: "Username and password required" })
-                    }
-                
-                    // หา user ด้วย username
-                    const userRef = await firebase_get(`users_by_username/${username}`)
-                    if (!userRef) {
-                      addLog('warn', 'Login failed - user not found', { username })
-                      return res.status(401).json({ error: "Invalid credentials" })
-                    }
-                
-                    const userId = userRef.userId
-                    const user = await firebase_get(`users/${userId}`)
-                
-                    // Check if user is pending approval
-                    if (user.status === 'pending') {
-                      addLog('warn', 'Login blocked - user pending approval', { username })
-                      return res.status(403).json({ error: "Your account is pending admin approval. Please wait for approval to access the system." })
-                    }
-                
-                    // เช็คพาสเวิร์ด
-                    if (user.password !== password) {
-                      addLog('warn', 'Login failed - invalid password', { username })
-                      return res.status(401).json({ error: "Invalid credentials" })
-                    }
-                
-                    // สร้าง token
-                    const token = createToken()
-                    sessions[token] = userId
-                
-                    addLog('info', 'Login successful', { userId, username })
-                    res.json({
-                      status: "Login successful",
-                      token,
-                      user: {
-                        userId,
-                        username,
-                        name: user.name,
-                        surname: user.surname,
-                        role: user.role || 'user'
-                      }
-                    })
-                  } catch (err) {
-                    res.status(500).json({ error: err.message })
-                  }
-                })
-                
-                function shouldLogMessage(message) {
-                  const importantKeywords = [
-                    'login successful',
-                    'logout successful',
-                    'user registered',
-                    'user approved',
-                    'user rejected',
-                    'followers follow',
-                    'followers unfollow',
-                    'send message request',
-                    'password changed',
-                    'approver',
-                    'line message',
-                    'memo',
-                    'approval'
-                  ]
-                
-                  const msg = message.toLowerCase()
-                  return importantKeywords.some(keyword => msg.includes(keyword))
-                }
-
-       prompt: แก้ไขตอนนี้ใน view-logs แสดงผล log แค่ login/logout เท่านั้น ให้แสดง log อื่นด้วย 
-        */
 
         async function clearLogs() {
             const confirmed = await showConfirmModal('Clear all system logs? They will be backed up to Firebase.', 'Clear Logs')
@@ -8112,6 +7937,7 @@
 
         function openTabAccessModal() {
             document.getElementById('view-tab-access').style.display = 'block'
+            document.getElementById('tabAccessModal').style.display = 'none'
         }
 
         function closeTabAccessModal() {
@@ -8210,18 +8036,37 @@
         window.cachedPendingMemos = []
 
         async function loadPendingApprovals() {
+            const tbody = document.getElementById('pendingApprovalsTbody')
+            const badge = document.getElementById('pendingApprovalsCountBadge')
+            const statusEl = document.getElementById('pendingApprovalsStatus')
+
+            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading pending approvals...</p></div></td></tr>`
+            statusEl.className = 'status-msg loading show'
+            statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
+            statusEl.querySelector('.msg-text').textContent = 'Fetching memos awaiting your approval...'
+
             try {
-                // Call server endpoint to get pending approvals for current approver
+                console.log('📋 Fetching pending approvals with token:', authToken?.substring(0, 20) + '...')
                 const res = await fetch('/memos/pending-approval', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
                 const data = await res.json()
-                const pendingMemos = data.pendingMemos || []
+                console.log('📋 Pending approvals response:', data)
 
-                // Cache the pending memos for quick access
+                if (!res.ok) {
+                    statusEl.className = 'status-msg error show'
+                    statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                    statusEl.querySelector('.msg-text').textContent = data.error || 'Failed to load pending approvals.'
+                    console.error('❌ Error loading pending approvals (HTTP ' + res.status + '):', data)
+                    return
+                }
+
+                const pendingMemos = data.pendingMemos || []
                 window.cachedPendingMemos = pendingMemos
 
-                console.log('📋 Pending approvals loaded:', pendingMemos.length)
+                // Update badge
+                badge.textContent = `${pendingMemos.length} pending`
+                statusEl.className = 'status-msg'
 
                 // Fetch users to build recipient name lookup
                 let usersMap = {}
@@ -8239,68 +8084,71 @@
                     console.warn('Could not fetch users for recipient names:', err)
                 }
 
-                // Render pending approvals table
-                const tbody = document.getElementById('pendingApprovalsTbody')
-                if (pendingMemos.length > 0) {
-                    tbody.innerHTML = pendingMemos.map(memo => {
-                        // Get recipient name from lookup or use recipientName if available
-                        const recipientName = memo.recipientName || (memo.recipientUserId ? usersMap[memo.recipientUserId] : null) || '-'
-                        const contentPreview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
-                        
-                        return `
-                        <tr style="border-bottom: 1px solid var(--border);">
-                            <td style="padding: 12px; font-size: 12px;">${new Date(memo.sentAt).toLocaleDateString('th-TH')}</td>
-                            <td style="padding: 12px;">
-                                <div style="font-weight: 600; color: var(--ink); cursor: pointer;" onclick="showMemoDetail('${memo.memoId}', ${JSON.stringify(memo).replace(/'/g, '&#39;')})">
-                                    ${escHtml(memo.title)}
-                                </div>
-                            </td>
-                            <td style="padding: 12px; font-size: 11px; color: var(--ink-faint); max-width: 200px;">
-                                <span title="${escHtml(memo.content)}">${escHtml(contentPreview)}</span>
-                            </td>
-                            <td style="padding: 12px; font-size: 12px;">
-                                ${memo.senderObject ? `${memo.senderObject.name} ${memo.senderObject.surname}` : 'Unknown'}
-                            </td>
-                            <td style="padding: 12px; font-size: 12px;">
-                                ${recipientName}
-                            </td>
-                            <td style="padding: 12px; font-size: 12px;">
-                                ${memo.senderObject?.department || '-'}
-                            </td>
-                            <td style="padding: 12px; text-align: center;">
-                                <div style="display: flex; gap: 6px; justify-content: center;">
-                                    <button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="viewPendingMemo('${memo.memoId}')">
-                                        <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
-                                        View
-                                    </button>
-                                    <button class="btn btn-success btn-sm" onclick="approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
-                                        <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
-                                        Approve
-                                    </button>
-                                    <button class="btn btn-danger btn-sm" onclick="rejectMemoDialog('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
-                                        <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
-                                        Reject
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `
-                    }).join('')
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="7" style="padding: 32px; text-align: center; color: var(--ink-faint);">No pending approvals</td></tr>'
+                if (pendingMemos.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">pending_actions</span><p>No pending approvals.</p></div></td></tr>`
+                    return
                 }
 
-                // Update badge
-                const badge = document.getElementById('pendingBadge')
-                if (badge && pendingMemos.length > 0) {
-                    badge.textContent = pendingMemos.length > 9 ? '9+' : pendingMemos.length
-                    badge.style.display = 'flex'
-                } else if (badge) {
-                    badge.style.display = 'none'
+                // Render pending approvals table
+                let rows = ''
+                for (let memo of pendingMemos) {
+                    const recipientName = memo.recipientName || (memo.recipientUserId ? usersMap[memo.recipientUserId] : null) || '-'
+                    const contentPreview = memo.content.substring(0, 15) + (memo.content.length > 15 ? '...' : '')
+                    const date = new Date(memo.sentAt)
+                    const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+                    const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                    
+                    rows += `<tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="viewPendingMemo('${memo.memoId}')">
+                        <td style="font-size:12px;">
+                          <span style="color:var(--ink-muted);">
+                            ${dateStr}<br>
+                            <span style="font-size:11px;">${timeStr}</span>
+                          </span>
+                        </td>
+                        <td style="font-size:12px;font-weight:600;color:var(--accent);">
+                            ${memo.docNumber || '—'}
+                        </td>
+                        <td style="padding: 12px;">
+                            <div style="font-weight: 600; color: var(--ink);">
+                                ${escHtml(memo.title)}
+                            </div>
+                        </td>
+                        <td style="padding: 12px; font-size: 12px;">
+                            ${memo.senderObject ? `${memo.senderObject.name} ${memo.senderObject.surname}` : 'Unknown'}
+                        </td>
+                        <td style="padding: 12px; font-size: 12px;">
+                            ${recipientName}
+                        </td>
+                        <td style="padding: 12px; font-size: 12px;">
+                            ${memo.senderObject?.department || '-'}
+                        </td>
+                        <td style="padding: 12px; font-size: 11px; color: var(--ink-faint); max-width: 200px;">
+                            <span title="${escHtml(memo.content)}">${escHtml(contentPreview)}</span>
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <div style="display: flex; gap: 6px; justify-content: center;">
+                                <button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); viewPendingMemo('${memo.memoId}')">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                                    View
+                                </button>
+                                <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                                    Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); rejectMemoDialog('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+                                    Reject
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`
                 }
+                tbody.innerHTML = rows
             } catch (err) {
+                statusEl.className = 'status-msg error show'
+                statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                statusEl.querySelector('.msg-text').textContent = err.message || 'Error loading approvals'
                 console.error('Error loading pending approvals:', err)
-                document.getElementById('pendingApprovalsTbody').innerHTML = '<tr><td colspan="7" style="padding: 16px; color: red;">Error loading approvals</td></tr>'
             }
         }
 

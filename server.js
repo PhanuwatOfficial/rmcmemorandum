@@ -1490,6 +1490,72 @@ app.delete("/admin/memo-approvers/:approverId", verifyToken, async (req, res) =>
   }
 })
 
+// Helper function to resolve DocNumber conflicts
+// If the provided docNumber already exists in sent_memos, generate the next available one
+async function resolveDocNumberConflict(docNumber, senderUserId) {
+  if (!docNumber) return docNumber
+  
+  try {
+    // Get all sent memos for this user to check for conflicts
+    const sentMemosData = await firebase_get(`sent_memos/${senderUserId}`)
+    
+    if (!sentMemosData || typeof sentMemosData !== 'object') {
+      // No conflict - this docNumber is available
+      return docNumber
+    }
+    
+    // Check if this exact docNumber exists
+    let currentDocNumber = docNumber
+    let docNumberExists = false
+    
+    for (const memoId in sentMemosData) {
+      const memo = sentMemosData[memoId]
+      if (memo.docNumber === currentDocNumber) {
+        docNumberExists = true
+        break
+      }
+    }
+    
+    if (!docNumberExists) {
+      return currentDocNumber
+    }
+    
+    // Conflict exists - find the next available number
+    const parts = docNumber.split('-')
+    const year = parts[0]
+    let nextNumber = parseInt(parts[1]) || 0
+    
+    // Keep incrementing until we find an available number
+    while (true) {
+      nextNumber++
+      currentDocNumber = `${year}-${String(nextNumber).padStart(4, '0')}`
+      
+      let stillExists = false
+      for (const memoId in sentMemosData) {
+        const memo = sentMemosData[memoId]
+        if (memo.docNumber === currentDocNumber) {
+          stillExists = true
+          break
+        }
+      }
+      
+      if (!stillExists) {
+        console.log(`📝 DocNumber conflict resolved: ${docNumber} -> ${currentDocNumber}`)
+        return currentDocNumber
+      }
+      
+      // Safety check to prevent infinite loops
+      if (nextNumber > 9999) {
+        console.error('❌ DocNumber overflow - could not find available number')
+        return docNumber
+      }
+    }
+  } catch (err) {
+    console.error('Error resolving DocNumber conflict:', err)
+    return docNumber
+  }
+}
+
 // Send memo (now with approval workflow)
 app.post("/send", async (req, res) => {
   const { userId, recipientUserId, title, type, content, senderUserId, docNumber } = req.body
@@ -1497,6 +1563,11 @@ app.post("/send", async (req, res) => {
   // recipientUserId is the system user ID (used for approval workflow)
 
   try {
+    // Resolve any DocNumber conflicts before proceeding
+    let resolvedDocNumber = docNumber
+    if (docNumber && senderUserId) {
+      resolvedDocNumber = await resolveDocNumberConflict(docNumber, senderUserId)
+    }
     // Get sender information if senderUserId is provided
     let senderName = 'System'
     if (senderUserId) {
@@ -1532,7 +1603,7 @@ app.post("/send", async (req, res) => {
       title,
       type,
       content,
-      docNumber: docNumber || '',
+      docNumber: resolvedDocNumber || '',
       recipientId: actualRecipientUserId,  // Use system user ID, not followerId
       recipientName: recipientName,
       followerId: targetUserId,  // Store the LINE followerId separately for reference
@@ -1706,9 +1777,9 @@ app.post("/send", async (req, res) => {
                       weight: "bold",
                       margin: "md"
                     },
-                    ...(docNumber ? [{
+                    ...(resolvedDocNumber ? [{
                       type: "text",
-                      text: `Doc #: ${docNumber}`,
+                      text: `Doc No.: ${resolvedDocNumber}`,
                       size: "sm",
                       color: "#1a2740",
                       weight: "bold",
@@ -1780,6 +1851,16 @@ app.post("/send", async (req, res) => {
         }
       }
 
+      // Also save to received_memos while pending approval so recipient can see it
+      const pendingMemo = {
+        ...memoData,
+        status: 'pending_approval',
+        approvalPending: true
+      }
+      if (actualRecipientUserId) {
+        await firebase_set(`received_memos/${actualRecipientUserId}/${memoId}`, pendingMemo)
+      }
+
       return res.json({ status: "Memo created - pending approval", memoId, approverCount: memoApprovers.length })
     }
 
@@ -1835,9 +1916,9 @@ app.post("/send", async (req, res) => {
               weight: "bold",
               margin: "md"
             },
-            ...(docNumber ? [{
+            ...(resolvedDocNumber ? [{
               type: "text",
-              text: `Doc #: ${docNumber}`,
+              text: `Doc No.: ${resolvedDocNumber}`,
               size: "sm",
               color: "#1a2740",
               weight: "bold",
@@ -1887,6 +1968,20 @@ app.post("/send", async (req, res) => {
     }
 
     await firebase_set(`sent_memos/${senderUserId}/${memoId}`, memoData)
+
+    // Also save to received_memos for the recipient (unlinked/system user)
+    // This ensures unlinked users can receive memos in the database even without LINE notification
+    if (actualRecipientUserId) {
+      const recipientCheck = await firebase_get(`users/${actualRecipientUserId}`)
+      if (recipientCheck) {
+        const receivedMemo = {
+          ...memoData,
+          status: 'sent',
+          approvalPending: false
+        }
+        await firebase_set(`received_memos/${actualRecipientUserId}/${memoId}`, receivedMemo)
+      }
+    }
 
     const notification = {
       id: Date.now().toString(),
@@ -2176,7 +2271,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
               },
               ...(memoData.docNumber ? [{
                 type: "text",
-                text: `Doc #: ${memoData.docNumber}`,
+                text: `Doc No.: ${memoData.docNumber}`,
                 size: "sm",
                 color: "#1a2740",
                 weight: "bold",
@@ -2869,6 +2964,12 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'targetUserId, title, type, and content required' })
     }
 
+    // Resolve any DocNumber conflicts
+    let resolvedDocNumber = docNumber
+    if (docNumber) {
+      resolvedDocNumber = await resolveDocNumberConflict(docNumber, senderUserId)
+    }
+
     // Get sender info
     const sender = await firebase_get(`users/${senderUserId}`)
     if (!sender) {
@@ -2890,7 +2991,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       title,
       type,
       content,
-      docNumber: docNumber || '',
+      docNumber: resolvedDocNumber || '',
       senderUserId,
       senderName: `${sender.name} ${sender.surname}`,
       senderUsername: sender.username,
@@ -3035,9 +3136,9 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
                       weight: "bold",
                       margin: "md"
                     },
-                    ...(docNumber ? [{
+                    ...(resolvedDocNumber ? [{
                       type: "text",
-                      text: `Doc #: ${docNumber}`,
+                      text: `Doc No.: ${resolvedDocNumber}`,
                       size: "sm",
                       color: "#1a2740",
                       weight: "bold",
@@ -3100,6 +3201,14 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
           // Silent error
         }
       }
+
+      // Also save to received_memos even while pending approval so recipient can see it
+      const pendingMemo = {
+        ...memoData,
+        status: 'pending_approval',
+        approvalPending: true
+      }
+      await firebase_set(`received_memos/${targetUserId}/${memoId}`, pendingMemo)
 
       // Log pending approval memo
       addLog('info', 'Send memo (pending approval)', { title, type, recipientUserId: targetUserId, senderName, approverCount: memoApprovers.length })
