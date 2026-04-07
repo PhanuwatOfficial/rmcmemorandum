@@ -117,8 +117,8 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 11px 24px;
-            color: rgba(255, 255, 255, 0.55);
+            padding: 15px 24px;
+            color: rgba(255, 255, 255, 0.753);
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
@@ -128,7 +128,7 @@
         }
 
         .nav-item:hover {
-            color: rgba(255, 255, 255, 0.9);
+            color: rgb(255, 255, 255);
             background: rgba(255, 255, 255, 0.06);
         }
 
@@ -810,6 +810,7 @@
         #memoApprovalActionsSection,
         #memoRejectionInputSection {
             animation: slideUp 0.3s ease-out;
+            flex: 1 1 100%;
         }
 
         #memoApprovalStatusSection {
@@ -988,8 +989,10 @@
             font-weight: 700;
             letter-spacing: 0.18em;
             text-transform: uppercase;
-            color: var(--ink-faint);
-            background: var(--surface);
+            /* color: var(--ink-faint); */
+            color: var(--paper);
+            /* background: var(--surface); */
+            background: var(--accent);
             border-bottom: 1px solid var(--border);
         }
 
@@ -1526,10 +1529,14 @@
         .memo-detail-body {
             padding: 32px;
             background: var(--paper);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .memo-detail-field {
-            margin-bottom: 24px;
+            flex: 1 1 calc(50% - 10px);
+            min-width: calc(50% - 10px);
             animation: slideUp 0.3s ease-out backwards;
         }
 
@@ -1651,6 +1658,17 @@
             }
             to {
                 transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-8px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
                 opacity: 1;
             }
         }
@@ -2381,8 +2399,9 @@
                 </a>
             </div>
         </nav>
-
-        <div class="sidebar-create" id="createSection" style="display:none;">
+<!--prompt: แก้ไข css เมื่อ nav-item นั้น active (ส่วนที่เป็น admin ดูได้ css ไม่แสดงผล (background,border-right,..) น่าจะเป็นเพราะ function checkApproverStatusAndLoadPending และอื่นๆ)-->
+      
+<div class="sidebar-create" id="createSection" style="display:none;">
             <button class="btn-create" onclick="closeMobileSidebar(); showView('compose')">
                 <span class="material-symbols-outlined">add</span>
                 New Memorandum
@@ -2433,7 +2452,7 @@
                             style="position: absolute; top: -4px; right: -4px; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; line-height: 1;">0</span>
                     </button>
                     <div id="notificationPanel"
-                        style="display: none; flex-direction: column; position: absolute; top: 100%; right: 0; width: 360px; max-height: 400px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; margin-top: 4px;">
+                        style="display: none; flex-direction: column; position: absolute; top: 100%; right: 0; width: 360px; max-height: 400px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; margin-top: 4px; animation: slideDown 0.25s ease-out;">
                         <div
                             style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
                             <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--ink);">แจ้งเตือน</h3>
@@ -2466,7 +2485,7 @@
             <!-- ── LOGIN VIEW ─────────────────────── -->
             <div id="view-login" class="view"
                 style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
-                <div style="width: 100%; max-width: 400px; margin: 0; margin-left: 32.5%; padding: 0 16px;">
+                <div style="width: 100%; max-width: 520px; margin: 0; margin-left: 32.5%; padding: 0 16px;">
                     <div class="page-header" style="text-align: center; margin-bottom: 25px;">
                         <h2 style="font-size: 32px; color: var(--accent);">Login</h2>
                         <!-- <p style="color: var(--ink-faint); font-size: 15px;">Access your Executive Memorandum account.</p> -->
@@ -2510,7 +2529,7 @@
             <!-- ── REGISTER VIEW ──────────────────── -->
             <div id="view-register" class="view"
                 style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
-                <div style="width: 100%; max-width: 400px; margin: 0; margin-left: 32.5%; padding: 0 16px;">
+                <div style="width: 100%; max-width: 520px; margin: 0; margin-left: 32.5%; padding: 0 16px;">
                     <!-- <div style="width: 40%; max-width: 80%; margin:0 auto;"> -->
                     <div class="page-header" style="text-align: center; margin-bottom: 25px;">
                         <h2 style="font-size: 32px; color: var(--accent); ">Create Account</h2>
@@ -2588,7 +2607,7 @@
                     <p>Manage your account and linked followers.</p>
                 </div>
 
-                <div class="section-card" style="max-width: 680px;">
+                <div class="section-card" style="max-width: 840px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">person</span>
@@ -2621,7 +2640,7 @@
                     </div>
                 </div>
 
-                <div class="section-card" style="max-width: 680px;">
+                <div class="section-card" style="max-width: 840px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">lock</span>
@@ -2660,7 +2679,7 @@
                     </div>
                 </div>
 
-                <div class="section-card" style="max-width: 680px;">
+                <div class="section-card" style="max-width: 840px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">link</span>
@@ -3803,6 +3822,16 @@
             </div>
             <div class="memo-detail-body">
                 <div class="memo-detail-field">
+                    <div class="memo-detail-label">Document Number</div>
+                    <div class="memo-detail-value bold" id="memoDetailDocNumber" style="color: var(--accent); font-family: 'Courier New', monospace;">—</div>
+                </div>
+
+                <div class="memo-detail-field">
+                    <div class="memo-detail-label">Date</div>
+                    <div class="memo-detail-value" id="memoDetailDate">—</div>
+                </div>
+
+                <div class="memo-detail-field">
                     <div class="memo-detail-label">Title</div>
                     <div class="memo-detail-value bold" id="memoDetailTitleValue">—</div>
                 </div>
@@ -3817,9 +3846,9 @@
                     <div class="memo-detail-value" id="memoDetailRecipient">—</div>
                 </div>
 
-                <div class="memo-detail-field">
-                    <div class="memo-detail-label">Date</div>
-                    <div class="memo-detail-value" id="memoDetailDate">—</div>
+                <div class="memo-detail-field" id="memoDetailRecipientsField" style="display: none;">
+                    <div class="memo-detail-label">Recipients</div>
+                    <div class="memo-detail-value" id="memoDetailRecipients" style="white-space: pre-wrap; word-break: break-word;">—</div>
                 </div>
 
                 <div class="memo-detail-field">
@@ -4174,8 +4203,8 @@
                 const unreadClass = notif.read ? '' : 'unread'
 
                 // Extract sender name from message if available
-                let messageDisplay = escHtml(notif.message).replace(/From: /, '<strong>ผู้ส่ง: </strong>')
-                messageDisplay = messageDisplay.replace(/จาก /, '<strong>จาก: </strong>')
+                let messageDisplay = escHtml(notif.message).replace(/From: /, '<span>ผู้ส่ง: </span>')
+                messageDisplay = messageDisplay.replace(/จาก /, '<span>จาก: </span>')
 
                 // Determine click handler - if we have memo, use it; otherwise use memoId
                 let clickHandler = 'markNotificationAsRead()'
@@ -4440,7 +4469,15 @@
                 el.classList.remove('active')
             })
             const activeLink = Array.from(document.querySelectorAll('.nav-item')).find(el =>
-                el.textContent.toLowerCase().includes(name === 'manage-user' ? 'account' : name === 'sent-memos' ? 'sent' : name === 'received-memos' ? 'received' : name)
+                el.textContent.toLowerCase().includes(
+                    name === 'manage-user' ? 'account' : 
+                    name === 'sent-memos' ? 'sent' : 
+                    name === 'received-memos' ? 'received' : 
+                    name === 'pending-approvals' ? 'pending' :
+                    name === 'followers' ? 'users' :
+                    name === 'logs' ? 'activity' :
+                    name
+                )
             )
             if (activeLink) activeLink.classList.add('active')
 
@@ -4671,6 +4708,7 @@
                         if (navItem) {
                             navItem.style.display = 'block'
                         }
+
                         if (mobileNavItem) {
                             mobileNavItem.style.display = ''
                         }
@@ -7219,12 +7257,14 @@
             })
             currentMemoDetail = memo
             document.getElementById('memoDetailTitle').textContent = memo.title
+            document.getElementById('memoDetailDocNumber').textContent = memo.docNumber || '—'
             document.getElementById('memoDetailTitleValue').textContent = memo.title
             document.getElementById('memoDetailTypeValue').textContent = memo.type || 'Memorandum'
 
             // Determine if memo is sent or received
             const isReceived = memo.senderName || memo.senderUserId
             const recipientLabel = document.getElementById('memoDetailRecipientLabel')
+            const recipientsField = document.getElementById('memoDetailRecipientsField')
 
             if (recipientLabel) {
                 // Update label based on memo type
@@ -7232,14 +7272,26 @@
                     recipientLabel.textContent = 'From'
                     document.getElementById('memoDetailRecipient').textContent = memo.senderName || 'Unknown'
                 } else {
-                    recipientLabel.textContent = 'To'
-                    document.getElementById('memoDetailRecipient').textContent = memo.recipientName || memo.recipientId
+                    recipientLabel.textContent = 'Sent By'
+                    document.getElementById('memoDetailRecipient').textContent = memo.senderName || currentUser?.name || 'Unknown'
                 }
             } else {
                 // Fallback if label element doesn't exist
                 document.getElementById('memoDetailRecipient').textContent = isReceived ?
                     (memo.senderName || 'Unknown') :
                     (memo.recipientName || memo.recipientId)
+            }
+            
+            // Show recipients list (always show if available)
+            if (memo.recipientNames && Array.isArray(memo.recipientNames) && memo.recipientNames.length > 0) {
+                document.getElementById('memoDetailRecipients').textContent = memo.recipientNames.join('\n')
+                if (recipientsField) recipientsField.style.display = 'block'
+            } else if (memo.recipientName) {
+                // Fallback to single recipientName
+                document.getElementById('memoDetailRecipients').textContent = memo.recipientName
+                if (recipientsField) recipientsField.style.display = 'block'
+            } else {
+                if (recipientsField) recipientsField.style.display = 'none'
             }
 
             const sentDate = new Date(memo.sentAt)
@@ -8093,6 +8145,12 @@
                 let rows = ''
                 for (let memo of pendingMemos) {
                     const recipientName = memo.recipientName || (memo.recipientUserId ? usersMap[memo.recipientUserId] : null) || '-'
+                    
+                    // Add recipientNames array if not present (for compatibility with memo detail modal)
+                    if (!memo.recipientNames) {
+                        memo.recipientNames = recipientName && recipientName !== '-' ? [recipientName] : []
+                    }
+                    
                     const contentPreview = memo.content.substring(0, 15) + (memo.content.length > 15 ? '...' : '')
                     const date = new Date(memo.sentAt)
                     const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
