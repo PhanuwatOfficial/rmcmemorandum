@@ -2477,7 +2477,6 @@
                 </a>
             </div>
         </nav>
-<!--prompt: แก้ไข css เมื่อ nav-item นั้น active (ส่วนที่เป็น admin ดูได้ css ไม่แสดงผล (background,border-right,..) น่าจะเป็นเพราะ function checkApproverStatusAndLoadPending และอื่นๆ)-->
       
 <div class="sidebar-create" id="createSection" style="display:none;">
             <button class="btn-create" onclick="closeMobileSidebar(); showView('compose')">
@@ -3061,10 +3060,6 @@
                     </div>
                 </div>
             </div>
-<!---
-ask:
-ตอนนี้ถ้าส่งหลาย recipient จะแยก row,docNumber ใช่ไหม
--->
 
             <!-- ── SENT MEMOS VIEW ────────────────── -->
             <div id="view-sent-memos" class="view" style="display:none;">
@@ -3887,7 +3882,6 @@ ask:
 
         </div>
 
-        <!--prompt: ให้เพิ่ม animation เพื่อความสวยงาม-->
     </div><!-- /main -->
 
     <!-- Mobile Bottom Navigation -->
@@ -5374,7 +5368,7 @@ ask:
                 setStatus('statusChangePassword', 'error', 'error', err.message)
             }
         }
-//แก้ไขเมื่อ change password แล้วไม่บันทึก log
+        
         function clearPasswordForm() {
             document.getElementById('currentPassword').value = ''
             document.getElementById('newPassword').value = ''
@@ -8126,7 +8120,6 @@ ask:
                 document.getElementById('tabAccessList').innerHTML = '<div style="color: red; padding: 16px;">Error loading tab access</div>'
             }
         }
-/*prompt: ตอนนี้ default tab มี tab อะไรบ้าง*/
         function openTabAccessEditor(userId, username, currentTabs, userRole) {
             document.getElementById('tabAccessModal').style.display = 'flex'
             document.getElementById('tabAccessModalUsername').textContent = username
