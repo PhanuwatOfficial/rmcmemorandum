@@ -1558,7 +1558,7 @@ async function resolveDocNumberConflict(docNumber, senderUserId) {
 
 // Send memo (now with approval workflow)
 app.post("/send", async (req, res) => {
-  const { userId, recipientUserId, title, type, content, senderUserId, docNumber } = req.body
+  const { userId, recipientUserId, title, type, content, senderUserId, docNumber, imageUrl } = req.body
   const targetUserId = userId  // This is the followerId (LINE user ID)
   // recipientUserId is the system user ID (used for approval workflow)
 
@@ -1604,6 +1604,7 @@ app.post("/send", async (req, res) => {
       type,
       content,
       docNumber: resolvedDocNumber || '',
+      imageUrl: imageUrl || null,
       recipientId: actualRecipientUserId,  // Use system user ID, not followerId
       recipientName: recipientName,
       followerId: targetUserId,  // Store the LINE followerId separately for reference
@@ -2542,6 +2543,11 @@ app.post("/admin/user-tabs/set", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "User not found" })
     }
 
+    // Always include manage-user (My Account) - all users must have access
+    if (!tabs.includes('manage-user')) {
+      tabs.push('manage-user')
+    }
+
     // Store tab access configuration
     const tabConfig = {
       userId,
@@ -2572,7 +2578,7 @@ app.get("/user/allowed-tabs", verifyToken, async (req, res) => {
       const user = await firebase_get(`users/${userId}`)
       const defaultTabs = user.role === 'admin'
         ? ['dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs', 'manage-user']
-        : ['dashboard', 'compose', 'sent-memos', 'received-memos', 'followers']
+        : ['dashboard', 'compose', 'sent-memos', 'received-memos','manage-user']
 
       return res.json({ tabs: defaultTabs, isCustom: false })
     }
@@ -2600,13 +2606,23 @@ app.get("/admin/user-tabs", verifyToken, async (req, res) => {
     if (allUsers && typeof allUsers === 'object') {
       for (const [userId, user] of Object.entries(allUsers)) {
         const userTabAccess = allTabAccess && allTabAccess[userId]
+        
+        // If no custom access, return default tabs based on role
+        let tabs
+        if (!userTabAccess) {
+          tabs = user.role === 'admin'
+            ? ['dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs', 'manage-user']
+            : ['dashboard', 'compose', 'sent-memos', 'received-memos', 'manage-user']
+        } else {
+          tabs = userTabAccess.tabs
+        }
 
         tabAccessList.push({
           userId,
           username: user.username,
           name: `${user.name} ${user.surname}`,
           role: user.role || 'user',
-          tabs: userTabAccess?.tabs || ['N/A'],
+          tabs: tabs,
           isCustom: !!userTabAccess
         })
       }
@@ -2957,7 +2973,7 @@ app.post("/notifications/send/:targetUserId", verifyToken, async (req, res) => {
 // Send memo to a system user (for users without linked followers)
 app.post("/send-system-memo", verifyToken, async (req, res) => {
   try {
-    const { targetUserId, title, type, content, docNumber } = req.body
+    const { targetUserId, title, type, content, docNumber, imageUrl } = req.body
     const senderUserId = req.userId
 
     if (!targetUserId || !title || !type || !content) {
@@ -2992,6 +3008,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       type,
       content,
       docNumber: resolvedDocNumber || '',
+      imageUrl: imageUrl || null,
       senderUserId,
       senderName: `${sender.name} ${sender.surname}`,
       senderUsername: sender.username,

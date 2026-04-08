@@ -264,5 +264,14 @@ approve user✓
 
 Bug 
 -DocNumber ซ้ำกัน (ตอนนี้เมื่อ send memo แล้ว docNumber ไม่ gen ใหม่)
+
+08/04/26
+-แก้ layout หน้า mobile
+-add function | search box
+-add function | icon setting topbar
+
+ทดสอบ setting approver by subdepartment
+-คนที่ approve memo ให้ส่ง memo โดยที่ไม่ต้องอนุมัติ
+-เพิ่ม upload pic ใน memo ได้ (cloudinary)
 */
 

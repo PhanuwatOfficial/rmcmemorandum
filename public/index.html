@@ -778,6 +778,84 @@
             background: #009900;
         }
 
+        /* ── Image Upload Styles ──────────────────────– */
+        .image-upload-wrapper {
+            position: relative;
+        }
+
+        .image-upload-btn:hover {
+            background: linear-gradient(135deg, var(--blue-bg) 0%, rgba(26, 58, 107, 0.05) 100%);
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        .image-upload-btn:active {
+            transform: scale(0.98);
+        }
+
+        .image-preview-container {
+            padding: 12px;
+            background: linear-gradient(135deg, var(--surface) 0%, rgba(245, 244, 240, 0.5) 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .image-remove-btn:hover {
+            background: rgba(139, 26, 26, 0.8);
+            transform: scale(1.1);
+        }
+
+        /* Drag & Drop Styles */
+        .image-upload-wrapper.dragover .image-upload-btn {
+            background: linear-gradient(135deg, var(--green-bg) 0%, rgba(26, 92, 58, 0.05) 100%);
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        /* ── Image Zoom Modal Styles ─────────────────── */
+        .image-zoom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .image-zoom-modal.show {
+            display: flex !important;
+            opacity: 1 !important;
+        }
+
+        .image-zoom-container {
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #imageZoomClose {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .image-zoom-info {
+            animation: fadeIn 0.5s ease-out 0.2s both;
+        }
+
         .btn-row {
             display: flex;
             gap: 12px;
@@ -2939,7 +3017,32 @@
                             <textarea id="msg" placeholder="Type your memorandum content here..." rows="6"></textarea>
                         </div>
 
-
+                        <!-- Image Upload Field -->
+                        <div class="field">
+                            <label><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach Image (Optional)</label>
+                            <div class="image-upload-wrapper">
+                                <input type="file" id="memoImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+                                <button type="button" class="image-upload-btn" onclick="document.getElementById('memoImageInput').click()" style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                                    <span class="material-symbols-outlined">upload_file</span>
+                                    <span id="uploadBtnText">Click to upload or drag image here</span>
+                                </button>
+                                <!-- Image Preview -->
+                                <div id="memoImagePreview" class="image-preview-container" style="display: none; margin-top: 12px;">
+                                    <div style="position: relative; display: inline-block;">
+                                        <img id="memoImageThumb" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <button type="button" class="image-remove-btn" onclick="removeImage()" style="position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s ease;">
+                                            <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+                                        </button>
+                                    </div>
+                                    <div id="uploadProgress" style="margin-top: 8px; display: none;">
+                                        <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">Uploading...</div>
+                                        <div class="progress-bar-wrap show">
+                                            <div class="progress-bar" id="uploadProgressBar" style="width: 0%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="btn-row" style="margin-top: 20px;">
                             <button class="btn btn-primary" onclick="send()">
@@ -2958,6 +3061,20 @@
                     </div>
                 </div>
             </div>
+<!---
+prompt:
+เพิ่ม upload pic ใน memo ได้ (cloudinary)
+
+            const cloudName = "domvtfj1i";
+            const uploadPreset = "testclaimdata";
+            const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
+
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", uploadPreset);
+            formData.append("folder", "MEMO");
+
+-->
 
             <!-- ── SENT MEMOS VIEW ────────────────── -->
             <div id="view-sent-memos" class="view" style="display:none;">
@@ -3620,7 +3737,7 @@
                         </div>
                     </div>
                     <div class="section-body">
-                        <div style="display: grid; gap: 12px;">
+                        <div style="display: grid; gap: 5px;">
                             <div class="field">
                                 <label>Select User (Approver)</label>
                                 <select id="approverUserId">
@@ -3719,7 +3836,7 @@
                             <button class="modal-close" onclick="closeTabAccessModal()"
                                 style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
                         </div>
-                        <div class="modal-body" style="padding: 20px 20px 20px 50px;">
+                        <div class="modal-body" style="padding: 25px;">
                             <div class="field" style="display: flex; flex-direction: column; margin-bottom: 18px;">
                                 <label style="font-weight: 600; margin-bottom: 6px;">User:</label>
                                 <div style="font-size: 15px; color: var(--ink); font-weight: 500; padding-left: 2px;">
@@ -3727,7 +3844,14 @@
                                 </div>
                             </div>
                             <div class="field" style="display: flex; flex-direction: column;">
-                                <label style="font-weight: 600; margin-bottom: 12px;">Select Allowed Tabs</label>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                                    <label style="font-weight: 600;">Select Allowed Tabs</label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn btn-ghost btn-sm" onclick="selectAllTabs()" style="padding: 4px 8px; font-size: 12px;">Select All</button>
+                                        <button class="btn btn-ghost btn-sm" onclick="deselectAllTabs()" style="padding: 4px 8px; font-size: 12px;">Deselect All</button>
+                                        <button class="btn btn-ghost btn-sm" onclick="setDefaultTabs()" style="padding: 4px 8px; font-size: 12px;">Default</button>
+                                    </div>
+                                </div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px;">
                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                                         <input type="checkbox" class="tab-checkbox" value="dashboard" style="width: 16px; height: 16px; cursor: pointer;"> 
@@ -3756,10 +3880,6 @@
                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                                         <input type="checkbox" class="tab-checkbox" value="logs" style="width: 16px; height: 16px; cursor: pointer;"> 
                                         <span>Activity Log</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" class="tab-checkbox" value="manage-user" style="width: 16px; height: 16px; cursor: pointer;"> 
-                                        <span>My Account</span>
                                     </label>
                                 </div>
                             </div>
@@ -3846,7 +3966,7 @@
                     <div class="memo-detail-value" id="memoDetailRecipient">—</div>
                 </div>
 
-                <div class="memo-detail-field" id="memoDetailRecipientsField" style="display: none;">
+                <div class="memo-detail-field" id="memoDetailRecipientsField">
                     <div class="memo-detail-label">Recipients</div>
                     <div class="memo-detail-value" id="memoDetailRecipients" style="white-space: pre-wrap; word-break: break-word;">—</div>
                 </div>
@@ -3854,6 +3974,15 @@
                 <div class="memo-detail-field">
                     <div class="memo-detail-label">Message Body</div>
                     <div class="memo-detail-content" id="memoDetailContent">—</div>
+                </div>
+
+                <!-- Image Display Section -->
+                <div class="memo-detail-field" id="memoDetailImageField" style="display: none;">
+                    <div class="memo-detail-label">Attached Image</div>
+                    <div style="margin-top: 8px;">
+                        <img id="memoDetailImage" src="" alt="Memo attachment" style="max-width: 100%; max-height: 400px; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer; transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" onclick="event.stopPropagation(); openImageModal(this.src)">
+                        <p style="font-size: 11px; color: var(--ink-faint); margin-top: 8px; text-align: center;">Click to view in full size</p>
+                    </div>
                 </div>
                 
                 <!-- Approval Status Section (shown when memo is approved or rejected) -->
@@ -3966,7 +4095,79 @@
         </div>
     </div>
 
+    <!-- Image Zoom Modal -->
+    <div id="imageZoomModal" class="image-zoom-modal">
+        <button id="imageZoomClose" class="image-zoom-close" onclick="closeImageModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 32px; cursor: pointer; z-index: 10001; transition: transform 0.2s ease;" onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <div class="image-zoom-container" style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; align-items: center;">
+            <img id="imageZoomContent" src="" alt="Full size image" style="max-width: 100%; max-height: 100%; border-radius: 8px; object-fit: contain;">
+        </div>
+        <div class="image-zoom-info" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255, 255, 255, 0.6); font-size: 12px; text-align: center;">
+            <p style="margin: 0;">Press ESC to close | Click outside to close</p>
+        </div>
+    </div>
+
     <script>
+        // ── Image Zoom Modal ────────────────────────
+        function openImageModal(imageSrc) {
+            console.log('🖼️ Opening image modal with src:', imageSrc);
+            const modal = document.getElementById('imageZoomModal');
+            const content = document.getElementById('imageZoomContent');
+            
+            if (!modal) {
+                console.error('❌ Modal element not found');
+                return;
+            }
+            
+            if (!content) {
+                console.error('❌ Image content element not found');
+                return;
+            }
+            
+            content.src = imageSrc;
+            modal.classList.add('show');
+            console.log('✅ Modal opened successfully');
+            
+            // Add ESC key listener
+            document.addEventListener('keydown', handleImageModalKeydown);
+        }
+
+        function closeImageModal() {
+            console.log('🖼️ Closing image modal');
+            const modal = document.getElementById('imageZoomModal');
+            if (!modal) return;
+            
+            modal.classList.remove('show');
+            document.removeEventListener('keydown', handleImageModalKeydown);
+            console.log('✅ Modal closed');
+        }
+
+        function handleImageModalKeydown(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        }
+
+        // Close modal when clicking outside the image
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('imageZoomModal');
+            if (!modal || !modal.classList.contains('show')) return;
+            
+            const container = document.querySelector('.image-zoom-container');
+            const closeBtn = document.getElementById('imageZoomClose');
+            
+            // Don't close if clicking on container, image, close button or their children
+            if (!container || !closeBtn) return;
+            
+            const isClickingOnContainer = container.contains(e.target);
+            const isClickingOnCloseBtn = closeBtn.contains(e.target) || e.target === closeBtn;
+            
+            if (!isClickingOnContainer && !isClickingOnCloseBtn) {
+                closeImageModal();
+            }
+        });
+
         // ──────────────────────────────────────────────
         // Notification System
         // ──────────────────────────────────────────────
@@ -6553,7 +6754,8 @@
                             type: type,
                             content: text,
                             docNumber: currentDocNumber,
-                            senderUserId: currentUser?.userId
+                            senderUserId: currentUser?.userId,
+                            imageUrl: memoImageUrl || null
                         }
                         console.log('📨 Sending LINE message:', sendData)
                         const res = await fetch('/send', {
@@ -6592,7 +6794,8 @@
                             title: title,
                             type: type,
                             content: text,
-                            docNumber: currentDocNumber
+                            docNumber: currentDocNumber,
+                            imageUrl: memoImageUrl || null
                         }
 
                         // Call endpoint to send memo (with approval workflow if needed)
@@ -7285,13 +7488,9 @@
             // Show recipients list (always show if available)
             if (memo.recipientNames && Array.isArray(memo.recipientNames) && memo.recipientNames.length > 0) {
                 document.getElementById('memoDetailRecipients').textContent = memo.recipientNames.join('\n')
-                if (recipientsField) recipientsField.style.display = 'block'
             } else if (memo.recipientName) {
                 // Fallback to single recipientName
                 document.getElementById('memoDetailRecipients').textContent = memo.recipientName
-                if (recipientsField) recipientsField.style.display = 'block'
-            } else {
-                if (recipientsField) recipientsField.style.display = 'none'
             }
 
             const sentDate = new Date(memo.sentAt)
@@ -7308,6 +7507,16 @@
             })
             document.getElementById('memoDetailDate').textContent = `${dateStr} ${timeStr}`
             document.getElementById('memoDetailContent').textContent = memo.content
+
+            // Display image if available
+            const imageField = document.getElementById('memoDetailImageField')
+            const imageElement = document.getElementById('memoDetailImage')
+            if (memo.imageUrl) {
+                imageElement.src = memo.imageUrl
+                imageField.style.display = 'block'
+            } else {
+                imageField.style.display = 'none'
+            }
 
             // Hide approval sections by defaultb
             document.getElementById('memoApprovalStatusSection').style.display = 'none'
@@ -7941,10 +8150,10 @@
                                 <div style="font-weight: 600; color: var(--ink);">${u.name}</div>
                                 <div style="font-size: 12px; color: var(--ink-faint);">@${u.username} (${u.role})</div>
                                 <div style="font-size: 11px; color: var(--ink-muted); margin-top: 4px;">
-                                    ${u.isCustom ? `Tabs: ${u.tabs.join(', ')}` : 'Using default access'}
+                                    ${u.role === 'admin' ? `Can view all tabs` : (u.isCustom ? `Tabs: ${u.tabs.join(', ')}` : 'Using default access')}
                                 </div>
                             </div>
-                            <button class="btn btn-primary btn-sm" onclick="openTabAccessEditor('${u.userId}', '${u.username}', ${JSON.stringify(u.tabs).replace(/"/g, '&quot;')})">
+                            <button class="btn btn-primary btn-sm" onclick="openTabAccessEditor('${u.userId}', '${u.username}', ${JSON.stringify(u.tabs).replace(/"/g, '&quot;')}, '${u.role}')">
                                 <span class="material-symbols-outlined">edit</span>
                                 Edit
                             </button>
@@ -7958,13 +8167,14 @@
                 document.getElementById('tabAccessList').innerHTML = '<div style="color: red; padding: 16px;">Error loading tab access</div>'
             }
         }
-
-        function openTabAccessEditor(userId, username, currentTabs) {
+/*prompt: ตอนนี้ default tab มี tab อะไรบ้าง*/
+        function openTabAccessEditor(userId, username, currentTabs, userRole) {
             document.getElementById('tabAccessModal').style.display = 'flex'
             document.getElementById('tabAccessModalUsername').textContent = username
 
-            // Store userId for saving later
+            // Store userId and role for saving later
             document.getElementById('tabAccessModal').dataset.userId = userId
+            document.getElementById('tabAccessModal').dataset.userRole = userRole
 
             // Uncheck all first
             document.querySelectorAll('.tab-checkbox').forEach(cb => cb.checked = false)
@@ -7977,6 +8187,31 @@
                     }
                 })
             }
+        }
+
+        function selectAllTabs() {
+            document.querySelectorAll('.tab-checkbox').forEach(cb => cb.checked = true)
+        }
+
+        function deselectAllTabs() {
+            document.querySelectorAll('.tab-checkbox').forEach(cb => cb.checked = false)
+        }
+
+        function setDefaultTabs() {
+            const userRole = document.getElementById('tabAccessModal').dataset.userRole || 'user'
+            const defaultTabs = userRole === 'admin'
+                ? ['dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs', 'manage-user']
+                : ['dashboard', 'compose', 'sent-memos', 'received-memos', 'manage-user']
+            
+            // Uncheck all first
+            document.querySelectorAll('.tab-checkbox').forEach(cb => cb.checked = false)
+            
+            // Check default tabs
+            document.querySelectorAll('.tab-checkbox').forEach(cb => {
+                if (defaultTabs.includes(cb.value)) {
+                    cb.checked = true
+                }
+            })
         }
 
         function closeMemoApproversModal() {
@@ -8005,6 +8240,11 @@
                 if (selectedTabs.length === 0) {
                     await showAlertModal('Select at least one tab', 'Validation Error')
                     return
+                }
+
+                // Always include manage-user (My Account) - all users must have access
+                if (!selectedTabs.includes('manage-user')) {
+                    selectedTabs.push('manage-user')
                 }
 
                 const res = await fetch('/admin/user-tabs/set', {
@@ -8307,6 +8547,158 @@
                 const input = prompt(message, '')
                 resolve(input)
             })
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Cloudinary Image Upload for Memo Compose
+        // ═══════════════════════════════════════════════════════════════
+
+        // Cloudinary Configuration
+        const CLOUDINARY_CONFIG = {
+            cloudName: "domvtfj1i",
+            uploadPreset: "testclaimdata",
+            uploadUrl: "https://api.cloudinary.com/v1_1/domvtfj1i/upload",
+            folder: "MEMO"
+        };
+
+        let memoImageUrl = null;
+
+        // Handle Image Upload
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showStatus('statusSingleSend', 'Please select a valid image file', 'error');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showStatus('statusSingleSend', 'Image size must be less than 5MB', 'error');
+                return;
+            }
+
+            // Show progress
+            document.getElementById('uploadProgress').style.display = 'block';
+            document.getElementById('uploadProgressBar').style.width = '0%';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+                formData.append('folder', CLOUDINARY_CONFIG.folder);
+                formData.append('resource_type', 'auto');
+
+                const xhr = new XMLHttpRequest();
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        document.getElementById('uploadProgressBar').style.width = percentComplete + '%';
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        memoImageUrl = response.secure_url;
+
+                        // Show preview
+                        const previewContainer = document.getElementById('memoImagePreview');
+                        const previewImage = document.getElementById('memoImageThumb');
+                        previewImage.src = memoImageUrl;
+                        previewContainer.style.display = 'block';
+
+                        // Hide progress
+                        setTimeout(() => {
+                            document.getElementById('uploadProgress').style.display = 'none';
+                            document.getElementById('uploadProgressBar').style.width = '0%';
+                        }, 500);
+
+                        showStatus('statusSingleSend', 'Image uploaded successfully', 'success');
+                    } else {
+                        showStatus('statusSingleSend', 'Image upload failed', 'error');
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    showStatus('statusSingleSend', 'Image upload error', 'error');
+                    document.getElementById('uploadProgress').style.display = 'none';
+                });
+
+                xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
+                xhr.send(formData);
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                showStatus('statusSingleSend', 'Error uploading image', 'error');
+                document.getElementById('uploadProgress').style.display = 'none';
+            }
+        }
+
+        // Remove Image
+        function removeImage() {
+            memoImageUrl = null;
+            const inputElement = document.getElementById('memoImageInput');
+            if (inputElement) inputElement.value = '';
+            const previewContainer = document.getElementById('memoImagePreview');
+            if (previewContainer) previewContainer.style.display = 'none';
+            const progress = document.getElementById('uploadProgress');
+            if (progress) progress.style.display = 'none';
+            const progressBar = document.getElementById('uploadProgressBar');
+            if (progressBar) progressBar.style.width = '0%';
+        }
+
+        // Add drag & drop support once DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadWrapper = document.querySelector('.image-upload-wrapper');
+            const uploadBtn = document.querySelector('.image-upload-btn');
+
+            if (uploadWrapper && uploadBtn) {
+                uploadWrapper.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadWrapper.classList.add('dragover');
+                });
+
+                uploadWrapper.addEventListener('dragleave', () => {
+                    uploadWrapper.classList.remove('dragover');
+                });
+
+                uploadWrapper.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadWrapper.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        const fileInput = document.getElementById('memoImageInput');
+                        fileInput.files = files;
+                        handleImageUpload({ target: { files: files } });
+                    }
+                });
+            }
+        });
+
+        // Wrap original send() function to include image URL
+        const originalSend = typeof send === 'function' ? send : null;
+        if (originalSend) {
+            send = function() {
+                if (memoImageUrl) {
+                    console.log('Memo includes image:', memoImageUrl);
+                    // The memoImageUrl is available in the global scope
+                    // You can send it to your backend along with the memo
+                }
+                originalSend();
+            };
+        }
+
+        // Wrap original clearCompose() function to reset images
+        const originalClearCompose = typeof clearCompose === 'function' ? clearCompose : null;
+        if (originalClearCompose) {
+            clearCompose = function() {
+                removeImage();
+                originalClearCompose();
+            };
         }
 
     </script>
