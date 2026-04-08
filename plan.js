@@ -273,7 +273,7 @@ Bug
 -ทดสอบ setting approver by subdepartment
 -คนที่ approve memo ให้ส่ง memo โดยที่ไม่ต้องอนุมัติ
 -เพิ่ม upload pic ใน memo ได้ (cloudinary) ✓
--แก้ไขให้ส่ง memo ได้หลาย user
+-แก้ไขให้ส่ง memo ได้หลาย user ✓
 -แก้ไข log ไม่อัพเดท
 */
 

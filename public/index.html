@@ -4085,6 +4085,37 @@ ask:
         </div>
     </div>
 
+    <!-- Prompt Modal -->
+    <div id="promptModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; align-items: center; justify-content: center;">
+        <div style="position: absolute; inset: 0; background: rgba(15, 17, 23, 0.5); backdrop-filter: blur(4px);"></div>
+        <div
+            style="position: relative; background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 420px; width: 90%; max-height: 80vh; overflow: auto; border: 1px solid var(--border);">
+            <div style="padding: 24px; border-bottom: 1px solid var(--border);">
+                <h2 id="promptModalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;">
+                    Input</h2>
+            </div>
+            <div style="padding: 24px;">
+                <p id="promptModalMessage" style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0 0 16px 0;">Enter your input:</p>
+                <input id="promptModalInput" type="text" placeholder="Enter text here..."
+                    style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-size: 14px; box-sizing: border-box; transition: border-color 0.15s;"
+                    onkeydown="if(event.key==='Enter') confirmPromptModal(); if(event.key==='Escape') cancelPromptModal()"
+                    onfocus="this.style.borderColor='var(--accent)'"
+                    onblur="this.style.borderColor='var(--border)'"/>
+            </div>
+            <div
+                style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 12px; justify-content: flex-end;">
+                <button id="promptModalCancelBtn" onclick="cancelPromptModal()"
+                    style="padding: 10px 24px; border: 1px solid var(--border); background: var(--paper); color: var(--ink); border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; outline: none;"
+                    onmouseover="this.style.background='var(--surface)'"
+                    onmouseout="this.style.background='var(--paper)'">Cancel</button>
+                <button id="promptModalConfirmBtn" onclick="confirmPromptModal()"
+                    style="padding: 10px 24px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; outline: none;"
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">OK</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Image Zoom Modal -->
     <div id="imageZoomModal" class="image-zoom-modal">
         <button id="imageZoomClose" class="image-zoom-close" onclick="closeImageModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 32px; cursor: pointer; z-index: 10001; transition: transform 0.2s ease;" onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">
@@ -7232,7 +7263,7 @@ ask:
                 return
             }
 
-            const recent = logs.slice(-100) // Most recent first
+            const recent = logs.slice(0, 100) // Most recent first
 
             el.innerHTML = recent.map(log => {
                 const eventInfo = getEventTypeAndIcon(log.message, log.data)
@@ -7668,11 +7699,7 @@ ask:
 
             const memoId = currentMemoDetail.memoId || currentMemoDetail.id
             const reason = document.getElementById('rejectionReasonInput').value.trim()
-            if (!reason) {
-                setStatus('memoDetailStatus', 'error', 'error', 'Please enter a rejection reason')
-                document.getElementById('memoDetailStatus').style.display = 'flex'
-                return
-            }
+            // reason เป็น optional - ผู้ใช้สามารถปฏิเสธโดยไม่กรอกเหตุผลได้
 
             try {
                 const res = await fetch(`/memo/reject/${memoId}`, {
@@ -8448,7 +8475,9 @@ ask:
         async function rejectMemoDialog(memoId) {
             try {
                 const reason = await showPromptModal('Enter rejection reason:', 'Reject Memo')
-                if (!reason) return
+                // reason เป็น optional - ผู้ใช้สามารถกดปุ่ม OK โดยไม่กรอกได้
+                // ถ้า user กดปุ่ม Cancel จะ return undefined และปิด dialog
+                if (reason === null || reason === undefined) return
 
                 const res = await fetch(`/memo/reject/${memoId}`, {
                     method: 'POST',
@@ -8474,12 +8503,56 @@ ask:
             }
         }
 
+        // ── Prompt Modal System ────────────────────
+        let promptModalResolver = null
+
         function showPromptModal(message, title = 'Input') {
             return new Promise((resolve) => {
-                const input = prompt(message, '')
-                resolve(input)
+                promptModalResolver = resolve
+                const modal = document.getElementById('promptModal')
+                const titleEl = document.getElementById('promptModalTitle')
+                const msgEl = document.getElementById('promptModalMessage')
+                const inputEl = document.getElementById('promptModalInput')
+                
+                titleEl.textContent = title
+                msgEl.textContent = message
+                inputEl.value = ''
+                inputEl.placeholder = message
+                
+                modal.style.display = 'flex'
+                setTimeout(() => inputEl.focus(), 100)
             })
         }
+
+        function confirmPromptModal() {
+            const inputEl = document.getElementById('promptModalInput')
+            const value = inputEl.value.trim()
+            const modal = document.getElementById('promptModal')
+            modal.style.display = 'none'
+            
+            if (promptModalResolver) {
+                promptModalResolver(value)
+                promptModalResolver = null
+            }
+        }
+
+        function cancelPromptModal() {
+            const modal = document.getElementById('promptModal')
+            modal.style.display = 'none'
+            
+            if (promptModalResolver) {
+                promptModalResolver(null)
+                promptModalResolver = null
+            }
+        }
+
+        // Close prompt modal when clicking outside
+        document.addEventListener('click', function (e) {
+            const modal = document.getElementById('promptModal')
+            if (modal && e.target === modal) {
+                cancelPromptModal()
+            }
+        })
 
         // ═══════════════════════════════════════════════════════════════
         // Cloudinary Image Upload for Memo Compose

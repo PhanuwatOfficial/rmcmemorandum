@@ -2447,9 +2447,8 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
     const memoId = req.params.memoId
     const { reason } = req.body
 
-    if (!reason) {
-      return res.status(400).json({ error: "Rejection reason required" })
-    }
+    // reason เป็นตัวเลือก ไม่จำเป็นต้องกรอก
+    const rejectionReason = reason || "No reason provided"
 
     // Find the memo
     const allUsers = await firebase_get('users')
@@ -2514,7 +2513,7 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
     memoData.rejectedBy = req.userId
     memoData.rejectedByName = `${currentUser.name} ${currentUser.surname}`
     memoData.rejectedAt = new Date().toISOString()
-    memoData.rejectionReason = reason
+    memoData.rejectionReason = rejectionReason
 
     await firebase_set(`sent_memos/${memoSenderId}/${memoId}`, memoData)
 
@@ -2539,7 +2538,7 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
     const notification = {
       id: Date.now().toString(),
       title: 'Memo ถูกปฏิเสธ',
-      message: `"${memoData.title}" ถูกปฏิเสธโดย ${currentUser.name} ${currentUser.surname}: ${reason}`,
+      message: `"${memoData.title}" ถูกปฏิเสธโดย ${currentUser.name} ${currentUser.surname}: ${rejectionReason}`,
       type: 'rejected',
       read: false,
       timestamp: new Date().toISOString(),
@@ -2553,7 +2552,7 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
       // Silent error
     }
 
-    addLog('info', 'Rejected memo', { memoId, rejectedBy: req.userId, reason })
+    addLog('info', 'Rejected memo', { memoId, rejectedBy: req.userId, reason: rejectionReason })
     res.json({ status: "Memo rejected", memoId })
   } catch (err) {
     res.status(500).json({ error: err.message })
