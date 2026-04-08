@@ -1538,9 +1538,25 @@ async function resolveDocNumberConflict(docNumber, senderUserId) {
 
 // Send memo (now with approval workflow)
 app.post("/send", async (req, res) => {
-  const { userId, recipientUserId, title, type, content, senderUserId, docNumber, imageUrl } = req.body
-  const targetUserId = userId  // This is the followerId (LINE user ID)
-  // recipientUserId is the system user ID (used for approval workflow)
+  // Support both old single-recipient and new multi-recipient formats
+  let recipientsList = []
+  
+  if (req.body.recipients && Array.isArray(req.body.recipients)) {
+    // New format: multiple recipients
+    recipientsList = req.body.recipients
+  } else if (req.body.userId || req.body.recipientUserId) {
+    // Old format: single recipient (backward compatibility)
+    recipientsList = [{
+      userId: req.body.userId,
+      recipientUserId: req.body.recipientUserId
+    }]
+  }
+
+  if (recipientsList.length === 0) {
+    return res.status(400).json({ error: 'No recipients specified' })
+  }
+
+  const { title, type, content, senderUserId, docNumber, imageUrl } = req.body
 
   try {
     // Resolve any DocNumber conflicts before proceeding
@@ -1564,17 +1580,38 @@ app.post("/send", async (req, res) => {
     // Check if memo requires approval based on sender's department
     const sender = senderUserId ? await firebase_get(`users/${senderUserId}`) : null
 
-    // Get recipient information - use recipientUserId (system user ID) if provided, otherwise use targetUserId
-    let recipientName = recipientUserId || targetUserId
-    let actualRecipientUserId = recipientUserId || targetUserId
-    try {
-      const recipient = await firebase_get(`users/${actualRecipientUserId}`)
-      if (recipient) {
-        recipientName = `${recipient.name || ''} ${recipient.surname || ''}`.trim() || recipientName
+    // Build recipient details for all recipients
+    let recipientNames = []
+    let recipientIds = []
+    let recipientObjects = []
+    let followerIds = []
+
+    for (let r of recipientsList) {
+      const followerId = r.userId
+      let recipientId = r.recipientUserId || r.userId
+      let recipientName = recipientId
+      
+      try {
+        const recipient = await firebase_get(`users/${recipientId}`)
+        if (recipient) {
+          recipientName = `${recipient.name || ''} ${recipient.surname || ''}`.trim() || recipientName
+        }
+      } catch (err) {
+        // Silent error
       }
-    } catch (err) {
-      // Silent error
+      
+      recipientNames.push(recipientName)
+      recipientIds.push(recipientId)
+      followerIds.push(followerId)
+      recipientObjects.push({
+        followerId: followerId,
+        systemUserId: recipientId,
+        name: recipientName
+      })
     }
+
+    const recipientName = recipientNames.join(', ')
+    const actualRecipientUserId = recipientIds[0]  // Primary recipient for logging
 
     // Create memo object
     const memoId = `memo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -1585,9 +1622,14 @@ app.post("/send", async (req, res) => {
       content,
       docNumber: resolvedDocNumber || '',
       imageUrl: imageUrl || null,
-      recipientId: actualRecipientUserId,  // Use system user ID, not followerId
+      // Multi-recipient support
+      recipientIds: recipientIds,  // All system user IDs
+      recipientNames: recipientNames,  // All recipient names
+      recipientObjects: recipientObjects,  // Full recipient details
+      // Backward compatibility - keep primary recipient fields
+      recipientId: actualRecipientUserId,
       recipientName: recipientName,
-      followerId: targetUserId,  // Store the LINE followerId separately for reference
+      followerId: followerIds[0],
       senderId: senderUserId,
       senderUserId: senderUserId,  // Also include senderUserId for frontend compatibility
       senderName: senderName,
@@ -1825,14 +1867,14 @@ app.post("/send", async (req, res) => {
         }
       }
 
-      // Also save to received_memos while pending approval so recipient can see it
-      const pendingMemo = {
-        ...memoData,
-        status: 'pending_approval',
-        approvalPending: true
-      }
-      if (actualRecipientUserId) {
-        await firebase_set(`received_memos/${actualRecipientUserId}/${memoId}`, pendingMemo)
+      // Also save to received_memos while pending approval so all recipients can see it
+      for (let recipientId of recipientIds) {
+        const pendingMemo = {
+          ...memoData,
+          status: 'pending_approval',
+          approvalPending: true
+        }
+        await firebase_set(`received_memos/${recipientId}/${memoId}`, pendingMemo)
       }
 
       return res.json({ status: "Memo created - pending approval", memoId, approverCount: memoApprovers.length })
@@ -1843,137 +1885,149 @@ app.post("/send", async (req, res) => {
     memoData.approvalPending = false
     memoData.sentTime = new Date().toISOString()
 
-    const lineMessage = {
-      type: "flex",
-      altText: `New Memorandum: ${title}`,
-      contents: {
-        type: "bubble",
-        header: {
-          type: "box",
-          layout: "vertical",
-          contents: [
-            {
-              type: "text",
-              text: "📋 New Memorandum",
-              weight: "bold",
-              color: "#182034",
-              size: "xl"
+    // Send to all recipients
+    for (let i = 0; i < recipientIds.length; i++) {
+      const recipientId = recipientIds[i]
+      const recipientObj = recipientObjects[i]
+      
+      // Get recipient's linked followers from database
+      const recipientUser = await firebase_get(`users/${recipientId}`)
+      const linkedFollowers = recipientUser && recipientUser.linkedFollowers 
+        ? Object.keys(recipientUser.linkedFollowers) 
+        : []
+      
+      // Send LINE to all linked followers of this recipient
+      for (const followerId of linkedFollowers) {
+        const lineMessage = {
+          type: "flex",
+          altText: `New Memorandum: ${title}`,
+          contents: {
+            type: "bubble",
+            header: {
+              type: "box",
+              layout: "vertical",
+              contents: [
+                {
+                  type: "text",
+                  text: "📋 New Memorandum",
+                  weight: "bold",
+                  color: "#182034",
+                  size: "xl"
+                }
+              ]
+            },
+            body: {
+              type: "box",
+              layout: "vertical",
+              spacing: "md",
+              contents: [
+                {
+                  type: "text",
+                  text: title,
+                  weight: "bold",
+                  size: "lg",
+                  wrap: true,
+                  color: "#182034"
+                },
+                {
+                  type: "text",
+                  text: `From: ${senderName}`,
+                  size: "sm",
+                  color: "#c8a96e",
+                  weight: "bold",
+                  margin: "md"
+                },
+                {
+                  type: "text",
+                  text: `Type: ${type || 'Announcement'}`,
+                  size: "sm",
+                  color: "#1a2740",
+                  weight: "bold",
+                  margin: "md"
+                },
+                ...(resolvedDocNumber ? [{
+                  type: "text",
+                  text: `Doc No.: ${resolvedDocNumber}`,
+                  size: "sm",
+                  color: "#1a2740",
+                  weight: "bold",
+                  margin: "md"
+                }] : []),
+                {
+                  type: "separator",
+                  margin: "md"
+                },
+                {
+                  type: "text",
+                  text: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+                  size: "sm",
+                  color: "#666666",
+                  wrap: true,
+                  margin: "md"
+                }
+              ]
+            },
+            footer: {
+              type: "box",
+              layout: "vertical",
+              spacing: "sm",
+              contents: [
+                {
+                  type: "button",
+                  action: {
+                    type: "uri",
+                    label: "View Details",
+                    uri: "https://rmcmemorandum.up.railway.app/"
+                  },
+                  style: "primary",
+                  color: "#1a2740"
+                }
+              ]
             }
-          ]
-        },
-        body: {
-          type: "box",
-          layout: "vertical",
-          spacing: "md",
-          contents: [
-            {
-              type: "text",
-              text: title,
-              weight: "bold",
-              size: "lg",
-              wrap: true,
-              color: "#182034"
-            },
-            {
-              type: "text",
-              text: `From: ${senderName}`,
-              size: "sm",
-              color: "#c8a96e",
-              weight: "bold",
-              margin: "md"
-            },
-            {
-              type: "text",
-              text: `Type: ${type || 'Announcement'}`,
-              size: "sm",
-              color: "#1a2740",
-              weight: "bold",
-              margin: "md"
-            },
-            ...(resolvedDocNumber ? [{
-              type: "text",
-              text: `Doc No.: ${resolvedDocNumber}`,
-              size: "sm",
-              color: "#1a2740",
-              weight: "bold",
-              margin: "md"
-            }] : []),
-            {
-              type: "separator",
-              margin: "md"
-            },
-            {
-              type: "text",
-              text: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
-              size: "sm",
-              color: "#666666",
-              wrap: true,
-              margin: "md"
-            }
-          ]
-        },
-        footer: {
-          type: "box",
-          layout: "vertical",
-          spacing: "sm",
-          contents: [
-            {
-              type: "button",
-              action: {
-                type: "uri",
-                label: "View Details",
-                uri: "https://rmcmemorandum.up.railway.app/"
-              },
-              style: "primary",
-              color: "#1a2740"
-            }
-          ]
+          }
+        }
+        
+        try {
+          await client.pushMessage(followerId, lineMessage)
+        } catch (lineErr) {
+          // Silent error - one follower failure doesn't stop sending to others
         }
       }
     }
 
-    // Send to recipient via LINE
-    try {
-      await client.pushMessage(targetUserId, lineMessage)
-    } catch (lineErr) {
-      // Don't throw - store the memo anyway with a note that LINE delivery failed
-      memoData.lineDeliveryFailed = true
-      memoData.lineDeliveryError = lineErr.message
-    }
-
     await firebase_set(`sent_memos/${senderUserId}/${memoId}`, memoData)
 
-    // Also save to received_memos for the recipient (unlinked/system user)
-    // This ensures unlinked users can receive memos in the database even without LINE notification
-    if (actualRecipientUserId) {
-      const recipientCheck = await firebase_get(`users/${actualRecipientUserId}`)
+    // Save to received_memos for all recipients
+    for (let recipientId of recipientIds) {
+      const recipientCheck = await firebase_get(`users/${recipientId}`)
       if (recipientCheck) {
         const receivedMemo = {
           ...memoData,
           status: 'sent',
           approvalPending: false
         }
-        await firebase_set(`received_memos/${actualRecipientUserId}/${memoId}`, receivedMemo)
+        await firebase_set(`received_memos/${recipientId}/${memoId}`, receivedMemo)
       }
     }
 
-    const notification = {
-      id: Date.now().toString(),
-      title: 'ได้รับ Memo ใหม่',
-      message: `"${title}" จาก ${senderName}`,
-      type: 'info',
-      read: false,
-      timestamp: new Date().toISOString(),
-      memoId: memoId,
-      memoObject: memoData,
-      memoType: 'received',
-      senderId: senderUserId,
-      recipientId: actualRecipientUserId,
-      followerId: targetUserId
-    }
-
-    if (recipientUserId || actualRecipientUserId) {
-      await firebase_set(`notifications/${actualRecipientUserId}/${notification.id}`, notification)
+    // Create notifications for all recipients
+    for (let i = 0; i < recipientIds.length; i++) {
+      const recipientId = recipientIds[i]
+      const notification = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        title: 'ได้รับ Memo ใหม่',
+        message: `"${title}" ส่งถึง ${recipientNames[i]} จาก ${senderName}`,
+        type: 'info',
+        read: false,
+        timestamp: new Date().toISOString(),
+        memoId: memoId,
+        memoObject: memoData,
+        memoType: 'received',
+        senderId: senderUserId,
+        recipientId: recipientId,
+        recipientIds: recipientIds
+      }
+      await firebase_set(`notifications/${recipientId}/${notification.id}`, notification)
     }
 
     addLog('info', 'Send memo', { title, type, recipientUserId: actualRecipientUserId, senderName })
@@ -2177,110 +2231,108 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
     // Get sender info for notifications
     const senderUser = await firebase_get(`users/${memoSenderId}`)
 
-    // Send to recipient (LINE follower or system user)
-    const recipientId = memoData.recipientId || memoData.recipientUserId
+    // Send to all recipients (support both old single-recipient and new multi-recipient formats)
+    const recipientIdsList = memoData.recipientIds && Array.isArray(memoData.recipientIds) 
+      ? memoData.recipientIds 
+      : (memoData.recipientId ? [memoData.recipientId] : [])
 
-    // Get recipient user to find linked followers
-    const recipientUser = recipientId ? await firebase_get(`users/${recipientId}`) : null
-    let lineFollowerIds = []
+    // Send LINE to all recipients' linked followers
+    for (let recipId of recipientIdsList) {
+      const recipientUser = recipId ? await firebase_get(`users/${recipId}`) : null
+      let lineFollowerIds = []
 
-    // Collect all linked followers of the recipient
-    if (recipientUser && recipientUser.linkedFollowers) {
-      lineFollowerIds = Object.keys(recipientUser.linkedFollowers)
-    }
+      // Collect all linked followers of this recipient
+      if (recipientUser && recipientUser.linkedFollowers) {
+        lineFollowerIds = Object.keys(recipientUser.linkedFollowers)
+      }
 
-    // If memo has explicit followerId, add it to the list
-    if (memoData.followerId && !lineFollowerIds.includes(memoData.followerId)) {
-      lineFollowerIds.push(memoData.followerId)
-    }
-
-    // If this is a LINE recipient (followerId exists), send LINE message
-    if (memoData.followerId || lineFollowerIds.length > 0) {
-      const lineMessage = {
-        type: "flex",
-        altText: `Approved Memorandum: ${memoData.title}`,
-        contents: {
-          type: "bubble",
-          header: {
-            type: "box",
-            layout: "vertical",
-            contents: [
-              {
-                type: "text",
-                text: "📋 New Memorandum",
-                weight: "bold",
-                color: "#182034",
-                size: "xl"
-              }
-            ]
-          },
-          body: {
-            type: "box",
-            layout: "vertical",
-            spacing: "md",
-            contents: [
-              {
-                type: "text",
-                text: memoData.title,
-                weight: "bold",
-                size: "lg",
-                wrap: true,
-                color: "#182034"
-              },
-              {
-                type: "text",
-                text: `From: ${senderUser.name} ${senderUser.surname}`,
-                size: "sm",
-                color: "#c8a96e",
-                weight: "bold",
-                margin: "md"
-              },
-              {
-                type: "text",
-                text: `Type: ${memoData.type || 'Announcement'}`,
-                size: "sm",
-                color: "#1a2740",
-                weight: "bold",
-                margin: "md"
-              },
-              ...(memoData.docNumber ? [{
-                type: "text",
-                text: `Doc No.: ${memoData.docNumber}`,
-                size: "sm",
-                color: "#1a2740",
-                weight: "bold",
-                margin: "md"
-              }] : []),
-              {
-                type: "text",
-                text: `Status: ✅ Approved`,
-                size: "sm",
-                color: "#1a5c3a",
-                weight: "bold",
-                margin: "md"
-              },
-              {
-                type: "text",
-                text: `Approved by: ${currentUser.name} ${currentUser.surname}`,
-                size: "sm",
-                color: "#1a5c3a",
-                weight: "bold",
-                margin: "md"
-              },
-              {
-                type: "separator",
-                margin: "md"
-              },
-              {
-                type: "text",
-                text: memoData.content.substring(0, 200) + (memoData.content.length > 200 ? '...' : ''),
-                size: "sm",
-                color: "#666666",
-                wrap: true,
-                margin: "md"
-              }
-            ]
-          },
+      // Send LINE message to all linked followers
+      if (lineFollowerIds.length > 0) {
+        const lineMessage = {
+          type: "flex",
+          altText: `Approved Memorandum: ${memoData.title}`,
+          contents: {
+            type: "bubble",
+            header: {
+              type: "box",
+              layout: "vertical",
+              contents: [
+                {
+                  type: "text",
+                  text: "📋 New Memorandum",
+                  weight: "bold",
+                  color: "#182034",
+                  size: "xl"
+                }
+              ]
+            },
+            body: {
+              type: "box",
+              layout: "vertical",
+              spacing: "md",
+              contents: [
+                {
+                  type: "text",
+                  text: memoData.title,
+                  weight: "bold",
+                  size: "lg",
+                  wrap: true,
+                  color: "#182034"
+                },
+                {
+                  type: "text",
+                  text: `From: ${senderUser.name} ${senderUser.surname}`,
+                  size: "sm",
+                  color: "#c8a96e",
+                  weight: "bold",
+                  margin: "md"
+                },
+                {
+                  type: "text",
+                  text: `Type: ${memoData.type || 'Announcement'}`,
+                  size: "sm",
+                  color: "#1a2740",
+                  weight: "bold",
+                  margin: "md"
+                },
+                ...(memoData.docNumber ? [{
+                  type: "text",
+                  text: `Doc No.: ${memoData.docNumber}`,
+                  size: "sm",
+                  color: "#1a2740",
+                  weight: "bold",
+                  margin: "md"
+                }] : []),
+                {
+                  type: "text",
+                  text: `Status: ✅ Approved`,
+                  size: "sm",
+                  color: "#1a5c3a",
+                  weight: "bold",
+                  margin: "md"
+                },
+                {
+                  type: "text",
+                  text: `Approved by: ${currentUser.name} ${currentUser.surname}`,
+                  size: "sm",
+                  color: "#1a5c3a",
+                  weight: "bold",
+                  margin: "md"
+                },
+                {
+                  type: "separator",
+                  margin: "md"
+                },
+                {
+                  type: "text",
+                  text: memoData.content.substring(0, 200) + (memoData.content.length > 200 ? '...' : ''),
+                  size: "sm",
+                  color: "#666666",
+                  wrap: true,
+                  margin: "md"
+                }
+              ]
+            },
           footer: {
             type: "box",
             layout: "vertical",
@@ -2299,42 +2351,40 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
             ]
           }
         }
-      }
-
-      try {
-        // Send to explicit follower ID
-        if (memoData.followerId) {
-          await client.pushMessage(memoData.followerId, lineMessage)
         }
 
-        // Also send to all linked followers of the recipient user
-        for (const linkedFollowerId of lineFollowerIds) {
-          if (linkedFollowerId !== memoData.followerId) {  // Don't send twice to the same person
-            try {
-              await client.pushMessage(linkedFollowerId, lineMessage)
-            } catch (linkedErr) {
-              // Silent error
-            }
+        // Send LINE to all linked followers of this recipient
+        for (const followerId of lineFollowerIds) {
+          try {
+            await client.pushMessage(followerId, lineMessage)
+          } catch (lineErr) {
+            // Silent error
           }
         }
-      } catch (err) {
-        // Silent error
       }
     }
 
-    // Also handle system user recipient (if exists)
-    if (memoData.recipientId) {
-      const recipient = await firebase_get(`users/${memoData.recipientId}`)
+    // Also handle system user recipients (if exists)
+    // Support both old single-recipient and new multi-recipient formats
+    const allRecipientIds = memoData.recipientIds && Array.isArray(memoData.recipientIds) 
+      ? memoData.recipientIds 
+      : (memoData.recipientId ? [memoData.recipientId] : [])
+
+    for (let recipientId of allRecipientIds) {
+      const recipient = await firebase_get(`users/${recipientId}`)
       if (recipient) {
-        // Add to received_memos
+        // Add to received_memos with updated status
         const approvedMemo = {
           ...memoData,
           sentAt: memoData.sentAt,
-          status: 'sent',
-          approvalPending: false
+          status: 'approved',
+          approvalPending: false,
+          approvedBy: req.userId,
+          approvedByName: `${currentUser.name} ${currentUser.surname}`,
+          approvedAt: memoData.approvedAt
         }
 
-        await firebase_set(`received_memos/${memoData.recipientId}/${memoId}`, approvedMemo)
+        await firebase_set(`received_memos/${recipientId}/${memoId}`, approvedMemo)
 
         // Create notification
         const memoNotification = {
@@ -2344,14 +2394,14 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
           memoType: 'received',
           message: `"${memoData.title}" จาก ${senderUser.name} ${senderUser.surname}`,
           read: false,
-          recipientId: memoData.recipientId,
+          recipientId: recipientId,
           senderId: memoSenderId,
           timestamp: new Date().toISOString(),
-          title: 'ได้รับ Memo ใหม่',
+          title: 'Memo ได้รับการอนุมัติแล้ว',
           type: 'info'
         }
 
-        await firebase_set(`notifications/${memoData.recipientId}/${memoNotification.id}`, memoNotification)
+        await firebase_set(`notifications/${recipientId}/${memoNotification.id}`, memoNotification)
       }
     }
 
@@ -2467,6 +2517,23 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
     memoData.rejectionReason = reason
 
     await firebase_set(`sent_memos/${memoSenderId}/${memoId}`, memoData)
+
+    // Update received_memos for all recipients
+    const recipientIdsList = memoData.recipientIds && Array.isArray(memoData.recipientIds) 
+      ? memoData.recipientIds 
+      : (memoData.recipientId ? [memoData.recipientId] : [])
+
+    for (let recipientId of recipientIdsList) {
+      const rejectedMemo = {
+        ...memoData,
+        status: 'rejected',
+        approvalPending: false,
+        rejectedBy: req.userId,
+        rejectedByName: `${currentUser.name} ${currentUser.surname}`,
+        rejectedAt: memoData.rejectedAt
+      }
+      await firebase_set(`received_memos/${recipientId}/${memoId}`, rejectedMemo)
+    }
 
     // Notify sender
     const notification = {
@@ -2946,11 +3013,29 @@ app.post("/notifications/send/:targetUserId", verifyToken, async (req, res) => {
 // Send memo to a system user (for users without linked followers)
 app.post("/send-system-memo", verifyToken, async (req, res) => {
   try {
-    const { targetUserId, title, type, content, docNumber, imageUrl } = req.body
+    // Support both old single-recipient and new multi-recipient formats
+    let recipientsList = []
+    
+    if (req.body.recipients && Array.isArray(req.body.recipients)) {
+      // New format: multiple recipients
+      recipientsList = req.body.recipients
+    } else if (req.body.targetUserId) {
+      // Old format: single recipient (backward compatibility)
+      recipientsList = [{
+        userId: req.body.targetUserId,
+        recipientUserId: req.body.targetUserId
+      }]
+    }
+
+    if (recipientsList.length === 0) {
+      return res.status(400).json({ error: 'No recipients specified' })
+    }
+
+    const { title, type, content, docNumber, imageUrl } = req.body
     const senderUserId = req.userId
 
-    if (!targetUserId || !title || !type || !content) {
-      return res.status(400).json({ error: 'targetUserId, title, type, and content required' })
+    if (!title || !type || !content) {
+      return res.status(400).json({ error: 'title, type, and content required' })
     }
 
     // Resolve any DocNumber conflicts
@@ -2965,11 +3050,34 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Sender not found' })
     }
 
-    // Get recipient info
-    const recipient = await firebase_get(`users/${targetUserId}`)
-    if (!recipient) {
-      return res.status(404).json({ error: 'Recipient not found' })
+    // Build recipient details for all recipients
+    let recipientNames = []
+    let recipientIds = []
+    let recipientObjects = []
+
+    for (let r of recipientsList) {
+      let recipientId = r.recipientUserId || r.userId
+      let recipientName = recipientId
+      
+      const recipient = await firebase_get(`users/${recipientId}`)
+      if (!recipient) {
+        return res.status(404).json({ error: `Recipient ${recipientId} not found` })
+      }
+      
+      if (recipient) {
+        recipientName = `${recipient.name} ${recipient.surname}`.trim() || recipientName
+      }
+      
+      recipientNames.push(recipientName)
+      recipientIds.push(recipientId)
+      recipientObjects.push({
+        systemUserId: recipientId,
+        name: recipientName
+      })
     }
+
+    const recipientName = recipientNames.join(', ')
+    const primaryRecipientId = recipientIds[0]
 
     // Create memo ID
     const memoId = `memo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -2985,7 +3093,12 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       senderUserId,
       senderName: `${sender.name} ${sender.surname}`,
       senderUsername: sender.username,
-      recipientUserId: targetUserId,
+      // Multi-recipient support
+      recipientIds: recipientIds,  // All system user IDs
+      recipientNames: recipientNames,  // All recipient names
+      recipientObjects: recipientObjects,  // Full recipient details
+      // Backward compatibility - keep primary recipient fields
+      recipientUserId: primaryRecipientId,
       sentAt: new Date().toISOString(),
       status: 'pending',
       approvalPending: true,
@@ -3054,7 +3167,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
           memoId: memoId,
           memo: memoData,
           senderId: senderUserId,
-          recipientId: targetUserId
+          recipientId: primaryRecipientId
         }
 
         try {
@@ -3192,20 +3305,22 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
         }
       }
 
-      // Also save to received_memos even while pending approval so recipient can see it
-      const pendingMemo = {
-        ...memoData,
-        status: 'pending_approval',
-        approvalPending: true
+      // Also save to received_memos for all recipients while pending approval
+      for (let recipientId of recipientIds) {
+        const pendingMemo = {
+          ...memoData,
+          status: 'pending_approval',
+          approvalPending: true
+        }
+        await firebase_set(`received_memos/${recipientId}/${memoId}`, pendingMemo)
       }
-      await firebase_set(`received_memos/${targetUserId}/${memoId}`, pendingMemo)
 
       // Log pending approval memo
-      addLog('info', 'Send memo (pending approval)', { title, type, recipientUserId: targetUserId, senderName, approverCount: memoApprovers.length })
+      addLog('info', 'Send memo (pending approval)', { title, type, recipientIds, senderName, approverCount: memoApprovers.length })
       return res.json({ status: "Memo created - pending approval", memoId, approverCount: memoApprovers.length })
     }
 
-    // No approvers found - send directly to recipient
+    // No approvers found - send directly to recipients
     memoData.status = 'sent'
     memoData.approvalPending = false
     memoData.sentTime = new Date().toISOString()
@@ -3213,27 +3328,32 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
     // Store in sender's sent_memos
     await firebase_set(`sent_memos/${senderUserId}/${memoId}`, memoData)
 
-    // Store in recipient's received_memos
-    await firebase_set(`received_memos/${targetUserId}/${memoId}`, memoData)
-
-    // Create notification for recipient
-    const notification = {
-      id: Date.now().toString(),
-      title: 'ได้รับ Memo ใหม่',
-      message: `"${title}" จาก ${senderName}`,
-      type: 'info',
-      read: false,
-      timestamp: new Date().toISOString(),
-      memoId: memoId,
-      memoObject: memoData,
-      memoType: 'received',
-      senderId: senderUserId,
-      recipientId: targetUserId
+    // Store in all recipients' received_memos
+    for (let recipientId of recipientIds) {
+      await firebase_set(`received_memos/${recipientId}/${memoId}`, memoData)
     }
 
-    await firebase_set(`notifications/${targetUserId}/${notification.id}`, notification)
+    // Create notifications for all recipients
+    for (let i = 0; i < recipientIds.length; i++) {
+      const recipientId = recipientIds[i]
+      const notification = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        title: 'ได้รับ Memo ใหม่',
+        message: `"${title}" จาก ${senderName}`,
+        type: 'info',
+        read: false,
+        timestamp: new Date().toISOString(),
+        memoId: memoId,
+        memoObject: memoData,
+        memoType: 'received',
+        senderId: senderUserId,
+        recipientIds: recipientIds,
+        recipientId: recipientId
+      }
+      await firebase_set(`notifications/${recipientId}/${notification.id}`, notification)
+    }
 
-    addLog('info', 'Send memo', { title, type, recipientUserId: targetUserId, senderName })
+    addLog('info', 'Send memo', { title, type, recipientIds, senderName })
     res.json({ status: 'Memo sent successfully', memoId })
   } catch (err) {
     res.status(500).json({ error: err.message })

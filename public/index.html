@@ -2563,7 +2563,7 @@
             <!-- ── LOGIN VIEW ─────────────────────── -->
             <div id="view-login" class="view"
                 style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
-                <div style="width: 100%; max-width: 520px; margin: 0; margin-left: 32.5%; padding: 0 16px;">
+                <div style="width: 100%; max-width: 520px; margin: 0; margin-left: 27.5%; padding: 0 16px;">
                     <div class="page-header" style="text-align: center; margin-bottom: 25px;">
                         <h2 style="font-size: 32px; color: var(--accent);">Login</h2>
                         <!-- <p style="color: var(--ink-faint); font-size: 15px;">Access your Executive Memorandum account.</p> -->
@@ -2607,7 +2607,7 @@
             <!-- ── REGISTER VIEW ──────────────────── -->
             <div id="view-register" class="view"
                 style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
-                <div style="width: 100%; max-width: 520px; margin: 0; margin-left: 32.5%; padding: 0 16px;">
+                <div style="width: 100%; max-width: 520px; margin: 0; margin-left: 27.5%; padding: 0 16px;">
                     <!-- <div style="width: 40%; max-width: 80%; margin:0 auto;"> -->
                     <div class="page-header" style="text-align: center; margin-bottom: 25px;">
                         <h2 style="font-size: 32px; color: var(--accent); ">Create Account</h2>
@@ -3062,18 +3062,8 @@
                 </div>
             </div>
 <!---
-prompt:
-เพิ่ม upload pic ใน memo ได้ (cloudinary)
-
-            const cloudName = "domvtfj1i";
-            const uploadPreset = "testclaimdata";
-            const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
-
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("upload_preset", uploadPreset);
-            formData.append("folder", "MEMO");
-
+ask:
+ตอนนี้ถ้าส่งหลาย recipient จะแยก row,docNumber ใช่ไหม
 -->
 
             <!-- ── SENT MEMOS VIEW ────────────────── -->
@@ -5006,20 +4996,20 @@ prompt:
 
         async function loadRegistrationDepartments() {
             try {
-                console.log('📚 Loading departments for registration form...')
+                // console.log('📚 Loading departments for registration form...')
                 const res = await fetch('/departments')
                 const data = await res.json()
-                console.log('📥 Departments response:', data)
+                // console.log('📥 Departments response:', data)
 
                 if (data.departments && Array.isArray(data.departments)) {
                     registrationDepartments = data.departments
-                    console.log('✅ Departments found:', registrationDepartments.length)
+                    // console.log('✅ Departments found:', registrationDepartments.length)
                     initCustomAutocomplete('regDepartment', 'regDepartmentDropdown', registrationDepartments)
                 }
 
                 if (data.departments2 && Array.isArray(data.departments2)) {
                     registrationDepartments2 = data.departments2
-                    console.log('✅ Sub-departments found:', registrationDepartments2.length)
+                    // console.log('✅ Sub-departments found:', registrationDepartments2.length)
                     initCustomAutocomplete('regDepartment2', 'regDepartment2Dropdown', registrationDepartments2)
                 }
 
@@ -6724,25 +6714,24 @@ prompt:
                 recipientNameMap[item.getAttribute('data-value')] = name
             })
 
-            console.log('📤 Sending memo:', { title, type, recipients, senderId: currentUser?.userId })
             setStatus('statusSingleSend', 'loading', 'hourglass_empty', `Dispatching to ${recipients.length} ${recipients.length === 1 ? 'recipient' : 'recipients'}...`)
             try {
                 // Separate LINE and notification recipients
                 const lineRecipients = recipients.filter(r => r.recipientType === 'line_follower')
                 const notificationRecipients = recipients.filter(r => r.recipientType === 'system_user')
 
-                let lineSuccessCount = 0
-                let lineFallCount = 0
-                let notificationSuccessCount = 0
-                let notificationFailCount = 0
+                let totalSuccessCount = 0
+                let totalFailCount = 0
                 let successfulRecipientNames = []
 
-                // Send LINE messages to linked followers
-                for (let recipient of lineRecipients) {
+                // Send LINE messages - now send all at once with recipients array
+                if (lineRecipients.length > 0) {
                     try {
                         const sendData = {
-                            userId: recipient.id,
-                            recipientUserId: recipient.userId,
+                            recipients: lineRecipients.map(r => ({
+                                userId: r.id,
+                                recipientUserId: r.userId
+                            })),
                             title: title,
                             type: type,
                             content: text,
@@ -6750,7 +6739,6 @@ prompt:
                             senderUserId: currentUser?.userId,
                             imageUrl: memoImageUrl || null
                         }
-                        console.log('📨 Sending LINE message:', sendData)
                         const res = await fetch('/send', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -6758,32 +6746,27 @@ prompt:
                         })
                         if (res.ok) {
                             const responseData = await res.json()
-                            // Check if memo is pending approval
-                            if (responseData.status === 'Memo created - pending approval') {
-                                console.log(`✓ Memo created - pending approval from ${responseData.approverCount} approver(s)`)
-                                lineSuccessCount++
+                            totalSuccessCount += lineRecipients.length
+                            lineRecipients.forEach(recipient => {
                                 const recipientName = recipientNameMap[recipient.id] || 'Unknown'
-                                successfulRecipientNames.push(`${recipientName} (Pending Approval)`)
-                            } else {
-                                lineSuccessCount++
-                                const recipientName = recipientNameMap[recipient.id] || 'Unknown'
-                                successfulRecipientNames.push(`${recipientName} (LINE)`)
-                            }
+                                successfulRecipientNames.push(recipientName)
+                            })
                         } else {
-                            lineFallCount++
+                            totalFailCount += lineRecipients.length
                         }
                     } catch (e) {
-                        console.error('Error sending LINE message:', e)
-                        lineFallCount++
+                        totalFailCount += lineRecipients.length
                     }
                 }
 
-                // Send notifications to system users
-                for (let recipient of notificationRecipients) {
+                // Send notifications to system users - now send all at once
+                if (notificationRecipients.length > 0) {
                     try {
-                        // Send memo data to be stored in received_memos
                         const memoData = {
-                            targetUserId: recipient.userId,
+                            recipients: notificationRecipients.map(r => ({
+                                userId: r.id,
+                                recipientUserId: r.userId
+                            })),
                             title: title,
                             type: type,
                             content: text,
@@ -6791,7 +6774,6 @@ prompt:
                             imageUrl: memoImageUrl || null
                         }
 
-                        // Call endpoint to send memo (with approval workflow if needed)
                         const memoRes = await fetch(`/send-system-memo`, {
                             method: 'POST',
                             headers: {
@@ -6801,35 +6783,19 @@ prompt:
                             body: JSON.stringify(memoData)
                         })
 
-                        if (!memoRes.ok) {
-                            notificationFailCount++
-                            continue
-                        }
-
-                        const memoResData = await memoRes.json()
-
-                        // Check if memo requires approval
-                        if (memoResData.status === 'Memo created - pending approval') {
-                            console.log(`✓ Memo created - pending approval from ${memoResData.approverCount} approver(s)`)
-                            notificationSuccessCount++
-                            const recipientName = recipientNameMap[recipient.id] || 'Unknown'
-                            successfulRecipientNames.push(`${recipientName} (Pending Approval)`)
-                        } else if (memoResData.status === 'Memo sent successfully') {
-                            // Memo sent directly without approval needed
-                            notificationSuccessCount++
-                            const recipientName = recipientNameMap[recipient.id] || 'Unknown'
-                            successfulRecipientNames.push(`${recipientName} (Notification)`)
+                        if (memoRes.ok) {
+                            totalSuccessCount += notificationRecipients.length
+                            notificationRecipients.forEach(recipient => {
+                                const recipientName = recipientNameMap[recipient.id] || 'Unknown'
+                                successfulRecipientNames.push(recipientName)
+                            })
                         } else {
-                            notificationFailCount++
+                            totalFailCount += notificationRecipients.length
                         }
                     } catch (e) {
-                        console.error('Error sending memo/notification to system user:', e)
-                        notificationFailCount++
+                        totalFailCount += notificationRecipients.length
                     }
                 }
-
-                const totalSuccessCount = lineSuccessCount + notificationSuccessCount
-                const totalFailCount = lineFallCount + notificationFailCount
 
                 if (totalFailCount === 0) {
                     setStatus('statusSingleSend', 'success', 'check_circle', `Memorandum sent to ${totalSuccessCount} ${totalSuccessCount === 1 ? 'recipient' : 'recipients'} successfully!`)
@@ -6856,7 +6822,7 @@ prompt:
                         'sent'
                     )
                     clearCompose()
-                    loadMemoDocNumber() // Still regenerate DocNumber even on partial success
+                    loadMemoDocNumber()
                 } else {
                     setStatus('statusSingleSend', 'error', 'error', 'Failed to send to all recipients')
                     addNotification(
@@ -6938,7 +6904,7 @@ prompt:
                 statusEl.className = 'status-msg'
 
                 if (data.count === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">send</span><p>No sent memos yet.</p></div></td></tr>`
+                    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">send</span><p>No sent memos yet.</p></div></td></tr>`
                     return
                 }
 
@@ -7035,7 +7001,7 @@ prompt:
                 statusEl.className = 'status-msg'
 
                 if (data.count === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined">inbox</span><p>No received memos yet.</p></div></td></tr>`
+                    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">inbox</span><p>No received memos yet.</p></div></td></tr>`
                     return
                 }
 

@@ -270,9 +270,10 @@ Bug
 -add function | search box
 -add function | icon setting topbar
 
-ทดสอบ setting approver by subdepartment
+-ทดสอบ setting approver by subdepartment
 -คนที่ approve memo ให้ส่ง memo โดยที่ไม่ต้องอนุมัติ
--เพิ่ม upload pic ใน memo ได้ (cloudinary)
+-เพิ่ม upload pic ใน memo ได้ (cloudinary) ✓
 -แก้ไขให้ส่ง memo ได้หลาย user
+-แก้ไข log ไม่อัพเดท
 */
 
