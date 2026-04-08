@@ -109,26 +109,18 @@ function createToken() {
 
 function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization
-  console.log('🔑 [AUTH] Verify token called')
-  console.log('   - Auth header:', authHeader ? authHeader.substring(0, 30) + '...' : 'MISSING')
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.log('❌ [AUTH] Invalid or missing token')
     return res.status(401).json({ error: 'No token provided' })
   }
 
   const token = authHeader.substring(7)
-  console.log('   - Token:', token.substring(0, 20) + '...')
-  console.log('   - Token exists in sessions:', !!sessions[token])
-
   const userId = sessions[token]
 
   if (!userId) {
-    console.log('❌ [AUTH] Token not found in sessions')
     return res.status(401).json({ error: 'Invalid or expired token' })
   }
 
-  console.log('✅ [AUTH] Token verified for userId:', userId)
   req.userId = userId
   next()
 }
@@ -934,7 +926,6 @@ app.get("/user/is-approver", verifyToken, async (req, res) => {
 app.get("/memos/user-stats", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
-    console.log('📊 [STATS] Starting stats calculation for userId:', userId)
 
     // ========== SENT MEMOS ==========
     // Path: sent_memos/{userId}/{memoId}
@@ -942,20 +933,14 @@ app.get("/memos/user-stats", verifyToken, async (req, res) => {
     let sentMemos = null
 
     sentMemos = await firebase_get(`sent_memos/${userId}`)
-    console.log('📤 [STATS] Sent memos path (sent_memos/${userId}):', sentMemos && typeof sentMemos === 'object' ? Object.keys(sentMemos).length + ' items' : 'NOT FOUND')
-
     sentCount = sentMemos && typeof sentMemos === 'object' ? Object.keys(sentMemos).length : 0
-    console.log('📊 [STATS] Total sent count:', sentCount)
 
     // ========== RECEIVED MEMOS ==========
     // Path: received_memos/{userId}/{memoId}
     let receivedCount = 0
 
     const receivedMemos = await firebase_get(`received_memos/${userId}`)
-    console.log('📥 [STATS] Received memos path (received_memos/${userId}):', receivedMemos && typeof receivedMemos === 'object' ? Object.keys(receivedMemos).length + ' items' : 'NOT FOUND')
-
     receivedCount = receivedMemos && typeof receivedMemos === 'object' ? Object.keys(receivedMemos).length : 0
-    console.log('📊 [STATS] Total received count:', receivedCount)
 
     // ========== PENDING APPROVALS ==========
     // Count pending memos this user sent (status = pending_approval)
@@ -968,21 +953,18 @@ app.get("/memos/user-stats", verifyToken, async (req, res) => {
           pendingApprovalCount++
         }
       }
-      console.log('👨‍⚖️ [STATS] Pending approvals (sent memos with status=pending_approval):', pendingApprovalCount + ' items')
     }
 
     // ========== APPROVED MEMOS ==========
     let approvedCount = 0
 
     if (sentMemos && typeof sentMemos === 'object') {
-      console.log('✅ [STATS] Checking approved memos in sent_memos...')
       for (let memoId in sentMemos) {
         const memo = sentMemos[memoId]
         if (memo.status === 'approved') {
           approvedCount++
         }
       }
-      console.log('✅ [STATS] Total approved memos:', approvedCount)
     }
 
     const responseData = {
@@ -992,7 +974,6 @@ app.get("/memos/user-stats", verifyToken, async (req, res) => {
       approvedCount
     }
 
-    console.log('📡 [STATS] Final response:', responseData)
     res.json(responseData)
   } catch (err) {
     console.error('❌ [STATS] Error:', err.message)
@@ -1540,7 +1521,6 @@ async function resolveDocNumberConflict(docNumber, senderUserId) {
       }
       
       if (!stillExists) {
-        console.log(`📝 DocNumber conflict resolved: ${docNumber} -> ${currentDocNumber}`)
         return currentDocNumber
       }
       
@@ -1690,13 +1670,6 @@ app.post("/send", async (req, res) => {
       }
 
       try {
-        console.log('📨 Creating pending_approval notification for sender:', {
-          senderId: senderUserId,
-          memoId: memoData.memoId,
-          memoStatus: memoData.status,
-          notificationType: senderNotification.type,
-          hasMemoData: !!senderNotification.memo
-        })
         await firebase_set(`notifications/${senderUserId}/${senderNotification.id}`, senderNotification)
       } catch (err) {
         // Silent error
@@ -3600,6 +3573,11 @@ app.get("/info", (req, res) => {
 })
 
 const PORT = process.env.PORT || 3000
+
+// Health check endpoint
+app.get('/ping', (req, res) => {
+  res.status(200).send('OK')
+})
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`)

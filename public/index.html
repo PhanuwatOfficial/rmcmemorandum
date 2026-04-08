@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -4111,7 +4111,7 @@ prompt:
     <script>
         // ── Image Zoom Modal ────────────────────────
         function openImageModal(imageSrc) {
-            console.log('🖼️ Opening image modal with src:', imageSrc);
+            // console.log removed (not error handle)
             const modal = document.getElementById('imageZoomModal');
             const content = document.getElementById('imageZoomContent');
             
@@ -4127,20 +4127,20 @@ prompt:
             
             content.src = imageSrc;
             modal.classList.add('show');
-            console.log('✅ Modal opened successfully');
+            // console.log removed (not error handle)
             
             // Add ESC key listener
             document.addEventListener('keydown', handleImageModalKeydown);
         }
 
         function closeImageModal() {
-            console.log('🖼️ Closing image modal');
+            // console.log removed (not error handle)
             const modal = document.getElementById('imageZoomModal');
             if (!modal) return;
             
             modal.classList.remove('show');
             document.removeEventListener('keydown', handleImageModalKeydown);
-            console.log('✅ Modal closed');
+            // console.log removed (not error handle)
         }
 
         function handleImageModalKeydown(e) {
@@ -4185,7 +4185,7 @@ prompt:
                 if (res.ok) {
                     const data = await res.json()
                     notifications = data.notifications || []
-                    console.log('✅ Notifications loaded:', notifications.length)
+                    // console.log removed (not error handle)
                     updateNotificationUI()
                     notificationsLoaded = true
                 } else {
@@ -4210,14 +4210,14 @@ prompt:
                     loadNotificationsFromFirebase()
                 }
             }, 1000) // Refresh every 30 seconds
-            console.log('🔄 Notification auto-refresh started')
+            // console.log removed (not error handle)
         }
 
         function stopNotificationRefresh() {
             if (notificationRefreshInterval) {
                 clearInterval(notificationRefreshInterval)
                 notificationRefreshInterval = null
-                console.log('⏹️ Notification auto-refresh stopped')
+                // console.log removed (not error handle)
             }
         }
 
@@ -4241,10 +4241,10 @@ prompt:
                         if (pendingMemos.length > 0) {
                             badge.textContent = pendingMemos.length > 9 ? '9+' : pendingMemos.length
                             badge.style.display = 'flex'
-                            console.log('🔔 Pending approvals badge updated:', pendingMemos.length)
+                            // console.log removed (not error handle)
                         } else {
                             badge.style.display = 'none'
-                            console.log('🔔 No pending approvals - badge hidden')
+                            // console.log removed (not error handle)
                         }
                     }
                 }
@@ -4261,14 +4261,14 @@ prompt:
             pendingApprovalsRefreshInterval = setInterval(() => {
                 refreshPendingApprovalsBadge()
             }, 1000)
-            console.log('🔄 Pending approvals badge auto-refresh started (every 3s)')
+            // console.log removed (not error handle)
         }
 
         function stopPendingApprovalsRefresh() {
             if (pendingApprovalsRefreshInterval) {
                 clearInterval(pendingApprovalsRefreshInterval)
                 pendingApprovalsRefreshInterval = null
-                console.log('⏹️ Pending approvals badge auto-refresh stopped')
+                // console.log removed (not error handle)
             }
         }
 
@@ -4355,16 +4355,15 @@ prompt:
             }
 
             const unreadCount = notifications.filter(n => !n.read).length
-            console.log('🔔 Updating badge - Total:', notifications.length, 'Unread:', unreadCount)
+            // console.log removed (not error handle)
 
             // Update badge
             if (unreadCount > 0) {
                 badge.textContent = unreadCount > 9 ? '9+' : unreadCount
                 badge.style.display = 'flex'
-                console.log('✅ Badge displayed with count:', badge.textContent)
             } else {
                 badge.style.display = 'none'
-                console.log('❌ Badge hidden (no unread)')
+                // console.log removed (not error handle)
             }
 
             // Update list
@@ -4410,13 +4409,7 @@ prompt:
                 // Determine click handler - if we have memo, use it; otherwise use memoId
                 let clickHandler = 'markNotificationAsRead()'
                 if (notif.memoObject || notif.memo) {
-                    console.log('📌 Notification has memo:', { 
-                        hasMemoObject: !!notif.memoObject, 
-                        hasMemo: !!notif.memo,
-                        memoType: notif.memoType,
-                        memoStatus: notif.memo?.status || notif.memoObject?.status,
-                        notificationType: notif.type
-                    })
+                    // console.log removed (not error handle)
                     const memoToUse = notif.memoObject || notif.memo
                     const memoJson = escHtml(JSON.stringify(memoToUse)).replace(/"/g, '&quot;')
                     
@@ -4428,10 +4421,10 @@ prompt:
                         clickHandler = `openMemoDetail(${memoJson})`
                     }
                 } else if (notif.memoId) {
-                    console.log('⚠️ Notification has no memo object, using memoId:', notif.memoId)
+                    // console.log removed (not error handle)
                     clickHandler = `viewNotificationMemo('${notif.memoId}')`
                 } else {
-                    console.log('❌ Notification has no memo or memoId:', notif.id)
+                    // console.log removed (not error handle)
                 }
 
                 html += `
@@ -4472,7 +4465,7 @@ prompt:
             const notif = notifications.find(n => String(n.id) === String(id))
             if (!notif || notif.read) return
 
-            console.log('📖 Marking notification as read:', id)
+            // console.log removed (not error handle)
 
             // Update in Firebase
             if (authToken) {
@@ -4491,7 +4484,7 @@ prompt:
         }
 
         async function removeNotification(id) {
-            console.log('🗑️ Removing notification:', id)
+            // console.log removed (not error handle)
 
             // Delete from Firebase
             if (authToken) {
@@ -4510,7 +4503,7 @@ prompt:
         }
 
         async function clearAllNotifications() {
-            console.log('🗑️🗑️ Clearing all notifications...')
+            // console.log removed (not error handle)
 
             // Delete all from Firebase
             if (authToken) {
@@ -4527,12 +4520,12 @@ prompt:
             notifications = []
             updateNotificationUI()
             document.getElementById('notificationPanel').style.display = 'none'
-            console.log('✅ All notifications cleared')
+            // console.log removed (not error handle)
         }
 
         // ── View Memo from Notification ─────────────
         async function viewNotificationMemo(memoId) {
-            console.log('� Opening memo from notification:', memoId)
+            // console.log removed (not error handle)
 
             document.getElementById('notificationPanel').style.display = 'none'
 
