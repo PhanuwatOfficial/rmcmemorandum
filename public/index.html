@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="ICON.png" />
+    <link rel="icon" href="icon.png" />
     <title>RMC E-MEMO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -4771,9 +4771,9 @@ prompt:
         }
 
         function updateUIForLoggedIn() {
-            console.log('🔄 [LOGIN] updateUIForLoggedIn() called')
-            console.log('👤 [LOGIN] Current user:', currentUser)
-            console.log('🔑 [LOGIN] Auth token exists:', !!authToken)
+            // console.log('🔄 [LOGIN] updateUIForLoggedIn() called')
+            // console.log('👤 [LOGIN] Current user:', currentUser)
+            // console.log('🔑 [LOGIN] Auth token exists:', !!authToken)
             showView('dashboard')
             document.getElementById('authNav').style.display = 'none'
             document.getElementById('mainNav').style.display = 'block'
@@ -4795,7 +4795,7 @@ prompt:
                 document.getElementById('topbarUserRole').textContent = currentUser.role || 'Bot Manager'
                 updateAvatarDisplay()
 
-                console.log('👤 User logged in:', currentUser.username)
+                // console.log('👤 User logged in:', currentUser.username)
 
                 // Reset and reload notifications for logged-in user
                 notificationsLoaded = false
@@ -4816,9 +4816,9 @@ prompt:
                 checkApproverStatusAndLoadPending()
                 
                 // Load dashboard stats (sent, received, approved, pending approvals)
-                console.log('📊 [LOGIN] Calling loadDashboardStats()...')
+                // console.log('📊 [LOGIN] Calling loadDashboardStats()...')
                 loadDashboardStats()
-                console.log('📊 [LOGIN] loadDashboardStats() called')
+                // console.log('📊 [LOGIN] loadDashboardStats() called')
             }
         }
 
@@ -4831,7 +4831,7 @@ prompt:
                     const data = await res.json()
                     const allowedTabs = data.tabs || []
                     
-                    console.log('📋 Applying tab restrictions. Allowed tabs:', allowedTabs)
+                    // console.log('📋 Applying tab restrictions. Allowed tabs:', allowedTabs)
                     
                     // Hide all nav items in mainNav first
                     const mainNav = document.getElementById('mainNav')
@@ -4879,7 +4879,7 @@ prompt:
                         })
                     }
                     
-                    console.log('✅ Tab access restrictions applied')
+                    // console.log('✅ Tab access restrictions applied')
                 }
             } catch (err) {
                 console.error('Error applying tab restrictions:', err)
@@ -4897,7 +4897,7 @@ prompt:
                     const mobileNavItem = document.querySelector('.mobile-bottom-nav-item[data-view="pending-approvals"]')
                     
                     if (data.isApprover) {
-                        console.log('✅ User is an approver - showing Pending Approvals tab')
+                        // console.log('✅ User is an approver - showing Pending Approvals tab')
                         // Show the nav item regardless of tabAccess settings
                         if (navItem) {
                             navItem.style.display = 'block'
@@ -7843,59 +7843,32 @@ prompt:
             }
             
             try {
-                console.log('🔍 Fetching dashboard stats')
-                console.log('🔑 Auth token:', authToken.substring(0, 20) + '...')
-                console.log('🔗 API Call: GET /memos/user-stats')
-                
                 const res = await fetch('/memos/user-stats', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
-                
-                console.log('📡 API Response Status:', res.status, res.statusText)
-                
                 if (!res.ok) {
                     const errorData = await res.json()
                     console.error('❌ API Error:', errorData)
                     return
                 }
-                
                 const stats = await res.json()
-                console.log('📊 Dashboard stats loaded:', stats)
-                console.log('   - Sent Count:', stats.sentCount)
-                console.log('   - Received Count:', stats.receivedCount)
-                console.log('   - Approved Count:', stats.approvedCount)
-                console.log('   - Pending Approvals:', stats.pendingApprovalCount)
-                
                 // Update stat cards
                 const sentEl = document.getElementById('stat-memos-sent')
                 const receivedEl = document.getElementById('stat-memos-received')
                 const approvedEl = document.getElementById('stat-memos-approved')
                 const pendingEl = document.getElementById('stat-pending-approvals')
-                
-                console.log('🎯 Updating DOM elements...')
-                console.log('   - Sent element:', sentEl)
-                console.log('   - Received element:', receivedEl)
-                console.log('   - Approved element:', approvedEl)
-                console.log('   - Pending element:', pendingEl)
-                
                 if (sentEl) {
                     sentEl.textContent = stats.sentCount || '0'
-                    console.log('✅ Sent count updated to:', stats.sentCount)
                 }
                 if (receivedEl) {
                     receivedEl.textContent = stats.receivedCount || '0'
-                    console.log('✅ Received count updated to:', stats.receivedCount)
                 }
                 if (approvedEl) {
                     approvedEl.textContent = stats.approvedCount || '0'
-                    console.log('✅ Approved count updated to:', stats.approvedCount)
                 }
                 if (pendingEl) {
                     pendingEl.textContent = stats.pendingApprovalCount || '0'
-                    console.log('✅ Pending approvals updated to:', stats.pendingApprovalCount)
                 }
-                
-                console.log('✅ Dashboard stats displayed successfully')
             } catch (err) {
                 console.error('❌ Error loading dashboard stats:', err)
                 console.error('   Stack:', err.stack)
