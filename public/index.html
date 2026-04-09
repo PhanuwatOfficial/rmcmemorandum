@@ -1911,6 +1911,40 @@
             font-variation-settings: 'wght' 400;
         }
 
+        /* ── Mobile Admin Menu ────────────────────── */
+        .mobile-admin-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--ink);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .mobile-admin-menu-item:hover {
+            background: var(--border);
+            border-color: var(--ink-muted);
+        }
+
+        .mobile-admin-menu-item:active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .mobile-admin-menu-item .material-symbols-outlined {
+            font-size: 20px;
+        }
+
         .department-item {
             margin-bottom: 12px;
         }
@@ -1978,6 +2012,40 @@
             padding: 32px 16px;
             color: var(--ink-faint);
             font-size: 13px;
+        }
+
+        /* ── Mobile Admin Menu ────────────────────── */
+        .mobile-admin-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--ink);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .mobile-admin-menu-item:hover {
+            background: var(--border);
+            border-color: var(--ink-muted);
+        }
+
+        .mobile-admin-menu-item:active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .mobile-admin-menu-item .material-symbols-outlined {
+            font-size: 20px;
         }
 
         /* ── Responsive Design ────────────────────── */
@@ -3948,40 +4016,33 @@
                 <span class="material-symbols-outlined">person</span>
                 <span>My Account</span>
             </button>
-            <button class="mobile-bottom-nav-item" id="mobileAdminMoreBtn" data-view="more"
-                onclick="toggleMobileAdminMenu()" style="display:none;">
-                <span class="material-symbols-outlined">more_horiz</span>
+            <button class="mobile-bottom-nav-item" id="mobileAdminMenuBtn" data-view="admin-menu" style="display:none;" 
+                onclick="toggleMobileAdminMenu()">
+                <span class="material-symbols-outlined">more_vert</span>
                 <span>More</span>
             </button>
         </div>
     </nav>
 
-    <!-- Mobile Admin Menu (Slides Up) -->
-    <div id="mobileAdminMenu"
-        style="display: none; position: fixed; bottom: 90px; left: 0; right: 0; background: var(--accent); border-top: 1px solid rgba(255, 255, 255, 0.08); z-index: 98; animation: slideUp 0.25s ease-out;">
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; padding: 0;">
-            <button class="mobile-bottom-nav-item" 
-                onclick="closeMobileAdminMenu(); showView('pending-approvals'); loadPendingApprovals()"
-                style="border-right: 1px solid rgba(255, 255, 255, 0.08); border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+    <!-- Mobile Admin Menu Modal -->
+    <div id="mobileAdminMenuModal" style="display: none; position: fixed; bottom: 90px; left: 0; right: 0; background: var(--paper); border-top: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 98; max-height: 60vh; overflow-y: auto;">
+        <div style="padding: 16px;">
+            <div style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; padding: 0 8px;">Admin Options</div>
+            <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('pending-approvals'); loadPendingApprovals()">
                 <span class="material-symbols-outlined">pending_actions</span>
-                <span>Pending</span>
+                <span>Pending Approvals</span>
             </button>
-            <button class="mobile-bottom-nav-item" 
-                onclick="closeMobileAdminMenu(); showView('broadcast')"
-                style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+            <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('broadcast')">
                 <span class="material-symbols-outlined">campaign</span>
                 <span>Broadcast</span>
             </button>
-            <button class="mobile-bottom-nav-item" 
-                onclick="closeMobileAdminMenu(); showView('followers'); loadFollowers()"
-                style="border-right: 1px solid rgba(255, 255, 255, 0.08);">
+            <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('followers')">
                 <span class="material-symbols-outlined">group</span>
-                <span>Users</span>
+                <span>Users Management</span>
             </button>
-            <button class="mobile-bottom-nav-item" 
-                onclick="closeMobileAdminMenu(); showView('logs'); loadLogs()">
+            <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('logs'); loadLogs()">
                 <span class="material-symbols-outlined">event_note</span>
-                <span>Logs</span>
+                <span>Activity Log</span>
             </button>
         </div>
     </div>
@@ -4555,6 +4616,12 @@
             panel.style.display = isVisible ? 'none' : 'flex'
         }
 
+        function toggleMobileAdminMenu() {
+            const modal = document.getElementById('mobileAdminMenuModal')
+            const isVisible = modal.style.display === 'block'
+            modal.style.display = isVisible ? 'none' : 'block'
+        }
+
         async function markNotificationAsRead(id) {
             const notif = notifications.find(n => String(n.id) === String(id))
             if (!notif || notif.read) return
@@ -4705,6 +4772,15 @@
             if (userMenu && !userSection?.contains(e.target)) {
                 userMenu.style.display = 'none'
             }
+
+            // Close mobile admin menu modal when clicking outside
+            const adminModal = document.getElementById('mobileAdminMenuModal')
+            const adminMenuBtn = document.getElementById('mobileAdminMenuBtn')
+            if (adminModal && adminMenuBtn && !adminModal.contains(e.target) && !adminMenuBtn.contains(e.target)) {
+                if (adminModal.style.display === 'block') {
+                    adminModal.style.display = 'none'
+                }
+            }
         })
 
         // ──────────────────────────────────────────────
@@ -4732,29 +4808,6 @@
             }
         }
 
-        // ──────────────────────────────────────────────
-        // Mobile Admin Menu Toggle
-        // ──────────────────────────────────────────────
-        function toggleMobileAdminMenu() {
-            const menu = document.getElementById('mobileAdminMenu')
-            const isVisible = menu.style.display === 'block'
-            menu.style.display = isVisible ? 'none' : 'block'
-        }
-
-        function closeMobileAdminMenu() {
-            const menu = document.getElementById('mobileAdminMenu')
-            menu.style.display = 'none'
-        }
-
-        // Close admin menu when clicking outside
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('mobileAdminMenu')
-            const moreBtn = document.getElementById('mobileAdminMoreBtn')
-            if (menu && moreBtn && !menu.contains(e.target) && !moreBtn.contains(e.target)) {
-                menu.style.display = 'none'
-            }
-        })
-
         // Close mobile sidebar when clicking on a nav item
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.nav-item').forEach(item => {
@@ -4762,14 +4815,15 @@
                     closeMobileSidebar()
                 })
             })
+
+            
         })
 
         // Handle mobile bottom nav visibility on window resize
         window.addEventListener('resize', () => {
             if (currentUser) {
                 document.getElementById('mobileBottomNav').style.display = window.innerWidth <= 480 ? 'block' : 'none'
-                // Update mobile admin "More" button visibility on resize
-                updateMobileAdminButtonVisibility()
+                document.getElementById('mobileAdminMenuBtn').style.display = (currentUser.role === 'admin') ? 'flex' : 'none'
             }
         })
 
@@ -4806,6 +4860,12 @@
             })
             const mobileNavItem = document.querySelector(`.mobile-bottom-nav-item[data-view="${name}"]`)
             if (mobileNavItem) mobileNavItem.classList.add('active')
+            
+            // Handle admin menu button visibility
+            const adminMenuBtn = document.getElementById('mobileAdminMenuBtn')
+            if (adminMenuBtn) {
+                adminMenuBtn.style.display = (currentUser && currentUser.role === 'admin') ? 'flex' : 'none'
+            }
 
             // Trigger view-specific setup
             if (name === 'register') {
@@ -4895,21 +4955,6 @@
             }
         }
 
-        function updateMobileAdminButtonVisibility() {
-            const mobileAdminMoreBtn = document.getElementById('mobileAdminMoreBtn')
-            if (!mobileAdminMoreBtn) return
-            
-            const isAdmin = currentUser && currentUser.role === 'admin'
-            const isMobile = window.innerWidth <= 480
-            
-            if (isAdmin && isMobile) {
-                mobileAdminMoreBtn.style.removeProperty('display')
-                mobileAdminMoreBtn.style.display = 'flex'
-            } else {
-                mobileAdminMoreBtn.style.display = 'none'
-            }
-        }
-
         function updateUIForLoggedIn() {
             // console.log('🔄 [LOGIN] updateUIForLoggedIn() called')
             // console.log('👤 [LOGIN] Current user:', currentUser)
@@ -4922,10 +4967,10 @@
             document.getElementById('guestSection').style.display = 'none'
             // Show adminNav only if user has admin role
             document.getElementById('adminNav').style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none'
-            // Update mobile admin button visibility
-            updateMobileAdminButtonVisibility()
             // Only show mobile bottom nav on mobile screens (max-width: 480px)
             document.getElementById('mobileBottomNav').style.display = window.innerWidth <= 480 ? 'block' : 'none'
+            // Show admin menu button on mobile for admin users
+            document.getElementById('mobileAdminMenuBtn').style.display = (currentUser && currentUser.role === 'admin') ? 'flex' : 'none'
 
             // Activate first bottom nav item (dashboard)
             const dashboardNavItem = document.querySelector('.mobile-bottom-nav-item[data-view="dashboard"]')
@@ -5145,11 +5190,8 @@
             document.getElementById('guestSection').style.display = 'block'
             document.getElementById('adminNav').style.display = 'none'
             document.getElementById('mobileBottomNav').style.display = 'none'
-            document.getElementById('mobileAdminMenu').style.display = 'none'
-            const mobileAdminMoreBtn = document.getElementById('mobileAdminMoreBtn')
-            if (mobileAdminMoreBtn) {
-                mobileAdminMoreBtn.style.display = 'none'
-            }
+            document.getElementById('mobileAdminMenuBtn').style.display = 'none'
+            document.getElementById('mobileAdminMenuModal').style.display = 'none'
 
             // Reset topbar user info
             document.getElementById('topbarUserName').textContent = 'ชื่อผู้ใช้'
