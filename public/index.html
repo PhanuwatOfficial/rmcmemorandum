@@ -291,14 +291,14 @@
         }
 
         .user-info .role {
-            font-size: 10px;
-            color: var(--ink-faint);
+            font-size: 11px;
+            color: var(--ink-muted);
             letter-spacing: 0.05em;
         }
 
         .avatar {
-            width: 34px;
-            height: 34px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: var(--accent);
             color: #fff;
@@ -2548,11 +2548,35 @@
                     <span class="material-symbols-outlined">settings</span>
                 </button>
                 <div class="divider-v"></div>
-                <div class="user-info">
-                    <div class="name" id="topbarUserName">ชื่อผู้ใช้</div>
-                    <div class="role" id="topbarUserRole">ตำแหน่ง</div>
+                <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+                    <div class="user-info" style="cursor: pointer;" onclick="toggleUserMenu()">
+                        <div class="name" id="topbarUserName">ชื่อผู้ใช้</div>
+                        <div class="role" id="topbarUserRole">ฝ่าย</div>
+                    </div>
+                    <div class="avatar" id="topbarAvatar" style="cursor: pointer;" onclick="toggleUserMenu()"></div>
+                    <div id="userMenuPanel"
+                        style="display: none; flex-direction: column; position: absolute; top: calc(100% + 8px); right: 0; width: 280px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; animation: slideDown 0.25s ease-out;">
+                        <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px;">
+                            <div class="avatar" id="userMenuAvatar" style="width: 32px; height: 32px; flex-shrink: 0;"></div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 13px; font-weight: 600; color: var(--ink);" id="userMenuName">ชื่อผู้ใช้</div>
+                                <div style="font-size: 11px; color: var(--ink-muted);" id="userMenuRole">ฝ่าย</div>
+                            </div>
+                        </div>
+                        <button class="nav-item" onclick="toggleUserMenu(); showView('manage-user')" 
+                            style="padding: 12px 16px; background: none; border: none; color: var(--ink); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; border-bottom: 1px solid var(--border); width: 100%;"
+                            onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='none'">
+                            <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 8px;">manage_accounts</span>
+                            Account Settings
+                        </button>
+                        <button onclick="toggleUserMenu(); logout()" 
+                            style="padding: 12px 16px; background: none; border: none; color: var(--red); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%;"
+                            onmouseover="this.style.background='rgba(220, 66, 59, 0.05)'" onmouseout="this.style.background='none'">
+                            <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 8px;">logout</span>
+                            Sign Out
+                        </button>
+                    </div>
                 </div>
-                <div class="avatar" id="topbarAvatar"></div>
             </div>
         </header>
 
@@ -3897,7 +3921,7 @@
     </div><!-- /main -->
 
     <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <nav class="mobile-bottom-nav" id="mobileBottomNav" style="display:none;">
         <div class="mobile-bottom-nav-content">
             <button class="mobile-bottom-nav-item" data-view="dashboard"
                 onclick="showView('dashboard'); activateMobileNavItem(this)">
@@ -3919,13 +3943,14 @@
                 <span class="material-symbols-outlined">inbox</span>
                 <span>Received</span>
             </button>
-            <button class="mobile-bottom-nav-item" data-view="followers"
-                onclick="showView('followers'); activateMobileNavItem(this)">
-                <span class="material-symbols-outlined">group</span>
-                <span>Users</span>
+            <button class="mobile-bottom-nav-item" data-view="manage-user"
+                onclick="showView('manage-user'); activateMobileNavItem(this)">
+                <span class="material-symbols-outlined">person</span>
+                <span>My Account</span>
             </button>
         </div>
     </nav>
+    <!--แก้ไขปัญหา mobilesite ตอนนี้ logout ไม่ได้ -->
 
     <!-- Memo Detail Modal -->
     <div id="memoDetailOverlay" class="memo-detail-overlay">
@@ -4487,6 +4512,12 @@
             }
         }
 
+        function toggleUserMenu() {
+            const panel = document.getElementById('userMenuPanel')
+            const isVisible = panel.style.display === 'flex'
+            panel.style.display = isVisible ? 'none' : 'flex'
+        }
+
         async function markNotificationAsRead(id) {
             const notif = notifications.find(n => String(n.id) === String(id))
             if (!notif || notif.read) return
@@ -4624,12 +4655,18 @@
             }, 100)
         }
 
-        // Close notification panel when clicking outside
+        // Close notification panel and user menu when clicking outside
         document.addEventListener('click', function (e) {
-            const panel = document.getElementById('notificationPanel')
-            const notifSection = panel?.parentElement
-            if (panel && !notifSection?.contains(e.target)) {
-                panel.style.display = 'none'
+            const notifPanel = document.getElementById('notificationPanel')
+            const notifSection = notifPanel?.parentElement
+            if (notifPanel && !notifSection?.contains(e.target)) {
+                notifPanel.style.display = 'none'
+            }
+
+            const userMenu = document.getElementById('userMenuPanel')
+            const userSection = userMenu?.parentElement
+            if (userMenu && !userSection?.contains(e.target)) {
+                userMenu.style.display = 'none'
             }
         })
 
@@ -4818,7 +4855,10 @@
             // Update topbar user info
             if (currentUser) {
                 document.getElementById('topbarUserName').textContent = `${currentUser.name} ${currentUser.surname}`
-                document.getElementById('topbarUserRole').textContent = currentUser.role || 'Bot Manager'
+                document.getElementById('topbarUserRole').textContent = currentUser.department || 'ไม่ระบุแผนก'
+                // Update user menu info as well
+                document.getElementById('userMenuName').textContent = `${currentUser.name} ${currentUser.surname}`
+                document.getElementById('userMenuRole').textContent = currentUser.department || 'ไม่ระบุแผนก'
                 updateAvatarDisplay()
 
                 // console.log('👤 User logged in:', currentUser.username)
@@ -4992,6 +5032,12 @@
                                 avatar.style.backgroundSize = 'cover'
                                 avatar.style.backgroundPosition = 'center'
                                 avatar.textContent = ''
+                                // Update user menu avatar as well
+                                const userMenuAvatar = document.getElementById('userMenuAvatar')
+                                userMenuAvatar.style.backgroundImage = `url('${firstFollower.pictureUrl}')`
+                                userMenuAvatar.style.backgroundSize = 'cover'
+                                userMenuAvatar.style.backgroundPosition = 'center'
+                                userMenuAvatar.textContent = ''
                                 return
                             }
                         }
@@ -5006,6 +5052,10 @@
             const avatar = document.getElementById('topbarAvatar')
             avatar.style.backgroundImage = 'none'
             avatar.textContent = initials
+            // Update user menu avatar with initials as well
+            const userMenuAvatar = document.getElementById('userMenuAvatar')
+            userMenuAvatar.style.backgroundImage = 'none'
+            userMenuAvatar.textContent = initials
         }
 
         function updateUIForLoggedOut() {
@@ -5019,7 +5069,7 @@
 
             // Reset topbar user info
             document.getElementById('topbarUserName').textContent = 'ชื่อผู้ใช้'
-            document.getElementById('topbarUserRole').textContent = 'ตำแหน่ง'
+            document.getElementById('topbarUserRole').textContent = 'ฝ่าย'
             const avatar = document.getElementById('topbarAvatar')
             avatar.style.backgroundImage = 'none'
             avatar.textContent = ''
@@ -5288,6 +5338,19 @@
                 setStatus('statusLogin', 'success', 'check_circle', 'Login successful!')
 
                 setTimeout(async () => {
+                    // Refresh user data from server to get complete info including department
+                    try {
+                        const userRes = await fetch('/user/me', {
+                            headers: { 'Authorization': `Bearer ${authToken}` }
+                        })
+                        if (userRes.ok) {
+                            const userData = await userRes.json()
+                            currentUser = userData
+                        }
+                    } catch (err) {
+                        console.error('Error refreshing user data:', err)
+                    }
+
                     document.getElementById('loginUsername').value = ''
                     document.getElementById('loginPassword').value = ''
                     updateUIForLoggedIn()
@@ -7968,7 +8031,7 @@
                     users.users.forEach(u => {
                         const opt = document.createElement('option')
                         opt.value = u.userId
-                        opt.textContent = `${u.name} ${u.surname} (@${u.username})`
+                        opt.textContent = `${u.name} ${u.surname} (${u.department})`
                         userSelect.appendChild(opt)
                     })
                 }
