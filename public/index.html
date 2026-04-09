@@ -2923,13 +2923,21 @@
                         </button>
                     </div>
                     <div class="section-body" style="padding: 0;">
-                        <div class="activity-log" id="dash-logs-preview" style="border-radius: 0; max-height: 200px;">
+                        <div class="activity-log" id="dash-logs-preview" style="border-radius: 0; max-height: 300px;">
                             <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading activity...
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+        <!--
+        prompt:
+        ให้เพิ่ม section
+        ที่รวมการแสดงผลจากตาราง
+        sentMemosTbody , receivedMemosTbody , pendingApprovalsTbody (แสดงเฉพาะ approver)
+        รวมมาไว้ที่เดียว
+        -->
 
             <!-- ── COMPOSE VIEW ───────────────────── -->
             <div id="view-compose" class="view" style="display:none;">
@@ -3777,6 +3785,10 @@
                 </div>
             </div>
 
+    <!--prompt: ใน approversList ถ้ามี user ไหนแล้ว ใน approverUserId จะต้องไม่มี user นั้นแล้ว (เพิ่มซ้ำไม่ได้)
+    ถ้าอยากเปลี่ยน ให้เพิ่มปุ่มแก้ไขแทน (ตอนนี้มีแต่ปุ่มลบ deleteMemoApprover)
+            -->
+
             <!-- ── TAB ACCESS CONTROL ──────────── -->
             <div id="view-tab-access" class="view" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 500; overflow-y: auto; padding: 20px;">
                 <div style="background: white; border-radius: var(--radius); max-width: 900px; margin: 20px auto; box-shadow: var(--shadow-lg);">
@@ -4050,7 +4062,6 @@
             </div>
         </div>
     </div>
-<!--ปรับปรุง css-->
 
     <!-- Custom Modal -->
     <div id="customModal"
@@ -5368,7 +5379,7 @@
                 setStatus('statusChangePassword', 'error', 'error', err.message)
             }
         }
-        
+
         function clearPasswordForm() {
             document.getElementById('currentPassword').value = ''
             document.getElementById('newPassword').value = ''
@@ -8001,22 +8012,46 @@
                     })
                 }
 
-                // Render approvers list
+                // Render approvers list - grouped by user
                 const list = document.getElementById('approversList')
                 if (data.approvers && data.approvers.length > 0) {
-                    list.innerHTML = data.approvers.map(a => `
-                        <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 600; color: var(--ink);">${a.approverName}</div>
-                                <div style="font-size: 12px; color: var(--ink-faint);">
-                                    ${a.departmentName} ${a.subDepartmentName && a.subDepartmentName !== 'All' ? `/ ${a.subDepartmentName}` : '(All Sub-Depts)'}
-                                </div>
-                                <div style="font-size: 11px; color: var(--ink-muted); margin-top: 4px;">@${a.approverUsername}</div>
+                    // Group approvers by username (same user with multiple departments)
+                    const approvalsGrouped = {}
+                    data.approvers.forEach(a => {
+                        const key = a.approverUsername
+                        if (!approvalsGrouped[key]) {
+                            approvalsGrouped[key] = {
+                                approverName: a.approverName,
+                                approverUsername: a.approverUsername,
+                                assignments: []
+                            }
+                        }
+                        approvalsGrouped[key].assignments.push({
+                            id: a.id,
+                            departmentName: a.departmentName,
+                            subDepartmentName: a.subDepartmentName
+                        })
+                    })
+
+                    // Render grouped approvers
+                    list.innerHTML = Object.entries(approvalsGrouped).map(([username, approver]) => `
+                        <div style="padding: 16px; border-bottom: 1px solid var(--border);">
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-weight: 600; color: var(--accent);">${approver.approverName}</div>
                             </div>
-                            <button class="btn btn-danger btn-sm" onclick="deleteMemoApprover('${a.id}')">
-                                <span class="material-symbols-outlined">delete</span>
-                                Remove
-                            </button>
+                            <div style="margin-left: 8px; border-left: 2px solid var(--border); padding-left: 12px;">
+                                ${approver.assignments.map(a => `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 13px;">
+                                        <div style="color: var(--ink-muted); flex: 1;">
+                                            ${a.departmentName} ${a.subDepartmentName && a.subDepartmentName !== 'All' ? `/ ${a.subDepartmentName}` : '(All Sub-Depts)'}
+                                        </div>
+                                        <button class="btn btn-danger btn-sm" style="padding: 4px 8px; margin-left: 8px;" onclick="deleteMemoApprover('${a.id}')">
+                                            <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                                            Remove
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
                     `).join('')
                 } else {

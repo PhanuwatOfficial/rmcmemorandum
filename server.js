@@ -1666,6 +1666,20 @@ app.post("/send", async (req, res) => {
         }
       }
 
+      // Convert department2 name to ID
+      const allDepartments2 = await firebase_get('departments2')
+      let senderSubDepartmentId = sender.department2
+
+      // Try to find matching sub-department by name
+      if (allDepartments2 && typeof allDepartments2 === 'object') {
+        for (const [deptId, dept] of Object.entries(allDepartments2)) {
+          if (dept.name === sender.department2) {
+            senderSubDepartmentId = deptId
+            break
+          }
+        }
+      }
+
       const approvers = await firebase_get('memoApprovers')
 
       if (approvers && typeof approvers === 'object') {
@@ -1674,7 +1688,7 @@ app.post("/send", async (req, res) => {
           if (approver.departmentId === senderDepartmentId) {
             // Either approves entire department or this specific sub-department
             // If approver has no subDepartmentId, they can approve any subdepartment in that department
-            const subDeptMatch = !approver.subDepartmentId ? true : (approver.subDepartmentId === sender.department2)
+            const subDeptMatch = !approver.subDepartmentId ? true : (approver.subDepartmentId === senderSubDepartmentId)
 
             if (subDeptMatch) {
               memoApprovers.push({
@@ -1688,8 +1702,17 @@ app.post("/send", async (req, res) => {
       }
     }
 
-    // If approvers found, require approval before sending
-    if (memoApprovers.length > 0) {
+    // Check if sender is an approver - if so, bypass approval requirement
+    let senderIsApprover = false
+    for (const approver of memoApprovers) {
+      if (approver.approverId === senderUserId) {
+        senderIsApprover = true
+        break
+      }
+    }
+
+    // If approvers found AND sender is NOT an approver, require approval before sending
+    if (memoApprovers.length > 0 && !senderIsApprover) {
       memoData.requiresApproval = true
       memoData.approvers = memoApprovers
       memoData.status = 'pending_approval'
@@ -1865,16 +1888,6 @@ app.post("/send", async (req, res) => {
         } catch (err) {
           // Silent error
         }
-      }
-
-      // Also save to received_memos while pending approval so all recipients can see it
-      for (let recipientId of recipientIds) {
-        const pendingMemo = {
-          ...memoData,
-          status: 'pending_approval',
-          approvalPending: true
-        }
-        await firebase_set(`received_memos/${recipientId}/${memoId}`, pendingMemo)
       }
 
       return res.json({ status: "Memo created - pending approval", memoId, approverCount: memoApprovers.length })
@@ -2076,6 +2089,17 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
       }
     }
 
+    // Get all sub-departments mapping for name->UUID conversion
+    const allDepartments2 = await firebase_get('departments2')
+    const subDepartmentNameToId = {}
+    if (allDepartments2 && typeof allDepartments2 === 'object') {
+      for (const [deptId, dept] of Object.entries(allDepartments2)) {
+        if (dept.name) {
+          subDepartmentNameToId[dept.name] = deptId
+        }
+      }
+    }
+
     // Get all users and their sent_memos to find pending_approval ones
     const allUsers = await firebase_get('users')
     const pendingMemos = []
@@ -2102,10 +2126,16 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
               senderDepartmentId = departmentNameToId[sender.department]
             }
 
+            // Convert sender's sub-department name to UUID
+            let senderSubDepartmentId = sender.department2
+            if (subDepartmentNameToId[sender.department2]) {
+              senderSubDepartmentId = subDepartmentNameToId[sender.department2]
+            }
+
             // Verify this user is one of the approvers for this sender
             const canApprove = userApprovals.some(approval => {
               const match = approval.departmentId === senderDepartmentId &&
-                (!approval.subDepartmentId || approval.subDepartmentId === sender.department2)
+                (!approval.subDepartmentId || approval.subDepartmentId === senderSubDepartmentId)
 
               if (!match) {
               }
@@ -2191,13 +2221,25 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
       }
     }
 
+    // Convert sender's sub-department name to UUID for comparison
+    const allDepartments2 = await firebase_get('departments2')
+    let senderSubDepartmentId = sender.department2
+    if (allDepartments2 && typeof allDepartments2 === 'object') {
+      for (const [subDeptId, subDept] of Object.entries(allDepartments2)) {
+        if (subDept.name === sender.department2) {
+          senderSubDepartmentId = subDeptId
+          break
+        }
+      }
+    }
+
     let isAuthorizedApprover = false
 
     if (approvers && typeof approvers === 'object') {
       for (const approver of Object.values(approvers)) {
         if (approver.approverId === req.userId &&
           approver.departmentId === senderDepartmentId &&
-          (!approver.subDepartmentId || approver.subDepartmentId === sender.department2)) {
+          (!approver.subDepartmentId || approver.subDepartmentId === senderSubDepartmentId)) {
           isAuthorizedApprover = true
           break
         }
@@ -3124,6 +3166,20 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
         }
       }
 
+      // Convert department2 name to ID
+      const allDepartments2 = await firebase_get('departments2')
+      let senderSubDepartmentId = sender.department2
+
+      // Try to find matching sub-department by name
+      if (allDepartments2 && typeof allDepartments2 === 'object') {
+        for (const [deptId, dept] of Object.entries(allDepartments2)) {
+          if (dept.name === sender.department2) {
+            senderSubDepartmentId = deptId
+            break
+          }
+        }
+      }
+
       const approvers = await firebase_get('memoApprovers')
 
       if (approvers && typeof approvers === 'object') {
@@ -3131,7 +3187,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
           // Check if approver can approve for this department
           if (approver.departmentId === senderDepartmentId) {
             // Either approves entire department or this specific sub-department
-            const subDeptMatch = !approver.subDepartmentId ? true : (approver.subDepartmentId === sender.department2)
+            const subDeptMatch = !approver.subDepartmentId ? true : (approver.subDepartmentId === senderSubDepartmentId)
 
             if (subDeptMatch) {
               memoApprovers.push({
@@ -3145,8 +3201,17 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       }
     }
 
-    // If approvers found, require approval before sending
-    if (memoApprovers.length > 0) {
+    // Check if sender is an approver - if so, bypass approval requirement
+    let senderIsApprover = false
+    for (const approver of memoApprovers) {
+      if (approver.approverId === senderUserId) {
+        senderIsApprover = true
+        break
+      }
+    }
+
+    // If approvers found AND sender is NOT an approver, require approval before sending
+    if (memoApprovers.length > 0 && !senderIsApprover) {
       memoData.requiresApproval = true
       memoData.approvers = memoApprovers
       memoData.status = 'pending_approval'
@@ -3302,16 +3367,6 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
         } catch (err) {
           // Silent error
         }
-      }
-
-      // Also save to received_memos for all recipients while pending approval
-      for (let recipientId of recipientIds) {
-        const pendingMemo = {
-          ...memoData,
-          status: 'pending_approval',
-          approvalPending: true
-        }
-        await firebase_set(`received_memos/${recipientId}/${memoId}`, pendingMemo)
       }
 
       // Log pending approval memo
@@ -3542,9 +3597,33 @@ app.get("/debug/memo-approval/:senderUserId", async (req, res) => {
     let matchedApprovers = []
 
     if (sender && sender.department && approvers) {
+      // Convert department name to ID
+      const allDepartments = await firebase_get('departments')
+      let senderDepartmentId = sender.department
+      if (allDepartments && typeof allDepartments === 'object') {
+        for (const [deptId, dept] of Object.entries(allDepartments)) {
+          if (dept.name === sender.department) {
+            senderDepartmentId = deptId
+            break
+          }
+        }
+      }
+
+      // Convert department2 name to ID
+      const allDepartments2 = await firebase_get('departments2')
+      let senderSubDepartmentId = sender.department2
+      if (allDepartments2 && typeof allDepartments2 === 'object') {
+        for (const [deptId, dept] of Object.entries(allDepartments2)) {
+          if (dept.name === sender.department2) {
+            senderSubDepartmentId = deptId
+            break
+          }
+        }
+      }
+
       for (const [key, approver] of Object.entries(approvers)) {
-        const isMatch = approver.departmentId === sender.department
-        const subDeptMatch = !approver.subDepartmentId ? true : (approver.subDepartmentId === sender.department2)
+        const isMatch = approver.departmentId === senderDepartmentId
+        const subDeptMatch = !approver.subDepartmentId ? true : (approver.subDepartmentId === senderSubDepartmentId)
         const willApprove = isMatch && subDeptMatch
 
         if (willApprove) {

@@ -271,14 +271,14 @@ Bug
 
 -เพิ่ม upload pic ใน memo ได้ (cloudinary) ✓
 -แก้ไขให้ส่ง memo ได้หลาย user ✓
--แก้ไข log ไม่อัพเดท✓
+-แก้ไข log ไม่อัพเดท ✓
+-คนที่ approve memo ให้ส่ง memo โดยที่ไม่ต้องอนุมัติ ✓
+-ทดสอบ setting approver by subdepartment ✓
 
 
--แก้ไข quick access
--คนที่ approve memo ให้ส่ง memo โดยที่ไม่ต้องอนุมัติ
--ทดสอบ setting approver by subdepartment
+-แก้ไข quick actions
 
--แก้ layout หน้า mobile
+-แก้ layout หน้า mobile (icon tab)
 -add function | search box
 -add function | icon setting topbar
 
