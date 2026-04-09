@@ -2370,17 +2370,81 @@
             }
 
             thead th {
-                padding: 10px 12px;
-                font-size: 10px;
+                display: none;
+            }
+
+            tbody {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 10px;
             }
 
             tbody tr {
-                border-bottom: 1px solid var(--border);
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0px;
+                background: linear-gradient(135deg, var(--surface) 0%, rgba(200, 169, 110, 0.02) 100%);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 12px;
+                margin: 0;
+                animation: slideUpIn 0.4s ease-out backwards;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            }
+
+            tbody tr:nth-child(1) { animation-delay: 0.05s; }
+            tbody tr:nth-child(2) { animation-delay: 0.1s; }
+            tbody tr:nth-child(3) { animation-delay: 0.15s; }
+            tbody tr:nth-child(n+4) { animation-delay: 0.2s; }
+
+            tbody tr:nth-child(odd) {
+                background: linear-gradient(135deg, var(--surface) 0%, rgba(200, 169, 110, 0.02) 100%);
+            }
+
+            tbody tr:hover {
+                background: linear-gradient(135deg, var(--surface) 0%, rgba(200, 169, 110, 0.04) 100%);
+                transform: scale(1);
+                /* transform: translateY(-2px); */
+                /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+                /* border-color: var(--accent); */
             }
 
             tbody td {
-                padding: 8px 10px;
-                font-size: 11px;
+                padding: 6px 0;
+                font-size: 13px;
+                display: flex;
+                justify-content: flex-start;
+                align-items: flex-start;
+                border: none;
+                gap: 6px;
+                flex-direction: column;
+                color: var(--ink);
+            }
+
+            tbody td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                /* color: var(--ink-faint); */
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                display: block;
+                margin-bottom: 2px;
+            }
+
+            /* Action column spans full width */
+            tbody td:last-child {
+                grid-column: 1 / -1;
+                flex-direction: row;
+                gap: 8px;
+                margin-top: 4px;
+                padding-top: 8px;
+                border-top: 1px solid var(--border);
+            }
+
+            tbody td:last-child::before {
+                content: '';
+                display: none;
             }
 
             .empty-state {
@@ -3176,7 +3240,7 @@
                             <span id="sentMemosCountBadge"
                                 style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
                         </div>
-                        <div style="display:flex;gap:10px;">
+                        <div style="display:none; gap:10px;">
                             <button class="btn btn-ghost btn-sm" onclick="loadSentMemos()">
                                 <span class="material-symbols-outlined">refresh</span>
                                 Refresh
@@ -3212,6 +3276,7 @@
                                     </td>
                                 </tr>
                             </tbody>
+                            <!-- Note: Table rows populated by loadSentMemos() - add data-label to dynamically generated cells -->
                         </table>
                     </div>
                 </div>
@@ -3232,7 +3297,7 @@
                             <span id="receivedMemosCountBadge"
                                 style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
                         </div>
-                        <div style="display:flex;gap:10px;">
+                        <div style="display:none; gap:10px;">
                             <button class="btn btn-ghost btn-sm" onclick="loadReceivedMemos()">
                                 <span class="material-symbols-outlined">refresh</span>
                                 Refresh
@@ -3287,7 +3352,7 @@
                             <span id="pendingApprovalsCountBadge"
                                 style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
                         </div>
-                        <button class="btn btn-ghost btn-sm" onclick="loadPendingApprovals()">
+                        <button class="btn btn-ghost btn-sm" style="display:none;" onclick="loadPendingApprovals()">
                             <span class="material-symbols-outlined">refresh</span>
                             Refresh
                         </button>
@@ -7155,31 +7220,31 @@
                     }
 
                     rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
-          <td style="font-size:12px;">
+          <td data-label="Date" style="font-size:12px;">
             <span style="color:var(--ink-muted);">
               ${dateStr}<br>
               <span style="font-size:11px;">${timeStr}</span>
             </span>
           </td>
-          <td style="font-size:12px;font-weight:600;color:var(--accent);">
+          <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">
             ${memo.docNumber || '—'}
           </td>
-          <td>
+          <td data-label="Title">
             <div style="font-weight:500;">${escHtml(memo.title)}</div>
           </td>
-          <td>
+          <td data-label="Type">
             <span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span>
           </td>
-          <td style="font-size:12px;color:var(--ink-muted);">
+          <td data-label="Recipient" style="font-size:12px;color:var(--ink-muted);">
             ${escHtml(recipientName)}
           </td>
-          <td style="font-size:12px;color:var(--ink-muted);">
+          <td data-label="Status" style="font-size:12px;color:var(--ink-muted);">
             ${statusBadge}
           </td>
-          <td style="font-size:12px;color:var(--ink-faint);max-width:200px;">
+          <td data-label="Preview" style="font-size:12px;color:var(--ink-faint);max-width:200px;">
             <span title="${escHtml(memo.content)}">${escHtml(preview)}</span>
           </td>
-          <td style="text-align: center;">
+          <td data-label="Action" style="text-align: center;">
             <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
               <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
                                     View
@@ -7239,28 +7304,28 @@
                     const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
                     
                     rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
-          <td style="font-size:12px;">
+          <td data-label="Date" style="font-size:12px;">
             <span style="color:var(--ink-muted);">
               ${dateStr}<br>
               <span style="font-size:11px;">${timeStr}</span>
             </span>
           </td>
-          <td style="font-size:12px;font-weight:600;color:var(--accent);">
+          <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">
             ${memo.docNumber || '—'}
           </td>
-          <td>
+          <td data-label="Title">
             <div style="font-weight:500;">${escHtml(memo.title)}</div>
           </td>
-          <td>
+          <td data-label="Type">
             <span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span>
           </td>
-          <td style="font-size:12px;color:var(--ink-muted);">
+          <td data-label="From" style="font-size:12px;color:var(--ink-muted);">
             ${escHtml(memo.senderName || 'Unknown')}
           </td>
-          <td style="font-size:12px;color:var(--ink-faint);max-width:200px;">
+          <td data-label="Preview" style="font-size:12px;color:var(--ink-faint);max-width:200px;">
             <span title="${escHtml(memo.content)}">${escHtml(preview)}</span>
           </td>
-          <td style="text-align: center;">
+          <td data-label="Action" style="text-align: center;">
             <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
               <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
                                     View
@@ -8573,33 +8638,33 @@
                     const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
                     
                     rows += `<tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="viewPendingMemo('${memo.memoId}')">
-                        <td style="font-size:12px;">
+                        <td data-label="Date" style="font-size:12px;">
                           <span style="color:var(--ink-muted);">
                             ${dateStr}<br>
                             <span style="font-size:11px;">${timeStr}</span>
                           </span>
                         </td>
-                        <td style="font-size:12px;font-weight:600;color:var(--accent);">
+                        <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">
                             ${memo.docNumber || '—'}
                         </td>
-                        <td style="padding: 12px;">
+                        <td data-label="Title" style="padding: 12px;">
                             <div style="font-weight: 600; color: var(--ink);">
                                 ${escHtml(memo.title)}
                             </div>
                         </td>
-                        <td style="padding: 12px; font-size: 12px;">
+                        <td data-label="From" style="padding: 12px; font-size: 12px;">
                             ${memo.senderObject ? `${memo.senderObject.name} ${memo.senderObject.surname}` : 'Unknown'}
                         </td>
-                        <td style="padding: 12px; font-size: 12px;">
+                        <td data-label="To" style="padding: 12px; font-size: 12px;">
                             ${recipientName}
                         </td>
-                        <td style="padding: 12px; font-size: 12px;">
+                        <td data-label="Department" style="padding: 12px; font-size: 12px;">
                             ${memo.senderObject?.department || '-'}
                         </td>
-                        <td style="padding: 12px; font-size: 11px; color: var(--ink-faint); max-width: 200px;">
+                        <td data-label="Content" style="padding: 12px; font-size: 11px; color: var(--ink-faint); max-width: 200px;">
                             <span title="${escHtml(memo.content)}">${escHtml(contentPreview)}</span>
                         </td>
-                        <td style="padding: 12px; text-align: center;">
+                        <td data-label="Action" style="padding: 12px; text-align: center;">
                             <div style="display: flex; gap: 6px; justify-content: center;">
                                 <button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); viewPendingMemo('${memo.memoId}')">
                                     <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
