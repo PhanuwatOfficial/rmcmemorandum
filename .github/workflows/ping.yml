@@ -1,0 +1,15 @@
+name: Keep Render Awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"  # ทุก 10 นาที
+  workflow_dispatch:        # กด run เองได้
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping server
+        run: |
+          curl -I https://rmcmemorandum.onrender.com/ping
