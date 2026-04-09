@@ -277,10 +277,11 @@ Bug
 -add function | icon setting topbar ✓
 
 
--แก้ไข quick actions
 
--แก้ layout หน้า mobile (icon tab)
+-แก้ไข quick actions
+-แก้ layout หน้า mobile (icon tab) 
 -add function | search box
+-แก้ layout line message
 
 
 */
