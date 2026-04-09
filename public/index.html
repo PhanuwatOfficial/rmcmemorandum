@@ -2544,7 +2544,7 @@
                         </div>
                     </div>
                 </div>
-                <button class="icon-btn" title="Settings">
+                <button class="icon-btn" title="Settings" onclick="if (!authToken || !currentUser) return; showView('manage-user')">
                     <span class="material-symbols-outlined">settings</span>
                 </button>
                 <div class="divider-v"></div>
@@ -4513,6 +4513,9 @@
         }
 
         function toggleUserMenu() {
+            // Only allow toggle if user is logged in
+            if (!authToken || !currentUser) return
+            
             const panel = document.getElementById('userMenuPanel')
             const isVisible = panel.style.display === 'flex'
             panel.style.display = isVisible ? 'none' : 'flex'

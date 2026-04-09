@@ -274,13 +274,14 @@ Bug
 -แก้ไข log ไม่อัพเดท ✓
 -คนที่ approve memo ให้ส่ง memo โดยที่ไม่ต้องอนุมัติ ✓
 -ทดสอบ setting approver by subdepartment ✓
+-add function | icon setting topbar ✓
 
 
 -แก้ไข quick actions
 
 -แก้ layout หน้า mobile (icon tab)
 -add function | search box
--add function | icon setting topbar
+
 
 */
 
