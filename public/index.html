@@ -4115,10 +4115,6 @@
 
 
 
-                            <label class="auto-refresh-toggle">
-                                <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
-                                Auto-refresh (2s)
-                            </label>
                             <div class="logs-counter" id="logsCount">0 entries</div>
                         </div>
                     </div>
@@ -4814,7 +4810,7 @@
             // Then refresh every 10 seconds for real-time updates
             pendingApprovalsRefreshInterval = setInterval(() => {
                 refreshPendingApprovalsBadge()
-            }, 1000)
+            }, 3000)
             // console.log removed (not error handle)
         }
 
@@ -8158,14 +8154,6 @@
         }
 
         // ── Logs ────────────────────────────────────
-        let autoRefreshInterval = null
-
-        function toggleAutoRefresh() {
-            const checked = document.getElementById('autoRefresh').checked
-            if (checked) { autoRefreshInterval = setInterval(loadLogs, 2000); loadLogs() }
-            else { clearInterval(autoRefreshInterval) }
-        }
-
         function getEventTypeAndIcon(message, data) {
             const msg = message.toLowerCase()
 
