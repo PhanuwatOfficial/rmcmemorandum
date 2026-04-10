@@ -239,7 +239,7 @@ approve user✓
 
 
 06/04
-    title: 'User egistered' ✓
+    title: 'User Registered' ✓
     title: 'User Approved' ✓
     title: 'User Rejected' ✓
     title: 'Login' ✓
@@ -275,16 +275,13 @@ Bug
 -คนที่ approve memo ให้ส่ง memo โดยที่ไม่ต้องอนุมัติ ✓
 -ทดสอบ setting approver by subdepartment ✓
 -add function | icon setting topbar ✓
-
+-แก้ layout หน้า mobile (icon tab)  ✓
 
 
 -แก้ไข quick actions
--แก้ layout หน้า mobile (icon tab) 
 -add function | search box
 -แก้ layout line message
 
-          <td><div class="follower-id">${escHtml(uid)}</div></td>
-          <td style="max-width:200px;font-size:12px;color:var(--ink-muted);">${status}</td>
 
 */
 

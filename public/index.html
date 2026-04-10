@@ -2440,6 +2440,29 @@
                 animation: slideUpIn 0.4s ease-out backwards;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             }
+            /* Empty state rows should not have grid layout */
+            tbody tr:has(.empty-state) {
+                display: flex !important;
+                flex-direction: column !important;
+                background: transparent !important;
+                border: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+
+            tbody tr:has(.empty-state) td {
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                padding: 32px 16px !important;
+                text-align: center !important;
+            }
+
+            tbody tr:has(.empty-state) td::before {
+                display: none !important;
+            }
 
             tbody tr:nth-child(1) {
                 animation-delay: 0.05s;
@@ -3230,7 +3253,7 @@
                             <span class="material-symbols-outlined">history</span>
                             Recent Activity
                         </div>
-                        <button class="btn btn-ghost btn-sm" onclick="showView('logs'); loadLogs()">
+                        <button id="dashViewAllLogsBtn" class="btn btn-ghost btn-sm" onclick="showView('logs'); loadLogs(false)" style="display: none;">
                             View All
                         </button>
                     </div>
@@ -3242,14 +3265,6 @@
                     </div>
                 </div>
             </div>
-
-            <!--
-        prompt:
-        ให้เพิ่ม section
-        ที่รวมการแสดงผลจากตาราง
-        sentMemosTbody , receivedMemosTbody , pendingApprovalsTbody (แสดงเฉพาะ approver)
-        รวมมาไว้ที่เดียว
-        -->
 
             <!-- ── COMPOSE VIEW ───────────────────── -->
             <div id="view-compose" class="view" style="display:none;">
@@ -3404,6 +3419,11 @@
                     </div>
                 </div>
             </div>
+
+        <!--
+        prompt:
+        หน้า dashboard อยากเอา  Quick Actions , Recent Activity ออก เพราะซ้ำกับ sidebar tab อื่นๆ แต่ไม่รู้จะเพิ่มอะไรดี งั้นรวม stat-card กับหน้า เขียน form-memo อยู่ tab ด้วยกันเลยดีไหม
+        -->
 
             <!-- ── SENT MEMOS VIEW ────────────────── -->
             <div id="view-sent-memos" class="view" style="display:none;">
@@ -3574,6 +3594,12 @@
                     </div>
                 </div>
             </div>
+
+            <!--prompt:
+            ส่วนที่บอกว่าไม่มีข้อมูล 
+            No sent memos yet., No received memos yet. , No pending registrations.
+            ในหน้า mobile ไม่ต้องแบ่ง ซ้าย-ขวา
+            -->
 
             <!-- ── BROADCAST VIEW ─────────────────── -->
             <div id="view-broadcast" class="view" style="display:none;">
@@ -5289,7 +5315,11 @@
                     }
                 }
             }
-            if (name === 'logs' && currentUser) loadLogs()
+            if (name === 'dashboard' && currentUser) {
+                refreshDashboard()
+                loadDashboardLogs()
+            }
+            if (name === 'logs' && currentUser) loadLogs(false)
         }
 
         // ── Activate Mobile Bottom Nav Item ─────────
@@ -7920,10 +7950,93 @@
             return important.slice(0, 2).join(', ')
         }
 
-        async function loadLogs() {
+        // ── Filter logs for current user only ──────────────────────────────────
+        function filterLogsForCurrentUser(logs) {
+            if (!logs || !currentUser) return []
+            
+            return logs.filter(log => {
+                // Skip "Send memo (pending approval)" if current user is recipient
+                if (log.message && log.message.toLowerCase().includes('send memo') && 
+                    log.message.toLowerCase().includes('pending approval')) {
+                    
+                    // Only show pending memos if user is the SENDER
+                    if (log.data && log.data.senderName) {
+                        const userFullName = currentUser.name + ' ' + currentUser.surname
+                        // Show only to sender, not to recipient
+                        if (log.data.senderName === userFullName) {
+                            return true
+                        }
+                    }
+                    // Hide pending approval memos from recipients
+                    return false
+                }
+                
+                // Format 1: log.user.userId or log.user.username
+                if (log.user) {
+                    if (log.user.userId === currentUser.uid) return true
+                    if (log.user.username === currentUser.username) return true
+                }
+                
+                // Format 2: log.data.username
+                if (log.data && log.data.username === currentUser.username) return true
+                
+                // Format 3: log as sender (for sent memos already approved)
+                if (log.data && log.data.senderName) {
+                    const userFullName = currentUser.name + ' ' + currentUser.surname
+                    if (log.data.senderName === userFullName) return true
+                }
+                
+                // Format 4: userId in log.data
+                if (log.data && log.data.userId === currentUser.uid) return true
+                
+                return false
+            })
+        }
+
+        // ── Load logs for dashboard (current user only) ─────────────────────────
+        function loadDashboardLogs() {
+            try {
+                // Show "View All" button only for admin users
+                const viewAllBtn = document.getElementById('dashViewAllLogsBtn')
+                if (viewAllBtn) {
+                    viewAllBtn.style.display = (currentUser && currentUser.role === 'admin') ? '' : 'none'
+                }
+                
+                // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+
+                fetch(firebaseUrl)
+                    .then(res => res.json())
+                    .then(logsData => {
+                        let logs = []
+                        if (logsData && typeof logsData === 'object') {
+                            logs = Object.values(logsData)
+                                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                        }
+                        
+                        // Filter for current user only
+                        const userLogs = filterLogsForCurrentUser(logs)
+                        
+                        // Show only 15 most recent logs on dashboard
+                        renderLogs(userLogs.slice(0, 30), 'dash-logs-preview')
+                    })
+                    .catch(e => {
+                        console.warn('Could not load dashboard logs:', e)
+                        document.getElementById('dash-logs-preview').innerHTML = 
+                            '<div style="color:#4a5568;font-style:italic;padding:24px 28px;">Unable to load activity...</div>'
+                    })
+            } catch (e) {
+                console.warn('Dashboard logs error:', e)
+            }
+        }
+
+        // ── Load all logs (can filter by current user) ──────────────────────────
+        async function loadLogs(filterByCurrentUser = false) {
             try {
                 // Fetch logs from Firebase
-                const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+
                 const res = await fetch(firebaseUrl)
                 const logsData = await res.json()
 
@@ -7935,10 +8048,14 @@
                     )
                 }
 
+                // Filter if needed
+                if (filterByCurrentUser && currentUser) {
+                    logs = filterLogsForCurrentUser(logs)
+                }
+
                 const logCount = logs.length
                 document.getElementById('logsCount').textContent = `${logCount} entries`
                 renderLogs(logs, 'logsViewer')
-                renderLogs(logs.slice(0, 20), 'dash-logs-preview')
                 document.getElementById('stat-logs').textContent = logCount
             } catch (e) {
                 document.getElementById('logsCount').textContent = 'Loading from Firebase...'
