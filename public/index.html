@@ -2732,7 +2732,7 @@
             <div class="topbar-left">
                 <div class="search-wrap">
                     <span class="material-symbols-outlined">search</span>
-                    <input class="search-input" type="text" placeholder="Search memorandums...">
+                    <input id="topbarSearchInput" class="search-input" type="text" placeholder="Search..." disabled>
                 </div>
             </div>
             <div class="topbar-right">
@@ -2807,7 +2807,7 @@
 
             <!-- ── LOGIN VIEW ─────────────────────── -->
             <div id="view-login" class="view"
-                style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px); background: linear-gradient(135deg, rgba(26, 39, 64, 0.03) 0%, rgba(200, 169, 110, 0.03) 100%);">
+                style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
                 <div
                     style="width: 100%; max-width: 520px; margin: 0; margin-left: 27.5%; padding: 0 16px; animation: slideInUp 0.6s ease-out;">
                     <div class="page-header" style="text-align: center; margin-bottom: 25px;">
@@ -2876,7 +2876,7 @@
 
             <!-- ── REGISTER VIEW ──────────────────── -->
             <div id="view-register" class="view"
-                style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px); background: linear-gradient(135deg, rgba(26, 39, 64, 0.03) 0%, rgba(200, 169, 110, 0.03) 100%);">
+                style="display:none; flex: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px);">
                 <div
                     style="width: 100%; max-width: 520px; margin: 0; margin-left: 27.5%; padding: 0 16px; animation: slideInUp 0.6s ease-out;">
                     <!-- <div style="width: 40%; max-width: 80%; margin:0 auto;"> -->
@@ -7477,6 +7477,124 @@
             }
         }
 
+        // ────────────────────────────────────────────────────────────────────────────────────────
+        // Search/Filter System - Global Variables & Functions (Context-Aware)
+        // ────────────────────────────────────────────────────────────────────────────────────────
+        let cachedSentMemos = []
+        let cachedReceivedMemos = []
+        let cachedPendingApprovals = []
+        let currentViewType = null // 'sent' | 'received' | 'pending' | null
+        let searchDebounceTimer = null
+
+        // Update search placeholder based on current view
+        function updateSearchPlaceholder() {
+            const searchInput = document.getElementById('topbarSearchInput')
+            if (!searchInput) return
+            switch(currentViewType) {
+                case 'sent':
+                    searchInput.placeholder = 'Search sent memos by title, doc #, or recipient...'
+                    searchInput.disabled = false
+                    break
+                case 'received':
+                    searchInput.placeholder = 'Search received memos by title, doc #, or sender...'
+                    searchInput.disabled = false
+                    break
+                case 'pending':
+                    searchInput.placeholder = 'Search pending approvals by title, doc #, or sender...'
+                    searchInput.disabled = false
+                    break
+                default:
+                    searchInput.placeholder = 'Search...'
+                    searchInput.disabled = true
+                    searchInput.value = ''
+            }
+        }
+
+        // Get normalized search query
+        function getSearchQuery() {
+            const searchInput = document.getElementById('topbarSearchInput')
+            if (!searchInput) return ''
+            return searchInput.value.toLowerCase().normalize('NFC')
+        }
+
+        // Filter and render sent memos
+        function filterAndRenderSentMemos() {
+            const query = getSearchQuery()
+            let filtered = cachedSentMemos
+            if (query.trim()) {
+                filtered = cachedSentMemos.filter(memo => {
+                    const title = (memo.title || '').toLowerCase().normalize('NFC')
+                    const docNumber = (memo.docNumber || '').toLowerCase().normalize('NFC')
+                    const recipientName = (memo.recipientName || '').toLowerCase().normalize('NFC')
+                    const recipientNames = (memo.recipientNames || []).join(' ').toLowerCase().normalize('NFC')
+                    const content = (memo.content || '').toLowerCase().normalize('NFC')
+                    return title.includes(query) || docNumber.includes(query) || recipientName.includes(query) || recipientNames.includes(query) || content.includes(query)
+                })
+            }
+            renderSentMemos(filtered)
+        }
+
+        // Filter and render received memos
+        function filterAndRenderReceivedMemos() {
+            const query = getSearchQuery()
+            let filtered = cachedReceivedMemos
+            if (query.trim()) {
+                filtered = cachedReceivedMemos.filter(memo => {
+                    const title = (memo.title || '').toLowerCase().normalize('NFC')
+                    const docNumber = (memo.docNumber || '').toLowerCase().normalize('NFC')
+                    const senderName = (memo.senderName || '').toLowerCase().normalize('NFC')
+                    const content = (memo.content || '').toLowerCase().normalize('NFC')
+                    return title.includes(query) || docNumber.includes(query) || senderName.includes(query) || content.includes(query)
+                })
+            }
+            renderReceivedMemos(filtered)
+        }
+
+        // Filter and render pending approvals
+        function filterAndRenderPendingApprovals() {
+            const query = getSearchQuery()
+            let filtered = cachedPendingApprovals
+            if (query.trim()) {
+                filtered = cachedPendingApprovals.filter(memo => {
+                    const title = (memo.title || '').toLowerCase().normalize('NFC')
+                    const docNumber = (memo.docNumber || '').toLowerCase().normalize('NFC')
+                    const senderName = (memo.senderName || '').toLowerCase().normalize('NFC')
+                    const content = (memo.content || '').toLowerCase().normalize('NFC')
+                    return title.includes(query) || docNumber.includes(query) || senderName.includes(query) || content.includes(query)
+                })
+            }
+            renderPendingApprovals(filtered)
+        }
+
+        // Setup search input listener with debounce
+        function setupSearchListener() {
+            const searchInput = document.getElementById('topbarSearchInput')
+            if (!searchInput) return
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchDebounceTimer)
+                searchDebounceTimer = setTimeout(() => {
+                    switch(currentViewType) {
+                        case 'sent':
+                            filterAndRenderSentMemos()
+                            break
+                        case 'received':
+                            filterAndRenderReceivedMemos()
+                            break
+                        case 'pending':
+                            filterAndRenderPendingApprovals()
+                            break
+                    }
+                }, 200)  // 200ms debounce
+            })
+        }
+
+        // Call this once on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupSearchListener)
+        } else {
+            setupSearchListener()
+        }
+
         // ── Broadcast ───────────────────────────────
         let sentCount = 0
         async function broadcast() {
@@ -7514,63 +7632,43 @@
             }
         }
 
-        // ── Load Sent Memos ─────────────────────────
-        async function loadSentMemos() {
+        // ── Render Sent Memos (from cache) ──────────────
+        function renderSentMemos(memos) {
             const tbody = document.getElementById('sentMemosTbody')
             const badge = document.getElementById('sentMemosCountBadge')
             const statusEl = document.getElementById('sentMemosStatus')
 
-            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading sent memos...</p></div></td></tr>`
-            statusEl.className = 'status-msg loading show'
-            statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
-            statusEl.querySelector('.msg-text').textContent = 'Fetching sent memorandums...'
+            badge.textContent = `${memos.length} memo${memos.length !== 1 ? 's' : ''}`
+            statusEl.className = 'status-msg'
 
-            try {
-                console.log('📥 Fetching sent memos with token:', authToken?.substring(0, 20) + '...')
-                const res = await fetch('/sent-memos', {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                })
-                const data = await res.json()
-                console.log('📬 Sent memos response:', data)
+            if (memos.length === 0) {
+                const emptyMsg = getSearchQuery().trim() ? 'No matching memos found.' : 'No sent memos yet.'
+                tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">send</span><p>${emptyMsg}</p></div></td></tr>`
+                return
+            }
 
-                if (!res.ok) {
-                    statusEl.className = 'status-msg error show'
-                    statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
-                    statusEl.querySelector('.msg-text').textContent = data.error || 'Failed to load sent memos.'
-                    console.error('❌ Error loading sent memos (HTTP ' + res.status + '):', data)
-                    return
+            let rows = ''
+            for (let memo of memos) {
+                const date = new Date(memo.sentAt)
+                const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+                const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                const preview = memo.content.substring(0, 15) + (memo.content.length > 15 ? '...' : '')
+                const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
+
+                // Get recipient name
+                const recipientName = memo.recipientNames ? memo.recipientNames.join(', ') : (memo.recipientName || 'Unknown')
+
+                // Determine status badge
+                let statusBadge = '<span class="badge badge-pending">Sent</span>'
+                if (memo.status === 'pending_approval') {
+                    statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber);">รอการอนุมัติ</span>'
+                } else if (memo.status === 'approved') {
+                    statusBadge = '<span class="badge" style="background: var(--green-bg); color: var(--green);">อนุมัติ</span>'
+                } else if (memo.status === 'rejected') {
+                    statusBadge = '<span class="badge" style="background: var(--red-bg); color: var(--red);">ปฏิเสธ</span>'
                 }
 
-                badge.textContent = `${data.count} sent`
-                statusEl.className = 'status-msg'
-
-                if (data.count === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">send</span><p>No sent memos yet.</p></div></td></tr>`
-                    return
-                }
-
-                let rows = ''
-                for (let memo of data.memos) {
-                    const date = new Date(memo.sentAt)
-                    const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
-                    const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-                    const preview = memo.content.substring(0, 15) + (memo.content.length > 15 ? '...' : '')
-                    const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
-
-                    // Get recipient name
-                    const recipientName = memo.recipientNames ? memo.recipientNames.join(', ') : (memo.recipientName || 'Unknown')
-
-                    // Determine status badge
-                    let statusBadge = '<span class="badge badge-pending">Sent</span>'
-                    if (memo.status === 'pending_approval') {
-                        statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber);">รอการอนุมัติ</span>'
-                    } else if (memo.status === 'approved') {
-                        statusBadge = '<span class="badge" style="background: var(--green-bg); color: var(--green);">อนุมัติ</span>'
-                    } else if (memo.status === 'rejected') {
-                        statusBadge = '<span class="badge" style="background: var(--red-bg); color: var(--red);">ปฏิเสธ</span>'
-                    }
-
-                    rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
+                rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
           <td data-label="Date" style="font-size:12px;">
             <span style="color:var(--ink-muted);">
               ${dateStr}<br>
@@ -7598,12 +7696,121 @@
           <td data-label="Action" style="text-align: center;">
             <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
               <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
-                                    View
-                                </button>
+              View
+            </button>
           </td>
         </tr>`
+            }
+            tbody.innerHTML = rows
+        }
+
+        // ── Render Received Memos (from cache) ──────────────
+        function renderReceivedMemos(memos) {
+            const tbody = document.getElementById('receivedMemosTbody')
+            const badge = document.getElementById('receivedMemosCountBadge')
+            const statusEl = document.getElementById('receivedMemosStatus')
+
+            badge.textContent = cachedReceivedMemos.length + ' received'
+            statusEl.className = 'status-msg'
+
+            if (memos.length === 0) {
+                const emptyMsg = getSearchQuery().trim() ? 'No matching memos found.' : 'No received memos yet.'
+                tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">inbox</span><p>${emptyMsg}</p></div></td></tr>`
+                return
+            }
+
+            let rows = ''
+            for (let memo of memos) {
+                const date = new Date(memo.sentAt)
+                const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+                const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                const preview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
+                const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
+
+                rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
+          <td data-label="Date" style="font-size:12px;"><span style="color:var(--ink-muted);">${dateStr}<br><span style="font-size:11px;">${timeStr}</span></span></td>
+          <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">${memo.docNumber || '—'}</td>
+          <td data-label="Title"><div style="font-weight:500;">${escHtml(memo.title)}</div></td>
+          <td data-label="Type"><span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span></td>
+          <td data-label="From" style="font-size:12px;color:var(--ink-muted);">${escHtml(memo.senderName || 'Unknown')}</td>
+          <td data-label="Preview" style="font-size:12px;color:var(--ink-faint);max-width:200px;"><span title="${escHtml(memo.content)}">${escHtml(preview)}</span></td>
+          <td data-label="Action" style="text-align: center;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})"><span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>View</button></td>
+        </tr>`
+            }
+            tbody.innerHTML = rows
+        }
+
+        // ── Render Pending Approvals (from cache) ──────────────
+        function renderPendingApprovals(memos) {
+            const tbody = document.getElementById('pendingApprovalsTbody')
+            const badge = document.getElementById('pendingApprovalsCountBadge')
+            const statusEl = document.getElementById('pendingApprovalsStatus')
+
+            badge.textContent = cachedPendingApprovals.length + ' pending'
+            statusEl.className = 'status-msg'
+
+            if (memos.length === 0) {
+                const emptyMsg = getSearchQuery().trim() ? 'No matching approvals found.' : 'No pending approvals.'
+                tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">pending_actions</span><p>${emptyMsg}</p></div></td></tr>`
+                return
+            }
+
+            let rows = ''
+            for (let memo of memos) {
+                const date = new Date(memo.sentAt)
+                const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+                const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
+
+                rows += `<tr style="cursor: pointer;" onclick="viewPendingMemo('${memo.memoId}')">
+          <td data-label="Date" style="font-size:12px;color:var(--ink-muted);">${dateStr}</td>
+          <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">${memo.docNumber || '—'}</td>
+          <td data-label="Title" style="font-weight:600;">${escHtml(memo.title)}</td>
+          <td data-label="From" style="font-size:12px;color:var(--ink-muted);">${escHtml(memo.senderName || 'Unknown')}</td>
+          <td data-label="Action"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); viewPendingMemo('${memo.memoId}')">Review</button></td>
+        </tr>`
+            }
+            tbody.innerHTML = rows
+        }
+
+        // ── Load Sent Memos ─────────────────────────
+        async function loadSentMemos() {
+            const tbody = document.getElementById('sentMemosTbody')
+            const statusEl = document.getElementById('sentMemosStatus')
+            const searchInput = document.getElementById('topbarSearchInput')
+
+            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading sent memos...</p></div></td></tr>`
+            statusEl.className = 'status-msg loading show'
+            statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
+            statusEl.querySelector('.msg-text').textContent = 'Fetching sent memorandums...'
+            if (searchInput) searchInput.disabled = true
+
+            try {
+                console.log('📥 Fetching sent memos with token:', authToken?.substring(0, 20) + '...')
+                const res = await fetch('/sent-memos', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                console.log('📬 Sent memos response:', data)
+
+                if (!res.ok) {
+                    statusEl.className = 'status-msg error show'
+                    statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                    statusEl.querySelector('.msg-text').textContent = data.error || 'Failed to load sent memos.'
+                    console.error('❌ Error loading sent memos (HTTP ' + res.status + '):', data)
+                    return
                 }
-                tbody.innerHTML = rows
+
+                // Cache the data
+                cachedSentMemos = data.memos || []
+                currentViewType = 'sent'
+                updateSearchPlaceholder()
+                if (searchInput) {
+                    searchInput.disabled = false
+                    searchInput.value = ''
+                }
+
+                // Render all memos 
+                renderSentMemos(cachedSentMemos)
             } catch (e) {
                 statusEl.className = 'status-msg error show'
                 statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
@@ -7613,14 +7820,14 @@
 
         // ── Load Received Memos ────────────────────────
         async function loadReceivedMemos() {
-            const tbody = document.getElementById('receivedMemosTbody')
-            const badge = document.getElementById('receivedMemosCountBadge')
             const statusEl = document.getElementById('receivedMemosStatus')
+            const searchInput = document.getElementById('topbarSearchInput')
 
-            tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading received memos...</p></div></td></tr>`
+            document.getElementById('receivedMemosTbody').innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading received memos...</p></div></td></tr>`
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
             statusEl.querySelector('.msg-text').textContent = 'Fetching received memorandums...'
+            if (searchInput) searchInput.disabled = true
 
             try {
                 console.log('📥 Fetching received memos with token:', authToken?.substring(0, 20) + '...')
@@ -7638,53 +7845,17 @@
                     return
                 }
 
-                badge.textContent = `${data.count} received`
-                statusEl.className = 'status-msg'
-
-                if (data.count === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">inbox</span><p>No received memos yet.</p></div></td></tr>`
-                    return
+                // Cache the data
+                cachedReceivedMemos = data.memos || []
+                currentViewType = 'received'
+                updateSearchPlaceholder()
+                if (searchInput) {
+                    searchInput.disabled = false
+                    searchInput.value = ''
                 }
 
-                let rows = ''
-                for (let memo of data.memos) {
-                    const date = new Date(memo.sentAt)
-                    const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
-                    const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-                    const preview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
-                    const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
-
-                    rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
-          <td data-label="Date" style="font-size:12px;">
-            <span style="color:var(--ink-muted);">
-              ${dateStr}<br>
-              <span style="font-size:11px;">${timeStr}</span>
-            </span>
-          </td>
-          <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">
-            ${memo.docNumber || '—'}
-          </td>
-          <td data-label="Title">
-            <div style="font-weight:500;">${escHtml(memo.title)}</div>
-          </td>
-          <td data-label="Type">
-            <span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span>
-          </td>
-          <td data-label="From" style="font-size:12px;color:var(--ink-muted);">
-            ${escHtml(memo.senderName || 'Unknown')}
-          </td>
-          <td data-label="Preview" style="font-size:12px;color:var(--ink-faint);max-width:200px;">
-            <span title="${escHtml(memo.content)}">${escHtml(preview)}</span>
-          </td>
-          <td data-label="Action" style="text-align: center;">
-            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
-              <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
-                                    View
-                                </button>
-          </td>
-        </tr>`
-                }
-                tbody.innerHTML = rows
+                // Render all memos
+                renderReceivedMemos(cachedReceivedMemos)
             } catch (e) {
                 statusEl.className = 'status-msg error show'
                 statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
@@ -9004,13 +9175,14 @@
 
         async function loadPendingApprovals() {
             const tbody = document.getElementById('pendingApprovalsTbody')
-            const badge = document.getElementById('pendingApprovalsCountBadge')
             const statusEl = document.getElementById('pendingApprovalsStatus')
+            const searchInput = document.getElementById('topbarSearchInput')
 
             tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading pending approvals...</p></div></td></tr>`
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
             statusEl.querySelector('.msg-text').textContent = 'Fetching memos awaiting your approval...'
+            if (searchInput) searchInput.disabled = true
 
             try {
                 console.log('📋 Fetching pending approvals with token:', authToken?.substring(0, 20) + '...')
@@ -9031,92 +9203,19 @@
                 const pendingMemos = data.pendingMemos || []
                 window.cachedPendingMemos = pendingMemos
 
-                // Update badge
-                badge.textContent = `${pendingMemos.length} pending`
+                // Cache the data
+                cachedPendingApprovals = pendingMemos
+                currentViewType = 'pending'
+                updateSearchPlaceholder()
+                if (searchInput) {
+                    searchInput.disabled = false
+                    searchInput.value = ''
+                }
+
                 statusEl.className = 'status-msg'
 
-                // Fetch users to build recipient name lookup
-                let usersMap = {}
-                try {
-                    const usersRes = await fetch('/admin/users', {
-                        headers: { 'Authorization': `Bearer ${authToken}` }
-                    })
-                    const usersData = await usersRes.json()
-                    if (usersData.users) {
-                        usersData.users.forEach(user => {
-                            usersMap[user.userId] = `${user.name || ''} ${user.surname || ''}`.trim()
-                        })
-                    }
-                } catch (err) {
-                    console.warn('Could not fetch users for recipient names:', err)
-                }
-
-                if (pendingMemos.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">pending_actions</span><p>No pending approvals.</p></div></td></tr>`
-                    return
-                }
-
-                // Render pending approvals table
-                let rows = ''
-                for (let memo of pendingMemos) {
-                    const recipientName = memo.recipientName || (memo.recipientUserId ? usersMap[memo.recipientUserId] : null) || '-'
-
-                    // Add recipientNames array if not present (for compatibility with memo detail modal)
-                    if (!memo.recipientNames) {
-                        memo.recipientNames = recipientName && recipientName !== '-' ? [recipientName] : []
-                    }
-
-                    const contentPreview = memo.content.substring(0, 15) + (memo.content.length > 15 ? '...' : '')
-                    const date = new Date(memo.sentAt)
-                    const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
-                    const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-
-                    rows += `<tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="viewPendingMemo('${memo.memoId}')">
-                        <td data-label="Date" style="font-size:12px;">
-                          <span style="color:var(--ink-muted);">
-                            ${dateStr}<br>
-                            <span style="font-size:11px;">${timeStr}</span>
-                          </span>
-                        </td>
-                        <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">
-                            ${memo.docNumber || '—'}
-                        </td>
-                        <td data-label="Title" style="padding: 12px;">
-                            <div style="font-weight: 600; color: var(--ink);">
-                                ${escHtml(memo.title)}
-                            </div>
-                        </td>
-                        <td data-label="From" style="padding: 12px; font-size: 12px;">
-                            ${memo.senderObject ? `${memo.senderObject.name} ${memo.senderObject.surname}` : 'Unknown'}
-                        </td>
-                        <td data-label="To" style="padding: 12px; font-size: 12px;">
-                            ${recipientName}
-                        </td>
-                        <td data-label="Department" style="padding: 12px; font-size: 12px;">
-                            ${memo.senderObject?.department || '-'}
-                        </td>
-                        <td data-label="Content" style="padding: 12px; font-size: 11px; color: var(--ink-faint); max-width: 200px;">
-                            <span title="${escHtml(memo.content)}">${escHtml(contentPreview)}</span>
-                        </td>
-                        <td data-label="Action" style="padding: 12px; text-align: center;">
-                            <div style="display: flex; gap: 6px; justify-content: center;">
-                                <button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); viewPendingMemo('${memo.memoId}')">
-                                    <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
-                                    View
-                                </button>
-                                <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
-                                    <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
-                                    Approve
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); rejectMemoDialog('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
-                                    <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
-                                    Reject
-                                </button>
-                            </div>
-                        </td>
-                    </tr>`
-                }
-                tbody.innerHTML = rows
+                // Render all memos
+                renderPendingApprovals(cachedPendingApprovals)
             } catch (err) {
                 statusEl.className = 'status-msg error show'
                 statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
