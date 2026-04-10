@@ -3266,6 +3266,11 @@
                 </div>
             </div>
 
+        <!--
+        prompt:
+        หน้า dashboard อยากเอา  Quick Actions  ออก ควรเพิ่มอะไรดี
+        -->
+
             <!-- ── COMPOSE VIEW ───────────────────── -->
             <div id="view-compose" class="view" style="display:none;">
                 <div class="page-header">
@@ -3420,10 +3425,7 @@
                 </div>
             </div>
 
-        <!--
-        prompt:
-        หน้า dashboard อยากเอา  Quick Actions , Recent Activity ออก เพราะซ้ำกับ sidebar tab อื่นๆ แต่ไม่รู้จะเพิ่มอะไรดี งั้นรวม stat-card กับหน้า เขียน form-memo อยู่ tab ด้วยกันเลยดีไหม
-        -->
+       
 
             <!-- ── SENT MEMOS VIEW ────────────────── -->
             <div id="view-sent-memos" class="view" style="display:none;">
@@ -3596,9 +3598,7 @@
             </div>
 
             <!--prompt:
-            ส่วนที่บอกว่าไม่มีข้อมูล 
-            No sent memos yet., No received memos yet. , No pending registrations.
-            ในหน้า mobile ไม่ต้องแบ่ง ซ้าย-ขวา
+            table ควรเพิ่มให้ admin user edit ได้ไหม
             -->
 
             <!-- ── BROADCAST VIEW ─────────────────── -->
@@ -7757,20 +7757,188 @@
 
             let rows = ''
             for (let memo of memos) {
+                const contentPreview = memo.content.substring(0, 15) + (memo.content.length > 15 ? '...' : '')
                 const date = new Date(memo.sentAt)
                 const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
-                const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
+                const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                
+                const recipientName = memo.recipientName || (memo.recipientUserId ? (memo.recipientNames ? memo.recipientNames[0] : '-') : '-') || '-'
 
-                rows += `<tr style="cursor: pointer;" onclick="viewPendingMemo('${memo.memoId}')">
-          <td data-label="Date" style="font-size:12px;color:var(--ink-muted);">${dateStr}</td>
-          <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">${memo.docNumber || '—'}</td>
-          <td data-label="Title" style="font-weight:600;">${escHtml(memo.title)}</td>
-          <td data-label="From" style="font-size:12px;color:var(--ink-muted);">${escHtml(memo.senderName || 'Unknown')}</td>
-          <td data-label="Action"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); viewPendingMemo('${memo.memoId}')">Review</button></td>
-        </tr>`
+                rows += `<tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="viewPendingMemo('${memo.memoId}')">
+                    <td data-label="Date" style="font-size:12px;">
+                      <span style="color:var(--ink-muted);">
+                        ${dateStr}<br>
+                        <span style="font-size:11px;">${timeStr}</span>
+                      </span>
+                    </td>
+                    <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">
+                        ${memo.docNumber || '—'}
+                    </td>
+                    <td data-label="Title" style="padding: 12px;">
+                        <div style="font-weight: 600; color: var(--ink);">
+                            ${escHtml(memo.title)}
+                        </div>
+                    </td>
+                    <td data-label="From" style="padding: 12px; font-size: 12px;">
+                        ${memo.senderObject ? `${memo.senderObject.name} ${memo.senderObject.surname}` : escHtml(memo.senderName || 'Unknown')}
+                    </td>
+                    <td data-label="To" style="padding: 12px; font-size: 12px;">
+                        ${escHtml(recipientName)}
+                    </td>
+                    <td data-label="Department" style="padding: 12px; font-size: 12px;">
+                        ${memo.senderObject?.department || '-'}
+                    </td>
+                    <td data-label="Content" style="padding: 12px; font-size: 11px; color: var(--ink-faint); max-width: 200px;">
+                        <span title="${escHtml(memo.content)}">${escHtml(contentPreview)}</span>
+                    </td>
+                    <td data-label="Action" style="padding: 12px; text-align: center;">
+                        <div style="display: flex; gap: 6px; justify-content: center;">
+                            <button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); viewPendingMemo('${memo.memoId}')">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                                View
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                                Approve
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); rejectMemoDialog('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+                                Reject
+                            </button>
+                        </div>
+                    </td>
+                </tr>`
             }
             tbody.innerHTML = rows
         }
+/*prompt: แก้ไขแสดงผลไม่ครบ
+ดูตัวอย่าง table เดิม
+
+   async function loadPendingApprovals() {
+            const tbody = document.getElementById('pendingApprovalsTbody')
+            const badge = document.getElementById('pendingApprovalsCountBadge')
+            const statusEl = document.getElementById('pendingApprovalsStatus')
+
+            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading pending approvals...</p></div></td></tr>`
+            statusEl.className = 'status-msg loading show'
+            statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
+            statusEl.querySelector('.msg-text').textContent = 'Fetching memos awaiting your approval...'
+
+            try {
+                console.log('📋 Fetching pending approvals with token:', authToken?.substring(0, 20) + '...')
+                const res = await fetch('/memos/pending-approval', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+                console.log('📋 Pending approvals response:', data)
+
+                if (!res.ok) {
+                    statusEl.className = 'status-msg error show'
+                    statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                    statusEl.querySelector('.msg-text').textContent = data.error || 'Failed to load pending approvals.'
+                    console.error('❌ Error loading pending approvals (HTTP ' + res.status + '):', data)
+                    return
+                }
+
+                const pendingMemos = data.pendingMemos || []
+                window.cachedPendingMemos = pendingMemos
+
+                // Update badge
+                badge.textContent = `${pendingMemos.length} pending`
+                statusEl.className = 'status-msg'
+
+                // Fetch users to build recipient name lookup
+                let usersMap = {}
+                try {
+                    const usersRes = await fetch('/admin/users', {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                    const usersData = await usersRes.json()
+                    if (usersData.users) {
+                        usersData.users.forEach(user => {
+                            usersMap[user.userId] = `${user.name || ''} ${user.surname || ''}`.trim()
+                        })
+                    }
+                } catch (err) {
+                    console.warn('Could not fetch users for recipient names:', err)
+                }
+
+                if (pendingMemos.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">pending_actions</span><p>No pending approvals.</p></div></td></tr>`
+                    return
+                }
+
+                // Render pending approvals table
+                let rows = ''
+                for (let memo of pendingMemos) {
+                    const recipientName = memo.recipientName || (memo.recipientUserId ? usersMap[memo.recipientUserId] : null) || '-'
+
+                    // Add recipientNames array if not present (for compatibility with memo detail modal)
+                    if (!memo.recipientNames) {
+                        memo.recipientNames = recipientName && recipientName !== '-' ? [recipientName] : []
+                    }
+
+                    const contentPreview = memo.content.substring(0, 15) + (memo.content.length > 15 ? '...' : '')
+                    const date = new Date(memo.sentAt)
+                    const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+                    const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+
+                    rows += `<tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="viewPendingMemo('${memo.memoId}')">
+                        <td data-label="Date" style="font-size:12px;">
+                          <span style="color:var(--ink-muted);">
+                            ${dateStr}<br>
+                            <span style="font-size:11px;">${timeStr}</span>
+                          </span>
+                        </td>
+                        <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">
+                            ${memo.docNumber || '—'}
+                        </td>
+                        <td data-label="Title" style="padding: 12px;">
+                            <div style="font-weight: 600; color: var(--ink);">
+                                ${escHtml(memo.title)}
+                            </div>
+                        </td>
+                        <td data-label="From" style="padding: 12px; font-size: 12px;">
+                            ${memo.senderObject ? `${memo.senderObject.name} ${memo.senderObject.surname}` : 'Unknown'}
+                        </td>
+                        <td data-label="To" style="padding: 12px; font-size: 12px;">
+                            ${recipientName}
+                        </td>
+                        <td data-label="Department" style="padding: 12px; font-size: 12px;">
+                            ${memo.senderObject?.department || '-'}
+                        </td>
+                        <td data-label="Content" style="padding: 12px; font-size: 11px; color: var(--ink-faint); max-width: 200px;">
+                            <span title="${escHtml(memo.content)}">${escHtml(contentPreview)}</span>
+                        </td>
+                        <td data-label="Action" style="padding: 12px; text-align: center;">
+                            <div style="display: flex; gap: 6px; justify-content: center;">
+                                <button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); viewPendingMemo('${memo.memoId}')">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                                    View
+                                </button>
+                                <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                                    Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); rejectMemoDialog('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+                                    Reject
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`
+                }
+                tbody.innerHTML = rows
+            } catch (err) {
+                statusEl.className = 'status-msg error show'
+                statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
+                statusEl.querySelector('.msg-text').textContent = err.message || 'Error loading approvals'
+                console.error('Error loading pending approvals:', err)
+            }
+        }
+
+*/
+
 
         // ── Load Sent Memos ─────────────────────────
         async function loadSentMemos() {

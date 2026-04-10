@@ -276,10 +276,9 @@ Bug
 -ทดสอบ setting approver by subdepartment ✓
 -add function | icon setting topbar ✓
 -แก้ layout หน้า mobile (icon tab)  ✓
-
+-add function | search box ✓
 
 -แก้ไข quick actions
--add function | search box
 -แก้ layout line message
 
 

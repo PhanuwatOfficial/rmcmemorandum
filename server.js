@@ -530,7 +530,7 @@ app.post("/user/unlink-follower", verifyToken, async (req, res) => {
               action: {
                 type: "uri",
                 label: "View Details",
-                uri: "https://rmcmemorandum.up.railway.app/"
+                uri: "https://rmcmemorandum.onrender.com/"
               },
               style: "primary",
               color: "#1a2740"
@@ -683,7 +683,7 @@ app.post("/user/unlink-profile", verifyToken, async (req, res) => {
               action: {
                 type: "uri",
                 label: "View Details",
-                uri: "https://rmcmemorandum.up.railway.app/"
+                uri: "https://rmcmemorandum.onrender.com/"
               },
               style: "primary",
               color: "#1a2740"
@@ -1869,7 +1869,7 @@ app.post("/send", async (req, res) => {
                       action: {
                         type: "uri",
                         label: "Review & Approve/Reject",
-                        uri: "https://rmcmemorandum.up.railway.app/"
+                        uri: "https://rmcmemorandum.onrender.com/"
                       },
                       style: "primary",
                       color: "#ecb744"
@@ -1995,7 +1995,7 @@ app.post("/send", async (req, res) => {
                   action: {
                     type: "uri",
                     label: "View Details",
-                    uri: "https://rmcmemorandum.up.railway.app/"
+                    uri: "https://rmcmemorandum.onrender.com/"
                   },
                   style: "primary",
                   color: "#1a2740"
@@ -2390,7 +2390,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
                 action: {
                   type: "uri",
                   label: "View Details",
-                  uri: "https://rmcmemorandum.up.railway.app/"
+                  uri: "https://rmcmemorandum.onrender.com/"
                 },
                 style: "primary",
                 color: "#1a2740"
@@ -3348,7 +3348,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
                       action: {
                         type: "uri",
                         label: "Review & Approve/Reject",
-                        uri: "https://rmcmemorandum.up.railway.app/"
+                        uri: "https://rmcmemorandum.onrender.com/"
                       },
                       style: "primary",
                       color: "#d17700"
