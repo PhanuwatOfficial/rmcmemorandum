@@ -283,6 +283,8 @@ Bug
 -add function | search box
 -แก้ layout line message
 
+          <td><div class="follower-id">${escHtml(uid)}</div></td>
+          <td style="max-width:200px;font-size:12px;color:var(--ink-muted);">${status}</td>
 
 */
 

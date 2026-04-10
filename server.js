@@ -266,6 +266,8 @@ app.get("/pending-users", verifyToken, async (req, res) => {
           username: u.username,
           name: u.name,
           surname: u.surname,
+          department: u.department,
+          department2: u.department2,
           createdAt: u.createdAt
         })
       }
