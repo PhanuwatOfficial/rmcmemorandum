@@ -4753,14 +4753,14 @@
             }
         }
 
-        // Auto-refresh notifications every 30 seconds when logged in
+        // Auto-refresh notifications every ... seconds when logged in
         function startNotificationRefresh() {
             if (notificationRefreshInterval) clearInterval(notificationRefreshInterval)
             notificationRefreshInterval = setInterval(() => {
                 if (authToken && currentUser) {
                     loadNotificationsFromFirebase()
                 }
-            }, 1000) // Refresh every 30 seconds
+            }, 3000) // Refresh every ... seconds
             // console.log removed (not error handle)
         }
 
@@ -4868,7 +4868,6 @@
                 read: false,
                 timestamp: new Date(),
                 memoId: memo?.id,
-                memoObject: memo,  // Store full memo object for detail view
                 memoType: memoType  // Store memo type (sent, received)
             }
 

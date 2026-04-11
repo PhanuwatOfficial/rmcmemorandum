@@ -1779,6 +1779,7 @@ app.post("/send", async (req, res) => {
         read: false,
         timestamp: new Date().toISOString(),
         memoId: memoId,
+        memoType: 'sent',
         memo: memoData,
         senderId: senderUserId,
         recipientId: actualRecipientUserId
@@ -2084,7 +2085,6 @@ app.post("/send", async (req, res) => {
         read: false,
         timestamp: new Date().toISOString(),
         memoId: memoId,
-        memoObject: memoData,
         memoType: 'received',
         senderId: senderUserId,
         recipientId: recipientId,
@@ -2102,7 +2102,6 @@ app.post("/send", async (req, res) => {
       read: false,
       timestamp: new Date().toISOString(),
       memoId: memoId,
-      memoObject: memoData,
       memoType: 'sent',
       senderId: senderUserId,
       recipientIds: recipientIds
@@ -2502,7 +2501,6 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
         const memoNotification = {
           id: `${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
           memoId: memoId,
-          memoObject: approvedMemo,
           memoType: 'received',
           message: `"${memoData.title}" จาก ${senderUser.name} ${senderUser.surname}`,
           read: false,
@@ -3092,7 +3090,7 @@ app.post("/notifications", verifyToken, async (req, res) => {
 // Send notification to a specific user (admin only)
 app.post("/notifications/send/:targetUserId", verifyToken, async (req, res) => {
   try {
-    const { title, message, type, memoObject, memoType } = req.body
+    const { title, message, type, memoType } = req.body
     const targetUserId = req.params.targetUserId
     const senderUserId = req.userId
 
@@ -3109,7 +3107,6 @@ app.post("/notifications/send/:targetUserId", verifyToken, async (req, res) => {
       read: false,
       timestamp: new Date().toISOString(),
       sentBy: senderUserId,
-      memoObject: memoObject || null,
       memoType: memoType || null
     }
 
@@ -3288,6 +3285,26 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
 
       // Store pending memo (NOT SENT YET)
       await firebase_set(`sent_memos/${senderUserId}/${memoId}`, memoData)
+
+      // Create notification for sender to show memo is pending approval
+      const senderNotification = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        title: 'Memo Awaiting Approval',
+        message: `"${title}" กำลังรอการอนุมัติ`,
+        type: 'pending_approval',
+        read: false,
+        timestamp: new Date().toISOString(),
+        memoId: memoId,
+        memo: memoData,
+        senderId: senderUserId,
+        recipientId: primaryRecipientId
+      }
+
+      try {
+        await firebase_set(`notifications/${senderUserId}/${senderNotification.id}`, senderNotification)
+      } catch (err) {
+        // Silent error
+      }
 
       // Create notifications for approvers and send LINE messages
       for (const approver of memoApprovers) {
@@ -3468,7 +3485,6 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
         read: false,
         timestamp: new Date().toISOString(),
         memoId: memoId,
-        memoObject: memoData,
         memoType: 'received',
         senderId: senderUserId,
         recipientIds: recipientIds,
@@ -3486,7 +3502,6 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       read: false,
       timestamp: new Date().toISOString(),
       memoId: memoId,
-      memoObject: memoData,
       memoType: 'sent',
       senderId: senderUserId,
       recipientIds: recipientIds
