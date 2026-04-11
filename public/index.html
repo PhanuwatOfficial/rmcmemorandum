@@ -3780,11 +3780,12 @@
                                         <th>Sub-Department (แผนก)</th>
                                         <th>Password</th>
                                         <th>Joined</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="allUsersTbody">
                                     <tr>
-                                        <td colspan="7">
+                                        <td colspan="8">
                                             <div class="empty-state"><span
                                                     class="material-symbols-outlined">person</span>
                                                 <p>Loading users...</p>
@@ -4966,8 +4967,11 @@
                     // For received memos from system users, navigate to received-memos and show detail
                     if (notif.memoType === 'received') {
                         clickHandler = `showViewAndMemoDetail('received-memos', ${memoJson})`
+                    } else if (notif.memoType === 'sent') {
+                        // For sent memos, navigate to sent-memos and show detail
+                        clickHandler = `showViewAndMemoDetail('sent-memos', ${memoJson})`
                     } else {
-                        // For all other memos (sent, pending approval, etc), open detail modal
+                        // For all other memos (pending approval, etc), open detail modal
                         clickHandler = `openMemoDetail(${memoJson})`
                     }
                 } else if (notif.memoId) {
@@ -6072,7 +6076,7 @@
                 }
 
                 const data = await res.json()
-                console.log('📋 Pending users response:', data)
+                // console.log('📋 Pending users response:', data)
 
                 statusEl.className = 'status-msg'
 
@@ -6888,7 +6892,7 @@
 
                 const tbody = document.getElementById('allUsersTbody')
                 if (!res.ok || !data.users || data.users.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">person_off</span><p>No users found</p></div></td></tr>`
+                    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">person_off</span><p>No users found</p></div></td></tr>`
                     return
                 }
 
@@ -6921,12 +6925,17 @@
             </div>
           </td>
           <td><small>${joinDate}</small></td>
+          <td style="text-align: center;">
+            <button class="btn btn-danger btn-sm" onclick="deleteSystemUser('${escHtml(userId)}', '${escHtml(user.username)}')" style="margin: 0;">
+              <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
+            </button>
+          </td>
         </tr>`
                 }
                 tbody.innerHTML = rows
             } catch (err) {
                 const tbody = document.getElementById('allUsersTbody')
-                tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">error</span><p>Error loading users: ${err.message}</p></div></td></tr>`
+                tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">error</span><p>Error loading users: ${err.message}</p></div></td></tr>`
             }
         }
 
@@ -6945,6 +6954,54 @@
                 display.textContent = '●●●●●●'
                 display.style.color = 'var(--ink)'
                 display.style.fontSize = '12px'
+            }
+        }
+
+        async function deleteSystemUser(userId, username) {
+            const confirmed = await showConfirmModal(`Delete user "${username}" permanently?`, 'Delete User')
+            if (!confirmed) return
+
+            try {
+                const res = await fetch(`/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+
+                if (!res.ok) {
+                    await showAlertModal('Error: ' + (data.message || res.statusText), 'Error')
+                    return
+                }
+
+                await showAlertModal(`User "${username}" has been deleted successfully`, 'Success')
+                await loadAllUsers()
+            } catch (err) {
+                console.error('❌ Error deleting user:', err)
+                await showAlertModal('Error: ' + err.message, 'Error')
+            }
+        }
+
+        async function deleteSystemUser(userId, username) {
+            const confirmed = await showConfirmModal(`Delete user "${username}" permanently?`, 'Delete User')
+            if (!confirmed) return
+
+            try {
+                const res = await fetch(`/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+                const data = await res.json()
+
+                if (!res.ok) {
+                    await showAlertModal('Error: ' + (data.message || res.statusText), 'Error')
+                    return
+                }
+
+                await showAlertModal(`User "${username}" has been deleted successfully`, 'Success')
+                await loadAllUsers()
+            } catch (err) {
+                console.error('❌ Error deleting user:', err)
+                await showAlertModal('Error: ' + err.message, 'Error')
             }
         }
 
@@ -6994,7 +7051,7 @@
                 if (data.docNumber) {
                     currentDocNumber = data.docNumber
                     document.getElementById('memoDocNumber').textContent = currentDocNumber
-                    console.log('✅ Document number loaded:', currentDocNumber)
+                    // console.log('✅ Document number loaded:', currentDocNumber)
                 }
             } catch (err) {
                 console.error('❌ Error loading document number:', err)
@@ -7054,7 +7111,7 @@
                     // Find users without linked followers
                     usersWithoutFollowers = allUsers.filter(user => !usersWithLinkedSet.has(user.userId) && user.userId !== currentUser.userId)
 
-                    console.log('👑 Admin loaded linkedFollowers:', linkedFollowers.length, 'usersWithout:', usersWithoutFollowers.length)
+                    // console.log('👑 Admin loaded linkedFollowers:', linkedFollowers.length, 'usersWithout:', usersWithoutFollowers.length)
                 } else {
                     // Regular users: get all linked followers from all users + show users without linked followers
                     const res = await fetch('/user/linked-followers-with-pictures', {
@@ -7223,7 +7280,7 @@
 
             // Debug: Verify all items
             const items = container.querySelectorAll('.recipient-item')
-            console.log(`✅ Generated ${items.length} recipient items grouped by department`)
+            // console.log(`✅ Generated ${items.length} recipient items grouped by department`)
         }
 
         // ── Toggle Recipient Item Selection ──────────
@@ -7360,6 +7417,7 @@
                 let totalSuccessCount = 0
                 let totalFailCount = 0
                 let successfulRecipientNames = []
+                let sentMemoId = null
 
                 // Send LINE messages - now send all at once with recipients array
                 if (lineRecipients.length > 0) {
@@ -7383,6 +7441,7 @@
                         })
                         if (res.ok) {
                             const responseData = await res.json()
+                            sentMemoId = responseData.memoId
                             totalSuccessCount += lineRecipients.length
                             lineRecipients.forEach(recipient => {
                                 const recipientName = recipientNameMap[recipient.id] || 'Unknown'
@@ -7421,6 +7480,8 @@
                         })
 
                         if (memoRes.ok) {
+                            const memoResponse = await memoRes.json()
+                            sentMemoId = memoResponse.memoId
                             totalSuccessCount += notificationRecipients.length
                             notificationRecipients.forEach(recipient => {
                                 const recipientName = recipientNameMap[recipient.id] || 'Unknown'
@@ -7437,13 +7498,7 @@
                 if (totalFailCount === 0) {
                     setStatus('statusSingleSend', 'success', 'check_circle', `Memorandum sent to ${totalSuccessCount} ${totalSuccessCount === 1 ? 'recipient' : 'recipients'} successfully!`)
                     const recipientDisplay = successfulRecipientNames.join(', ')
-                    addNotificationWithMemo(
-                        'ส่ง Memo สำเร็จ',
-                        `ส่ง "${title}" ไปยัง ${recipientDisplay}`,
-                        'success',
-                        { title: title, recipients: recipientDisplay },
-                        'sent'
-                    )
+                    
                     loadNotificationsFromFirebase()
                     clearCompose()
                     loadMemoDocNumber() // Regenerate DocNumber for next memo
@@ -7451,13 +7506,7 @@
                 } else if (totalSuccessCount > 0) {
                     setStatus('statusSingleSend', 'warn', 'warning', `Sent to ${totalSuccessCount} recipients, failed for ${totalFailCount}`)
                     const recipientDisplay = successfulRecipientNames.join(', ')
-                    addNotificationWithMemo(
-                        'ส่ง Memo บางส่วนสำเร็จ',
-                        `ส่งไปยัง ${recipientDisplay} (ล้มเหลว ${totalFailCount})`,
-                        'warn',
-                        { title: title, recipients: recipientDisplay },
-                        'sent'
-                    )
+                    
                     clearCompose()
                     loadMemoDocNumber()
                 } else {
@@ -7807,134 +7856,6 @@
             }
             tbody.innerHTML = rows
         }
-/*prompt: แก้ไขแสดงผลไม่ครบ
-ดูตัวอย่าง table เดิม
-
-   async function loadPendingApprovals() {
-            const tbody = document.getElementById('pendingApprovalsTbody')
-            const badge = document.getElementById('pendingApprovalsCountBadge')
-            const statusEl = document.getElementById('pendingApprovalsStatus')
-
-            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading pending approvals...</p></div></td></tr>`
-            statusEl.className = 'status-msg loading show'
-            statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
-            statusEl.querySelector('.msg-text').textContent = 'Fetching memos awaiting your approval...'
-
-            try {
-                console.log('📋 Fetching pending approvals with token:', authToken?.substring(0, 20) + '...')
-                const res = await fetch('/memos/pending-approval', {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                })
-                const data = await res.json()
-                console.log('📋 Pending approvals response:', data)
-
-                if (!res.ok) {
-                    statusEl.className = 'status-msg error show'
-                    statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
-                    statusEl.querySelector('.msg-text').textContent = data.error || 'Failed to load pending approvals.'
-                    console.error('❌ Error loading pending approvals (HTTP ' + res.status + '):', data)
-                    return
-                }
-
-                const pendingMemos = data.pendingMemos || []
-                window.cachedPendingMemos = pendingMemos
-
-                // Update badge
-                badge.textContent = `${pendingMemos.length} pending`
-                statusEl.className = 'status-msg'
-
-                // Fetch users to build recipient name lookup
-                let usersMap = {}
-                try {
-                    const usersRes = await fetch('/admin/users', {
-                        headers: { 'Authorization': `Bearer ${authToken}` }
-                    })
-                    const usersData = await usersRes.json()
-                    if (usersData.users) {
-                        usersData.users.forEach(user => {
-                            usersMap[user.userId] = `${user.name || ''} ${user.surname || ''}`.trim()
-                        })
-                    }
-                } catch (err) {
-                    console.warn('Could not fetch users for recipient names:', err)
-                }
-
-                if (pendingMemos.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">pending_actions</span><p>No pending approvals.</p></div></td></tr>`
-                    return
-                }
-
-                // Render pending approvals table
-                let rows = ''
-                for (let memo of pendingMemos) {
-                    const recipientName = memo.recipientName || (memo.recipientUserId ? usersMap[memo.recipientUserId] : null) || '-'
-
-                    // Add recipientNames array if not present (for compatibility with memo detail modal)
-                    if (!memo.recipientNames) {
-                        memo.recipientNames = recipientName && recipientName !== '-' ? [recipientName] : []
-                    }
-
-                    const contentPreview = memo.content.substring(0, 15) + (memo.content.length > 15 ? '...' : '')
-                    const date = new Date(memo.sentAt)
-                    const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
-                    const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-
-                    rows += `<tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="viewPendingMemo('${memo.memoId}')">
-                        <td data-label="Date" style="font-size:12px;">
-                          <span style="color:var(--ink-muted);">
-                            ${dateStr}<br>
-                            <span style="font-size:11px;">${timeStr}</span>
-                          </span>
-                        </td>
-                        <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">
-                            ${memo.docNumber || '—'}
-                        </td>
-                        <td data-label="Title" style="padding: 12px;">
-                            <div style="font-weight: 600; color: var(--ink);">
-                                ${escHtml(memo.title)}
-                            </div>
-                        </td>
-                        <td data-label="From" style="padding: 12px; font-size: 12px;">
-                            ${memo.senderObject ? `${memo.senderObject.name} ${memo.senderObject.surname}` : 'Unknown'}
-                        </td>
-                        <td data-label="To" style="padding: 12px; font-size: 12px;">
-                            ${recipientName}
-                        </td>
-                        <td data-label="Department" style="padding: 12px; font-size: 12px;">
-                            ${memo.senderObject?.department || '-'}
-                        </td>
-                        <td data-label="Content" style="padding: 12px; font-size: 11px; color: var(--ink-faint); max-width: 200px;">
-                            <span title="${escHtml(memo.content)}">${escHtml(contentPreview)}</span>
-                        </td>
-                        <td data-label="Action" style="padding: 12px; text-align: center;">
-                            <div style="display: flex; gap: 6px; justify-content: center;">
-                                <button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); viewPendingMemo('${memo.memoId}')">
-                                    <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
-                                    View
-                                </button>
-                                <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
-                                    <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
-                                    Approve
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); rejectMemoDialog('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
-                                    <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
-                                    Reject
-                                </button>
-                            </div>
-                        </td>
-                    </tr>`
-                }
-                tbody.innerHTML = rows
-            } catch (err) {
-                statusEl.className = 'status-msg error show'
-                statusEl.querySelector('.material-symbols-outlined').textContent = 'error'
-                statusEl.querySelector('.msg-text').textContent = err.message || 'Error loading approvals'
-                console.error('Error loading pending approvals:', err)
-            }
-        }
-
-*/
-
 
         // ── Load Sent Memos ─────────────────────────
         async function loadSentMemos() {
@@ -9341,12 +9262,12 @@
             if (searchInput) searchInput.disabled = true
 
             try {
-                console.log('📋 Fetching pending approvals with token:', authToken?.substring(0, 20) + '...')
+                // console.log('📋 Fetching pending approvals with token:', authToken?.substring(0, 20) + '...')
                 const res = await fetch('/memos/pending-approval', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
                 const data = await res.json()
-                console.log('📋 Pending approvals response:', data)
+                // console.log('📋 Pending approvals response:', data)
 
                 if (!res.ok) {
                     statusEl.className = 'status-msg error show'

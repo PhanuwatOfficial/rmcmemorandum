@@ -1026,6 +1026,51 @@ app.get("/admin/users", verifyToken, async (req, res) => {
   }
 })
 
+// Delete a system user (admin only)
+app.delete("/admin/users/:userId", verifyToken, async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    // Verify current user is admin
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+
+    // Verify user exists
+    const userToDelete = await firebase_get(`users/${userId}`)
+    if (!userToDelete) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    // Don't allow deleting the only admin
+    const allUsers = await firebase_get('users')
+    const adminCount = Object.values(allUsers || {}).filter(u => u.role === 'admin').length
+    if (userToDelete.role === 'admin' && adminCount <= 1) {
+      return res.status(400).json({ error: "Cannot delete the last admin user" })
+    }
+
+    // Delete user from users
+    await firebase_delete(`users/${userId}`)
+
+    // Delete user from users_by_username
+    const username = userToDelete.username
+    if (username) {
+      await firebase_delete(`users_by_username/${username}`)
+    }
+
+    // Log the deletion
+    addLog('info', 'User deleted', {
+      username: userToDelete.username,
+      deletedBy: currentUser.username
+    })
+
+    res.json({ status: "User deleted successfully" })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Admin: Link follower to any user
 app.post("/admin/link-follower-to-user", verifyToken, async (req, res) => {
   try {
@@ -2046,6 +2091,26 @@ app.post("/send", async (req, res) => {
         recipientIds: recipientIds
       }
       await firebase_set(`notifications/${recipientId}/${notification.id}`, notification)
+    }
+
+    // Create notification for sender (memo sent successfully)
+    const senderNotification = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      title: 'ส่ง Memo สำเร็จ',
+      message: `ส่ง "${title}" ไปยัง ${recipientName}`,
+      type: 'success',
+      read: false,
+      timestamp: new Date().toISOString(),
+      memoId: memoId,
+      memoObject: memoData,
+      memoType: 'sent',
+      senderId: senderUserId,
+      recipientIds: recipientIds
+    }
+    try {
+      await firebase_set(`notifications/${senderUserId}/${senderNotification.id}`, senderNotification)
+    } catch (err) {
+      // Silent error
     }
 
     addLog('info', 'Send memo', { title, type, recipientUserId: actualRecipientUserId, senderName })
@@ -3410,6 +3475,26 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
         recipientId: recipientId
       }
       await firebase_set(`notifications/${recipientId}/${notification.id}`, notification)
+    }
+
+    // Create notification for sender (memo sent successfully)
+    const senderNotif = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      title: 'ส่ง Memo สำเร็จ',
+      message: `ส่ง "${title}" ไปยัง ${recipientName}`,
+      type: 'success',
+      read: false,
+      timestamp: new Date().toISOString(),
+      memoId: memoId,
+      memoObject: memoData,
+      memoType: 'sent',
+      senderId: senderUserId,
+      recipientIds: recipientIds
+    }
+    try {
+      await firebase_set(`notifications/${senderUserId}/${senderNotif.id}`, senderNotif)
+    } catch (err) {
+      // Silent error
     }
 
     addLog('info', 'Send memo', { title, type, recipientIds, senderName })
