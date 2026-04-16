@@ -8249,8 +8249,8 @@
                     viewAllBtn.style.display = (currentUser && currentUser.role === 'admin') ? '' : 'none'
                 }
                 
-                // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-                const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                // const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
                 fetch(firebaseUrl)
                     .then(res => res.json())
@@ -8281,8 +8281,8 @@
         async function loadLogs(filterByCurrentUser = false) {
             try {
                 // Fetch logs from Firebase
-                // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-                const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                // const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
                 const res = await fetch(firebaseUrl)
                 const logsData = await res.json()
