@@ -2651,43 +2651,43 @@
                 </a>
             </div>
             <div id="mainNav" style="display:none;">
-                <a class="nav-item active" onclick="showView('dashboard')">
+                <a class="nav-item active" data-view="dashboard" onclick="showView('dashboard')">
                     <span class="material-symbols-outlined">dashboard</span>
-                    Dashboard
+                    <span data-translate="dashboard">Dashboard</span>
                 </a>
-                <a class="nav-item" onclick="showView('compose')">
+                <a class="nav-item" data-view="compose" onclick="showView('compose')">
                     <span class="material-symbols-outlined">edit_note</span>
-                    Compose Memo
+                    <span data-translate="composeMemo">Compose Memo</span>
                 </a>
-                <a class="nav-item" onclick="showView('sent-memos')">
+                <a class="nav-item" data-view="sent-memos" onclick="showView('sent-memos')">
                     <span class="material-symbols-outlined">send</span>
-                    Sent Memos
+                    <span data-translate="sentMemos">Sent Memos</span>
                 </a>
-                <a class="nav-item" onclick="showView('received-memos')">
+                <a class="nav-item" data-view="received-memos" onclick="showView('received-memos')">
                     <span class="material-symbols-outlined">inbox</span>
-                    Received Memos
+                    <span data-translate="receivedMemos">Received Memos</span>
                 </a>
-                <a class="nav-item" id="navPendingApprovals"
+                <a class="nav-item" id="navPendingApprovals" data-view="pending-approvals"
                     onclick="showView('pending-approvals'); loadPendingApprovals()" style="display:none;">
                     <span class="material-symbols-outlined">pending_actions</span>
                     <span style="display: inline-block; position: relative; margin-left:0.5rem;">
-                        Pending Approvals
+                        <span data-translate="pendingApprovals">Pending Approvals</span>
                         <span id="pendingBadge"
                             style="display:none; position: absolute; top: -8px; right: -20px; background: #c8a96e; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;">0</span>
                     </span>
                 </a>
 
-                <a class="nav-item" onclick="showView('broadcast')">
+                <a class="nav-item" data-view="broadcast" onclick="showView('broadcast')">
                     <span class="material-symbols-outlined">campaign</span>
-                    Broadcast
+                    <span data-translate="broadcast">Broadcast</span>
                 </a>
-                <a class="nav-item" onclick="showView('followers')">
+                <a class="nav-item" data-view="followers" onclick="showView('followers')">
                     <span class="material-symbols-outlined">group</span>
-                    Users Management
+                    <span data-translate="usersManagement">Users Management</span>
                 </a>
-                <a class="nav-item" onclick="showView('logs')">
+                <a class="nav-item" data-view="logs" onclick="showView('logs')">
                     <span class="material-symbols-outlined">event_note</span>
-                    Activity Log
+                    <span data-translate="activityLog">Activity Log</span>
                 </a>
             </div>
         </nav>
@@ -2695,26 +2695,26 @@
         <div class="sidebar-create" id="createSection" style="display:none;">
             <button class="btn-create" onclick="closeMobileSidebar(); showView('compose')">
                 <span class="material-symbols-outlined">add</span>
-                New Memorandum
+                <span data-translate="newMemorandum">New Memorandum</span>
             </button>
         </div>
 
         <div class="sidebar-footer">
             <div id="userSection" style="display:none; padding: 12px 16px; ">
-                <div style="font-size:11px; color: rgba(255,255,255,0.55); margin-bottom: 8px;">ACCOUNT</div>
+                <div style="font-size:11px; color: rgba(255,255,255,0.55); margin-bottom: 8px;" data-translate="account">ACCOUNT</div>
                 <a class="nav-item" onclick="showView('manage-user')" style="font-size: 12px;">
                     <span class="material-symbols-outlined">manage_accounts</span>
-                    My Account
+                    <span data-translate="myAccount">My Account</span>
                 </a>
                 <a class="nav-item" onclick="logout()" style="font-size: 12px;">
                     <span class="material-symbols-outlined">logout</span>
-                    Sign Out
+                    <span data-translate="signOut">Sign Out</span>
                 </a>
             </div>
             <div id="guestSection">
                 <a class="nav-item" href="#">
                     <span class="material-symbols-outlined">help_outline</span>
-                    Support
+                    <span data-translate="support">Support</span>
                 </a>
             </div>
         </div>
@@ -4495,59 +4495,59 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
     <div id="memoDetailOverlay" class="memo-detail-overlay">
         <div class="memo-detail-panel">
             <div class="memo-detail-header">
-                <h3 class="memo-detail-title" id="memoDetailTitle">Memorandum Details</h3>
+                <h3 class="memo-detail-title" id="memoDetailTitle" data-translate="memoDetails">Memorandum Details</h3>
                 <button class="memo-detail-close" onclick="closeMemoDetail()">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
             <div class="memo-detail-body">
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label">Document Number</div>
+                    <div class="memo-detail-label" data-translate="documentNumber">Document Number</div>
                     <div class="memo-detail-value bold" id="memoDetailDocNumber"
                         style="color: var(--accent); font-family: 'Courier New', monospace;">—</div>
                 </div>
 
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label">Date</div>
+                    <div class="memo-detail-label" data-translate="date">Date</div>
                     <div class="memo-detail-value" id="memoDetailDate">—</div>
                 </div>
 
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label">Title</div>
+                    <div class="memo-detail-label" data-translate="title">Title</div>
                     <div class="memo-detail-value bold" id="memoDetailTitleValue">—</div>
                 </div>
 
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label">Type</div>
+                    <div class="memo-detail-label" data-translate="type">Type</div>
                     <div class="memo-detail-value" id="memoDetailTypeValue">—</div>
                 </div>
 
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label" id="memoDetailRecipientLabel">Sent To</div>
+                    <div class="memo-detail-label" id="memoDetailRecipientLabel" data-translate="recipient">Sent To</div>
                     <div class="memo-detail-value" id="memoDetailRecipient">—</div>
                 </div>
 
                 <div class="memo-detail-field" id="memoDetailRecipientsField">
-                    <div class="memo-detail-label">Recipients</div>
+                    <div class="memo-detail-label" data-translate="recipients">Recipients</div>
                     <div class="memo-detail-value" id="memoDetailRecipients"
                         style="white-space: pre-wrap; word-break: break-word;">—</div>
                 </div>
 
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label">Message Body</div>
+                    <div class="memo-detail-label" data-translate="messageBody">Message Body</div>
                     <div class="memo-detail-content" id="memoDetailContent">—</div>
                 </div>
 
                 <!-- Image Display Section -->
                 <div class="memo-detail-field" id="memoDetailImageField" style="display: none;">
-                    <div class="memo-detail-label">Attached Image</div>
+                    <div class="memo-detail-label" data-translate="attachedImage">Attached Image</div>
                     <div style="margin-top: 8px;">
                         <img id="memoDetailImage" src="" alt="Memo attachment"
                             style="max-width: 100%; max-height: 400px; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer; transition: transform 0.2s ease;"
                             onmouseover="this.style.transform='scale(1.02)'"
                             onmouseout="this.style.transform='scale(1)'"
                             onclick="event.stopPropagation(); openImageModal(this.src)">
-                        <p style="font-size: 11px; color: var(--ink-faint); margin-top: 8px; text-align: center;">Click
+                        <p style="font-size: 11px; color: var(--ink-faint); margin-top: 8px; text-align: center;" data-translate="clickToViewFullSize">Click
                             to view in full size</p>
                     </div>
                 </div>
@@ -4558,7 +4558,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     <div
                         style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 12px;">
                         <div style="flex: 0 0 auto;">
-                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;">Status</div>
+                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;" data-translate="status">Status</div>
                             <div id="memoApprovalStatus"
                                 style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,0,0,0.05); border-radius: 4px;">
                                 <span id="memoStatusIcon" class="material-symbols-outlined"
@@ -4567,14 +4567,14 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                             </div>
                         </div>
                         <div style="flex: 1; min-width: 200px;">
-                            <div class="memo-detail-label" style=" font-size: 12px; margin-bottom: 6px;">
+                            <div class="memo-detail-label" style=" font-size: 12px; margin-bottom: 6px;" data-translate="approvedBy">
                                 Approved/Rejected By</div>
                             <div class="memo-detail-value" id="memoApprovalBy"
                                 style="padding: 8px 12px; background: transparent; color: var(--ink); font-weight: 500;">
                                 —</div>
                         </div>
                         <div style="flex: 1; min-width: 200px;">
-                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;">Date & Time
+                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;" data-translate="dateAndTime">Date & Time
                             </div>
                             <div class="memo-detail-value" id="memoApprovalDateTime"
                                 style="padding: 8px 12px; background: transparent; color: var(--ink); font-weight: 500;">
@@ -4584,7 +4584,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     <div id="memoRejectionReasonSection"
                         style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.08);">
                         <div class="memo-detail-label"
-                            style="font-size: 12px; margin-bottom: 8px; color: var(--red); font-weight: 600;">Rejection
+                            style="font-size: 12px; margin-bottom: 8px; color: var(--red); font-weight: 600;" data-translate="rejectionReason">Rejection
                             Reason</div>
                         <div class="memo-detail-content" id="memoRejectionReason"
                             style="padding: 12px; background: rgba(220, 66, 59, 0.05); border-left: 3px solid var(--red); font-size: 13px; color: var(--ink); line-height: 1.5;">
@@ -4596,16 +4596,16 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 <div id="memoApprovalActionsSection"
                     style="margin-top: 20px; padding: 16px; background: var(--surface); border-radius: var(--radius); display: none;">
                     <div style="margin-bottom: 16px;">
-                        <p style="margin: 0 0 12px 0; font-weight: 500; color: var(--ink);">This memo requires your
+                        <p style="margin: 0 0 12px 0; font-weight: 500; color: var(--ink);" data-translate="memoRequiresApproval">This memo requires your
                             approval</p>
                         <div style="display: flex; gap: 12px;">
                             <button class="btn btn-app" style=" flex: 1;" onclick="showApprovalConfirm('approve')">
                                 <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
-                                Approve
+                                <span data-translate="approve">Approve</span>
                             </button>
                             <button class="btn btn-reject" style=" flex: 1;" onclick="showApprovalConfirm('reject')">
                                 <span class="material-symbols-outlined" style="font-size: 18px;">cancel</span>
-                                Reject
+                                <span data-translate="reject">Reject</span>
                             </button>
                         </div>
                     </div>
@@ -4615,9 +4615,9 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 <div id="memoRejectionInputSection"
                     style="margin-top: 16px; padding: 16px; background: var(--surface); border-radius: var(--radius); border: 2px solid var(--red); display: none;">
                     <div class="memo-detail-field">
-                        <label for="rejectionReasonInput" class="memo-detail-label">Please provide a reason for
+                        <label for="rejectionReasonInput" class="memo-detail-label" data-translate="provideRejectionReason">Please provide a reason for
                             rejection</label>
-                        <textarea id="rejectionReasonInput" placeholder="Enter rejection reason..."
+                        <textarea id="rejectionReasonInput" placeholder="Enter rejection reason..." data-translate-placeholder="enterRejectionReason"
                             style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; line-height: 1.5; resize: vertical; min-height: 80px; color: var(--ink);"
                             spellcheck="false"></textarea>
                     </div>
@@ -4625,11 +4625,11 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                         <button class="btn btn-sm" style="background: var(--red); color: white; flex: 1;"
                             onclick="submitMemoRejection()">
                             <span class="material-symbols-outlined">send</span>
-                            Submit Rejection
+                            <span data-translate="submitRejection">Submit Rejection</span>
                         </button>
                         <button class="btn btn-sm btn-ghost" style="flex: 1;" onclick="cancelApprovalAction()">
                             <span class="material-symbols-outlined">close</span>
-                            Cancel
+                            <span data-translate="cancel">Cancel</span>
                         </button>
                     </div>
                 </div>
@@ -4642,15 +4642,15 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             <div class="memo-detail-footer">
                 <button class="btn btn-ghost" onclick="copyMemoContent()">
                     <span class="material-symbols-outlined">content_copy</span>
-                    Copy Content
+                    <span data-translate="copyContent">Copy Content</span>
                 </button>
                 <button class="btn btn-ghost" onclick="printMemoDetail()">
                     <span class="material-symbols-outlined">print</span>
-                    Print
+                    <span data-translate="print">Print</span>
                 </button>
                 <button class="btn btn-ghost" onclick="closeMemoDetail()">
                     <span class="material-symbols-outlined">close</span>
-                    Close
+                    <span data-translate="close">Close</span>
                 </button>
             </div>
         </div>
@@ -4663,11 +4663,11 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
         <div
             style="position: relative; background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 420px; width: 90%; max-height: 80vh; overflow: auto; border: 1px solid var(--border);">
             <div style="padding: 24px; border-bottom: 1px solid var(--border);">
-                <h2 id="modalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;">
+                <h2 id="modalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;" data-translate="confirmation">
                     Confirmation</h2>
             </div>
             <div style="padding: 24px;">
-                <p id="modalMessage" style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0;">Are you
+                <p id="modalMessage" style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0;" data-translate="areYouSure">Are you
                     sure?</p>
             </div>
             <div
@@ -4675,10 +4675,10 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 <button id="modalCancelBtn" onclick="closeCustomModal(false)"
                     style="padding: 10px 24px; border: 1px solid var(--border); background: var(--paper); color: var(--ink); border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; outline: none;"
                     onmouseover="this.style.background='var(--surface)'"
-                    onmouseout="this.style.background='var(--paper)'">Cancle</button>
+                    onmouseout="this.style.background='var(--paper)'" data-translate="cancel">Cancle</button>
                 <button id="modalConfirmBtn" onclick="closeCustomModal(true)"
                     style="padding: 10px 24px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; outline: none;"
-                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Confirm</button>
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'" data-translate="confirm">Confirm</button>
             </div>
         </div>
     </div>
@@ -4690,14 +4690,14 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
         <div
             style="position: relative; background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 420px; width: 90%; max-height: 80vh; overflow: auto; border: 1px solid var(--border);">
             <div style="padding: 24px; border-bottom: 1px solid var(--border);">
-                <h2 id="promptModalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;">
+                <h2 id="promptModalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;" data-translate="input">
                     Input</h2>
             </div>
             <div style="padding: 24px;">
                 <p id="promptModalMessage"
-                    style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0 0 16px 0;">Enter your input:
+                    style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0 0 16px 0;" data-translate="enterYourInput">Enter your input:
                 </p>
-                <input id="promptModalInput" type="text" placeholder="Enter text here..."
+                <input id="promptModalInput" type="text" placeholder="Enter text here..." data-translate-placeholder="enterTextHere"
                     style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-size: 14px; box-sizing: border-box; transition: border-color 0.15s;"
                     onkeydown="if(event.key==='Enter') confirmPromptModal(); if(event.key==='Escape') cancelPromptModal()"
                     onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
@@ -4707,10 +4707,10 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 <button id="promptModalCancelBtn" onclick="cancelPromptModal()"
                     style="padding: 10px 24px; border: 1px solid var(--border); background: var(--paper); color: var(--ink); border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; outline: none;"
                     onmouseover="this.style.background='var(--surface)'"
-                    onmouseout="this.style.background='var(--paper)'">Cancel</button>
+                    onmouseout="this.style.background='var(--paper)'" data-translate="cancel">Cancel</button>
                 <button id="promptModalConfirmBtn" onclick="confirmPromptModal()"
                     style="padding: 10px 24px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; outline: none;"
-                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">OK</button>
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'" data-translate="ok">OK</button>
             </div>
         </div>
     </div>
@@ -4729,7 +4729,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
         </div>
         <div class="image-zoom-info"
             style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255, 255, 255, 0.6); font-size: 12px; text-align: center;">
-            <p style="margin: 0;">Press ESC to close | Click outside to close</p>
+            <p style="margin: 0;" data-translate="pressEscToClose">Press ESC to close | Click outside to close</p>
         </div>
     </div>
 
@@ -5114,7 +5114,19 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 dept_ds_FFB: "Design FFB",
                 quota: "สิทธิ์",
                 more: "เพิ่มเติม",
+                dashboard: "แดชบอร์ด",
+                composeMemo: "เขียนเมมโม",
+                sentMemos: "เมมโมที่ส่ง",
+                receivedMemos: "เมมโมที่ได้รับ",
+                broadcast: "ประกาศ",
+                usersManagement: "จัดการสมาชิก",
+                activityLog: "ประวัติการใช้งาน",
                 moreMenu: "เมนูเพิ่มเติม",
+                newMemorandum: "เมมโมใหม่",
+                account: "บัญชี",
+                myAccount: "บัญชีของฉัน",
+                signOut: "ออกจากระบบ",
+                support: "ช่วยเหลือ",
                 holidayCalendar: "ปฏิทินวันหยุด",
                 addHoliday: "เพิ่มวันหยุด",
                 editProfile: "แก้ไขข้อมูลส่วนตัว",
@@ -5183,7 +5195,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 manageLINE: "จัดการการแจ้งเตือน LINE และคำสั่งอย่างเป็นทางการ",
                 memoSent: "เมมโมที่ส่ง",
                 allMemosDispatched: "เมมโมทั้งหมดที่ส่ง",
-                pendingApprovals: "รอการอนุมัติ",
+                pendingApprovals: "อนุมัติเมมโม",
                 awaitingYourDecision: "รอการตัดสินใจของคุณ",
                 memosReceived: "เมมโมที่ได้รับ",
                 sentToFollowers: "ส่งให้ผู้ติดตาม",
@@ -5334,7 +5346,29 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 role_admin: "ผู้ดูแลระบบ",
                 role_user: "ผู้ใช้",
                 items: "รายการ",
-                name: "ชื่อ-นามสกุล"
+                name: "ชื่อ-นามสกุล",
+                attachedImage: "ภาพที่แนบมา",
+                clickToViewFullSize: "คลิกเพื่อดูในขนาดเต็ม",
+                dateAndTime: "วันที่และเวลา",
+                rejectionReason: "เหตุผลในการปฏิเสธ",
+                memoRequiresApproval: "เมมโมนี้ต้องการการอนุมัติของคุณ",
+                approve: "อนุมัติ",
+                reject: "ปฏิเสธ",
+                provideRejectionReason: "กรุณาระบุเหตุผลในการปฏิเสธ",
+                enterRejectionReason: "กรอกเหตุผลในการปฏิเสธ...",
+                submitRejection: "ส่งการปฏิเสธ",
+                cancel: "ยกเลิก",
+                copyContent: "คัดลอกเนื้อหา",
+                print: "พิมพ์",
+                close: "ปิด",
+                confirmation: "ยืนยัน",
+                areYouSure: "คุณแน่ใจหรือไม่?",
+                confirm: "ยืนยัน",
+                input: "ป้อนข้อมูล",
+                enterYourInput: "กรอกข้อมูลของคุณ:",
+                enterTextHere: "กรอกข้อความที่นี่...",
+                ok: "ตกลง",
+                pressEscToClose: "กด ESC เพื่อปิด | คลิกนอกพื้นที่เพื่อปิด"
             },
             en: {
                 dept_arch_NXT: "Architect",
@@ -5346,7 +5380,19 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 dept_ds_FFB: "Design FFB",
                 quota: "Quota",
                 more: "More",
+                dashboard: "Dashboard",
+                composeMemo: "Compose Memo",
+                sentMemos: "Sent Memos",
+                receivedMemos: "Received Memos",
+                broadcast: "Broadcast",
+                usersManagement: "Users Management",
+                activityLog: "Activity Log",
                 moreMenu: "More Menu",
+                newMemorandum: "New Memorandum",
+                account: "Account",
+                myAccount: "My Account",
+                signOut: "Sign Out",
+                support: "Support",
                 holidayCalendar: "Holiday Calendar",
                 addHoliday: "Add Holiday",
                 editProfile: "Edit Profile",
@@ -5567,6 +5613,28 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 role_user: "USER",
                 items: "items",
                 name: "Full Name",
+                attachedImage: "Attached Image",
+                clickToViewFullSize: "Click to view in full size",
+                dateAndTime: "Date & Time",
+                rejectionReason: "Rejection Reason",
+                memoRequiresApproval: "This memo requires your approval",
+                approve: "Approve",
+                reject: "Reject",
+                provideRejectionReason: "Please provide a reason for rejection",
+                enterRejectionReason: "Enter rejection reason...",
+                submitRejection: "Submit Rejection",
+                cancel: "Cancel",
+                copyContent: "Copy Content",
+                print: "Print",
+                close: "Close",
+                confirmation: "Confirmation",
+                areYouSure: "Are you sure?",
+                confirm: "Confirm",
+                input: "Input",
+                enterYourInput: "Enter your input:",
+                enterTextHere: "Enter text here...",
+                ok: "OK",
+                pressEscToClose: "Press ESC to close | Click outside to close",
                 "dept_บริหาร": "Administration",
                 "dept_จัดซื้อในประเทศ": "Domestic Procurement",
                 "dept_จัดซื้อต่างประเทศ": "International Procurement",
@@ -6201,17 +6269,8 @@ function applyTranslations() {
                                 return // Skip this item for now
                             }
 
-                            const isAllowed = allowedTabs.some(tab => {
-                                if (item.textContent.toLowerCase().includes('dashboard')) return tab === 'dashboard'
-                                if (item.textContent.toLowerCase().includes('compose')) return tab === 'compose'
-                                if (item.textContent.toLowerCase().includes('sent')) return tab === 'sent-memos'
-                                if (item.textContent.toLowerCase().includes('received')) return tab === 'received-memos'
-                                if (item.textContent.toLowerCase().includes('broadcast')) return tab === 'broadcast'
-                                if (item.textContent.toLowerCase().includes('users') || item.textContent.toLowerCase().includes('followers')) return tab === 'followers'
-                                if (item.textContent.toLowerCase().includes('activity') || item.textContent.toLowerCase().includes('logs')) return tab === 'logs'
-                                return false
-                            })
-
+                            const viewName = item.getAttribute('data-view')
+                            const isAllowed = allowedTabs.includes(viewName)
                             item.style.display = isAllowed ? '' : 'none'
                         })
                     }
