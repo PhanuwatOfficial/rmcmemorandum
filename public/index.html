@@ -2630,7 +2630,6 @@
 </head>
 
 <body>
-
     <!-- ══════════════════════════════════════════
      SIDEBAR
 ════════════════════════════════════════════ -->
@@ -2762,6 +2761,27 @@
                     onclick="if (!authToken || !currentUser) return; showView('manage-user')">
                     <span class="material-symbols-outlined">settings</span>
                 </button>
+                <div style="position: relative;">
+                    <button class="icon-btn" title="Language" onclick="toggleLanguageMenu()" id="languageBtn">
+                        <span class="material-symbols-outlined">language</span>
+                        <span id="currentLang" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; font-weight: 700; color: var(--accent);">TH</span>
+                    </button>
+                    <div id="languageMenu"
+                        style="display: none; flex-direction: column; position: absolute; top: 100%; right: 0; width: 140px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; animation: slideDown 0.25s ease-out; margin-top: 4px;">
+                        <button onclick="changeLanguage('th'); toggleLanguageMenu()"
+                            style="padding: 12px 16px; background: none; border: none; color: var(--ink); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%;"
+                            onmouseover="this.style.background='var(--surface)'"
+                            onmouseout="this.style.background='none'">
+                            ไทย (Thai)
+                        </button>
+                        <button onclick="changeLanguage('en'); toggleLanguageMenu()"
+                            style="padding: 12px 16px; background: none; border: none; color: var(--ink); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; border-top: 1px solid var(--border);"
+                            onmouseover="this.style.background='var(--surface)'"
+                            onmouseout="this.style.background='none'">
+                            English (EN)
+                        </button>
+                    </div>
+                </div>
                 <div class="divider-v"></div>
                 <div style="display: flex; align-items: center; gap: 8px; position: relative;">
                     <div class="user-info" style="cursor: pointer; padding: 6px 8px; border-radius: var(--radius); transition: background 0.15s;" onclick="toggleUserMenu()" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">
@@ -2812,9 +2832,11 @@
                     style="width: 100%; max-width: 520px; margin: 0; margin-left: 27.5%; padding: 0 16px; animation: slideInUp 0.6s ease-out;">
                     <div class="page-header" style="text-align: center; margin-bottom: 25px;">
                         <h2
+                            data-translate="login"
                             style="font-size: 32px; color: var(--accent); font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px;">
+                            
                             Login</h2>
-                        <p style="color: var(--ink-faint); font-size: 14px; margin: 0;">Welcome to your Executive
+                        <p data-translate="welcomeToMemo" style="color: var(--ink-faint); font-size: 14px; margin: 0;">Welcome to your Executive
                             Memorandum</p>
                     </div>
 
@@ -2825,29 +2847,29 @@
                         </div>
                         <div class="section-body" style="padding: 32px 28px; overflow: visible;">
                             <div class="field">
-                                <label
+                                <label data-translate="username"
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">person</span>Username</label>
-                                <input id="loginUsername" type="text" placeholder="Enter your username"
+                                <input id="loginUsername" type="text" placeholder="Enter your username" data-translate="enterUsername"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onkeypress="if(event.key==='Enter') doLogin()"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
                             </div>
                             <div class="field" style="margin-bottom: 24px;">
-                                <label
+                                <label data-translate="password"
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">lock</span>Password</label>
-                                <input id="loginPassword" type="password" placeholder="Enter your password"
+                                <input id="loginPassword" type="password" placeholder="Enter your password" data-translate="enterPassword"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onkeypress="if(event.key==='Enter') doLogin()"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
                             </div>
                             <div class="btn-row" style="margin-top: 24px;">
-                                <button class="btn btn-primary" onclick="doLogin()"
+                                <button class="btn btn-primary" onclick="doLogin()" data-translate="signIn"
                                     style="width: 100%; padding: 12px 16px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--accent) 0%, #2a3a60 100%); color: white; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(26, 39, 64, 0.2); position: relative; overflow: hidden;"
                                     onmouseover="this.style.boxShadow='0 6px 16px rgba(26, 39, 64, 0.3)'; this.style.transform='translateY(-2px)';"
                                     onmouseout="this.style.boxShadow='0 4px 12px rgba(26, 39, 64, 0.2)'; this.style.transform='translateY(0)';">
@@ -2863,7 +2885,7 @@
                             </div>
                             <div
                                 style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); border-top: 1px solid var(--border); padding-top: 20px;">
-                                Don't have an account? <a onclick="showView('register')"
+                                <span data-translate="dontHaveAccount">Don't have an account?</span> <a onclick="showView('register')" data-translate="registerHere"
                                     style="color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; transition: all 0.2s ease; position: relative; display: inline-block;"
                                     onmouseover="this.style.color='var(--accent-2)'; this.style.textDecoration='underline';"
                                     onmouseout="this.style.color='var(--accent)'; this.style.textDecoration='none';">Register
@@ -2881,10 +2903,10 @@
                     style="width: 100%; max-width: 520px; margin: 0; margin-left: 27.5%; padding: 0 16px; animation: slideInUp 0.6s ease-out;">
                     <!-- <div style="width: 40%; max-width: 80%; margin:0 auto;"> -->
                     <div class="page-header" style="text-align: center; margin-bottom: 25px;">
-                        <h2
+                        <h2 data-translate="createAccount"
                             style="font-size: 32px; color: var(--accent); font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px;">
                             Create Account</h2>
-                        <p style="color: var(--ink-faint); font-size: 14px; margin: 0;">Join the Executive Memorandum
+                        <p data-translate="joinSystem" style="color: var(--ink-faint); font-size: 14px; margin: 0;">Join the Executive Memorandum
                             system</p>
                     </div>
 
@@ -2895,64 +2917,64 @@
                         </div>
                         <div class="section-body" style="padding: 32px 28px; overflow: visible;">
                             <div class="field" style="animation: slideInUp 0.5s ease-out;">
-                                <label
+                                <label data-translate="username"
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">person</span>Username</label>
-                                <input id="regUsername" type="text" placeholder="Choose a username"
+                                <input id="regUsername" type="text" placeholder="Choose a username" data-translate="chooseUsername"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
                             </div>
                             <div class="field" style="animation: slideInUp 0.5s ease-out 0.05s backwards;">
-                                <label
+                                <label data-translate="firstName"
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">badge</span>First Name</label>
-                                <input id="regName" type="text" placeholder="Your first name"
+                                <input id="regName" type="text" placeholder="Your first name" data-translate="firstNamePlaceholder"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
                             </div>
                             <div class="field" style="animation: slideInUp 0.5s ease-out 0.1s backwards;">
-                                <label
+                                <label data-translate="lastName"
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">badge</span>Last Name</label>
-                                <input id="regSurname" type="text" placeholder="Your last name"
+                                <input id="regSurname" type="text" placeholder="Your last name" data-translate="lastNamePlaceholder"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
                             </div>
                             <div class="field" style="animation: slideInUp 0.5s ease-out 0.15s backwards;">
-                                <label
+                                <label data-translate="password"
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">lock</span>Password</label>
-                                <input id="regPassword" type="password" placeholder="Create a password"
+                                <input id="regPassword" type="password" placeholder="Create a password" data-translate="createPassword"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
                             </div>
                             <div class="field" style="animation: slideInUp 0.5s ease-out 0.2s backwards;">
-                                <label
+                                <label data-translate="confirmPassword"
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">verified_user</span>Confirm
                                     Password</label>
-                                <input id="regConfirmPassword" type="password" placeholder="Confirm your password"
+                                <input id="regConfirmPassword" type="password" placeholder="Confirm your password" data-translate="confirmYourPassword"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
                             </div>
                             <div class="field" style="animation: slideInUp 0.5s ease-out 0.25s backwards;">
-                                <label
+                                <label data-translate="departmentTh"
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">domain</span>Department
                                     (ฝ่าย)</label>
                                 <div class="custom-autocomplete-wrapper" style="position: relative;">
-                                    <input id="regDepartment" type="text" placeholder="Select department..."
+                                    <input id="regDepartment" type="text" placeholder="Select department..." data-translate="selectDepartment"
                                         class="custom-autocomplete-input" autocomplete="off"
                                         style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                         onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
@@ -2964,13 +2986,13 @@
                             </div>
                             <div class="field"
                                 style="margin-bottom: 24px; animation: slideInUp 0.5s ease-out 0.3s backwards;">
-                                <label
+                                <label data-translate="subDepartmentTh"
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">work</span>Sub-Department
                                     (แผนก)</label>
                                 <div class="custom-autocomplete-wrapper" style="position: relative;">
-                                    <input id="regDepartment2" type="text" placeholder="Select sub-department..."
+                                    <input id="regDepartment2" type="text" placeholder="Select sub-department..." data-translate="selectSubDepartment"
                                         class="custom-autocomplete-input" autocomplete="off"
                                         style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                         onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
@@ -2983,7 +3005,7 @@
 
                             <div class="btn-row"
                                 style="margin-top: 24px; animation: slideInUp 0.5s ease-out 0.35s backwards;">
-                                <button class="btn btn-primary" onclick="doRegister()"
+                                <button class="btn btn-primary" onclick="doRegister()" data-translate="createAccountBtn"
                                     style="width: 100%; padding: 12px 16px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--accent) 0%, #2a3a60 100%); color: white; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(26, 39, 64, 0.2); position: relative; overflow: hidden;"
                                     onmouseover="this.style.boxShadow='0 6px 16px rgba(26, 39, 64, 0.3)'; this.style.transform='translateY(-2px)';"
                                     onmouseout="this.style.boxShadow='0 4px 12px rgba(26, 39, 64, 0.2)'; this.style.transform='translateY(0)';">
@@ -2999,7 +3021,7 @@
                             </div>
                             <div
                                 style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); border-top: 1px solid var(--border); padding-top: 20px; animation: slideInUp 0.5s ease-out 0.45s backwards;">
-                                Already have an account? <a onclick="showView('login')"
+                                <span data-translate="alreadyHaveAccount">Already have an account?</span> <a onclick="showView('login')" data-translate="loginHere"
                                     style="color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; transition: all 0.2s ease; position: relative; display: inline-block;"
                                     onmouseover="this.style.color='var(--accent-2)'; this.style.textDecoration='underline';"
                                     onmouseout="this.style.color='var(--accent)'; this.style.textDecoration='none';">Login
@@ -3010,20 +3032,18 @@
                 </div>
             </div>
 
-            <!--prompt:view page login/register เพิ่มตกแต่งสวยๆ เพิ่ม icon head tag-->
-
             <!-- ── MANAGE USER VIEW ───────────────── -->
             <div id="view-manage-user" class="view" style="display:none;">
                 <div class="page-header">
-                    <h2>Account Settings</h2>
-                    <p>Manage your account and linked followers.</p>
+                    <h2 data-translate="accountSettings">Account Settings</h2>
+                    <p data-translate="manageAccountFollowers">Manage your account and linked followers.</p>
                 </div>
 
                 <div class="section-card" style="max-width: 840px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">person</span>
-                            Account Information
+                            <span data-translate="accountInformation">Account Information</span>
                         </div>
                     </div>
                     <div class="section-body">
@@ -3056,29 +3076,29 @@
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">lock</span>
-                            Change Password
+                            <span data-translate="changePassword">Change Password</span>
                         </div>
                     </div>
                     <div class="section-body">
                         <div style="display: grid; gap: 12px;">
                             <div class="field">
-                                <label>Current Password</label>
+                                <label data-translate="currentPassword">Current Password</label>
                                 <input id="currentPassword" type="password" placeholder="Enter your current password">
                             </div>
                             <div class="field">
-                                <label>New Password</label>
+                                <label data-translate="newPassword">New Password</label>
                                 <input id="newPassword" type="password" placeholder="Enter your new password">
                             </div>
                             <div class="field">
-                                <label>Confirm New Password</label>
+                                <label data-translate="confirmPassword">Confirm New Password</label>
                                 <input id="confirmPassword" type="password" placeholder="Confirm your new password">
                             </div>
                             <div class="btn-row" style="margin-top: 16px;">
-                                <button class="btn btn-primary" onclick="changePassword()">
+                                <button class="btn btn-primary" onclick="changePassword()" data-translate="updatePassword">
                                     <span class="material-symbols-outlined">check_circle</span>
                                     Update Password
                                 </button>
-                                <button class="btn btn-ghost" onclick="clearPasswordForm()">
+                                <button class="btn btn-ghost" onclick="clearPasswordForm()" data-translate="clear">
                                     <span class="material-symbols-outlined">clear</span>
                                     Clear
                                 </button>
@@ -3095,9 +3115,9 @@
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">link</span>
-                            Linked LINE Profile
+                            <span data-translate="linkedLINEProfile">Linked LINE Profile</span>
                         </div>
-                        <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()"
+                        <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()" data-translate="refresh"
                             title="Refresh profile data">
                             <span class="material-symbols-outlined">refresh</span>
                             Refresh
@@ -3178,9 +3198,9 @@
                             style="text-align: center; padding: 50px 24px; background: linear-gradient(135deg, rgba(26, 39, 64, 0.03) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px dashed var(--border); border-radius: var(--radius); color: var(--ink-faint);">
                             <span class="material-symbols-outlined"
                                 style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.35; color: var(--accent-2);">link_off</span>
-                            <p style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">No LINE Profile Linked
+                            <p style="font-size: 14px; font-weight: 500; margin-bottom: 12px;" data-translate="noLINEProfile">No LINE Profile Linked
                             </p>
-                            <p style="font-size: 12px; color: var(--ink-muted); line-height: 1.6;">Link a LINE profile
+                            <p style="font-size: 12px; color: var(--ink-muted); line-height: 1.6;" data-translate="linkProfile">Link a LINE profile
                                 to your account in the <strong>Followers Management</strong> section to get started.</p>
                         </div>
                     </div>
@@ -3190,56 +3210,56 @@
             <!-- ── DASHBOARD VIEW ─────────────────── -->
             <div id="view-dashboard" class="view">
                 <div class="page-header">
-                    <h2>Executive Inbox</h2>
-                    <p>Manage LINE notifications and formal directives.</p>
+                    <h2 data-translate="executiveInbox">Executive Inbox</h2>
+                    <p data-translate="manageLINE">Manage LINE notifications and formal directives.</p>
                 </div>
 
                 <!-- User Dashboard Stats -->
                 <div class="stats-grid">
                     <div class="stat-card accent-card">
-                        <div class="stat-label">Memo Sent</div>
+                        <div class="stat-label" data-translate="memoSent">Memo Sent</div>
                         <div class="stat-value" id="stat-memos-sent">—</div>
-                        <div class="stat-sub">All memos dispatched</div>
+                        <div class="stat-sub" data-translate="allMemosDispatched">All memos dispatched</div>
                     </div>
                     <div class="stat-card" id="stat-pending-approvals-card">
-                        <div class="stat-label">Pending Approvals</div>
+                        <div class="stat-label" data-translate="pendingApprovals">Pending Approvals</div>
                         <div class="stat-value" id="stat-pending-approvals">—</div>
-                        <div class="stat-sub">Awaiting your decision</div>
+                        <div class="stat-sub" data-translate="awaitingYourDecision">Awaiting your decision</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Memos Received</div>
+                        <div class="stat-label" data-translate="memosReceived">Memos Received</div>
                         <div class="stat-value" id="stat-memos-received">—</div>
-                        <div class="stat-sub">Sent to followers</div>
+                        <div class="stat-sub" data-translate="sentToFollowers">Sent to followers</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Approved</div>
+                        <div class="stat-label" data-translate="approved">Approved</div>
                         <div class="stat-value" id="stat-memos-approved">—</div>
-                        <div class="stat-sub">Successfully approved</div>
+                        <div class="stat-sub" data-translate="successfullyApproved">Successfully approved</div>
                     </div>
                 </div>
 
                 <!-- Quick Actions -->
-                <div class="section-card">
+                <div class="section-card" style="display:none;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">bolt</span>
-                            Quick Actions
+                            <span data-translate="quickActions">Quick Actions</span>
                         </div>
                     </div>
                     <div class="section-body" style="display:flex; gap:12px; flex-wrap:wrap;">
-                        <button class="btn btn-primary" onclick="showView('compose')">
+                        <button class="btn btn-primary" onclick="showView('compose')" data-translate="composeMemorandum">
                             <span class="material-symbols-outlined">edit_note</span>
                             Compose Memorandum
                         </button>
-                        <button class="btn btn-ghost" onclick="showView('broadcast')">
+                        <button class="btn btn-ghost" onclick="showView('broadcast')" data-translate="broadcastToAll">
                             <span class="material-symbols-outlined">campaign</span>
                             Broadcast to All
                         </button>
-                        <button class="btn btn-ghost" onclick="showView('followers'); loadFollowers()">
+                        <button class="btn btn-ghost" onclick="showView('followers'); loadFollowers()" data-translate="viewFollowers">
                             <span class="material-symbols-outlined">group</span>
                             View Followers
                         </button>
-                        <button class="btn btn-ghost" onclick="showView('logs'); loadLogs()">
+                        <button class="btn btn-ghost" onclick="showView('logs'); loadLogs()" data-translate="viewLogs">
                             <span class="material-symbols-outlined">terminal</span>
                             View Logs
                         </button>
@@ -3251,14 +3271,14 @@
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">history</span>
-                            Recent Activity
+                            <span data-translate="recentActivity">Recent Activity</span>
                         </div>
                         <button id="dashViewAllLogsBtn" class="btn btn-ghost btn-sm" onclick="showView('logs'); loadLogs(false)" style="display: none;">
                             View All
                         </button>
                     </div>
                     <div class="section-body" style="padding: 0;">
-                        <div class="activity-log" id="dash-logs-preview" style="border-radius: 0; max-height: 300px;">
+                        <div class="activity-log" id="dash-logs-preview" style="border-radius: 0; max-height: 450px;">
                             <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading activity...
                             </div>
                         </div>
@@ -3266,42 +3286,39 @@
                 </div>
             </div>
 
-        <!--
-        prompt:
-        หน้า dashboard อยากเอา  Quick Actions  ออก ควรเพิ่มอะไรดี
-        -->
-
             <!-- ── COMPOSE VIEW ───────────────────── -->
             <div id="view-compose" class="view" style="display:none;">
                 <div class="page-header">
-                    <h2>Compose Memorandum</h2>
-                    <p>Create and dispatch formal memorandums to selected recipients.</p>
+                    <h2 data-translate="composeMemorandum">Compose Memorandum</h2>
+                    <p data-translate="createAndDispatch">Create and dispatch formal memorandums to selected recipients.</p>
                 </div>
 
                 <div class="section-card" style="max-width: 840px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">edit_note</span>
-                            Memorandum Details
+                            <span data-translate="memoDetails">Memorandum Details</span>
                         </div>
                     </div>
                     <div class="section-body">
+             
                         <div class="field">
-                            <label><span class="material-symbols-outlined"
-                                    style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">article</span>Document
-                                Number</label>
+                            <label data-translate="documentNumber">
+                                <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">article</span>
+                                Document Number
+                            </label>
                             <div style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-weight: 600; color: var(--accent); font-family: 'Courier New', monospace;"
                                 id="memoDocNumber">—</div>
                         </div>
                         <div class="field">
-                            <label><span class="material-symbols-outlined"
+                            <label data-translate="memoTitle"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">edit_note</span>Memorandum
                                 Title</label>
-                            <input id="memoTitle" type="text" placeholder="Enter memorandum title...">
+                            <input id="memoTitle" type="text" placeholder="Enter memorandum title..." data-translate="enterMemoTitle">
                         </div>
 
                         <div class="field">
-                            <label><span class="material-symbols-outlined"
+                            <label data-translate="memoType"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">category</span>Type</label>
                             <div class="memo-type-container">
                                 <label class="memo-type-label">
@@ -3332,24 +3349,24 @@
                         </div>
 
                         <div class="field">
-                            <label><span class="material-symbols-outlined"
+                            <label data-translate="filterByDepartment"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">filter_list</span>Filter
                                 by Department</label>
                             <select id="depFilterSelect"
                                 style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit; cursor: pointer;"
                                 onchange="filterRecipientsByDepartment()">
-                                <option value="">— All Departments —</option>
+                                <option value="" data-translate="allDepartments">— All Departments —</option>
                             </select>
                         </div>
 
                         <div class="field">
-                            <label><span class="material-symbols-outlined"
+                            <label data-translate="recipients"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">people</span>Recipients</label>
                             <div class="recipients-multiselect-wrapper" style="position: relative;">
                                 <button type="button" id="recipientsSelectBtn" class="recipients-select-btn"
                                     style="width: 100%; padding: 11px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease;"
                                     onclick="toggleRecipientsDropdown()">
-                                    <span id="recipientsSelectLabel" style="flex: 1;">Select recipients...</span>
+                                    <span id="recipientsSelectLabel" style="flex: 1;" data-translate="selectRecipients">Select recipients...</span>
                                     <span class="material-symbols-outlined"
                                         style="font-size: 18px; flex-shrink: 0; transition: transform 0.2s;">expand_more</span>
                                 </button>
@@ -3364,15 +3381,15 @@
                         </div>
 
                         <div class="field">
-                            <label><span class="material-symbols-outlined"
+                            <label data-translate="messageBody"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">message</span>Message
                                 Body</label>
-                            <textarea id="msg" placeholder="Type your memorandum content here..." rows="6"></textarea>
+                            <textarea id="msg" placeholder="Type your memorandum content here..." rows="6" data-translate="typeContent"></textarea>
                         </div>
 
                         <!-- Image Upload Field -->
                         <div class="field">
-                            <label><span class="material-symbols-outlined"
+                            <label data-translate="attachImage"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
                                 Image (Optional)</label>
                             <div class="image-upload-wrapper">
@@ -3382,7 +3399,7 @@
                                     onclick="document.getElementById('memoImageInput').click()"
                                     style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
                                     <span class="material-symbols-outlined">upload_file</span>
-                                    <span id="uploadBtnText">Click to upload or drag image here</span>
+                                    <span id="uploadBtnText" data-translate="clickToUpload">Click to upload or drag image here</span>
                                 </button>
                                 <!-- Image Preview -->
                                 <div id="memoImagePreview" class="image-preview-container"
@@ -3408,11 +3425,11 @@
                         </div>
 
                         <div class="btn-row" style="margin-top: 20px;">
-                            <button class="btn btn-primary" onclick="send()">
+                            <button class="btn btn-primary" onclick="send()" data-translate="sendMemorandum">
                                 <span class="material-symbols-outlined">send</span>
                                 Send Memorandum
                             </button>
-                            <button class="btn btn-ghost" onclick="clearCompose()">
+                            <button class="btn btn-ghost" onclick="clearCompose()" data-translate="clear">
                                 <span class="material-symbols-outlined">clear</span>
                                 Clear
                             </button>
@@ -3425,20 +3442,18 @@
                 </div>
             </div>
 
-       
-
             <!-- ── SENT MEMOS VIEW ────────────────── -->
             <div id="view-sent-memos" class="view" style="display:none;">
                 <div class="page-header">
-                    <h2>Sent Memos</h2>
-                    <p>Review all memorandums you have dispatched.</p>
+                    <h2 data-translate="sentMemos">Sent Memos</h2>
+                    <p data-translate="reviewDispatched">Review all memorandums you have dispatched.</p>
                 </div>
 
                 <div class="section-card">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">send</span>
-                            Memorandum History
+                            <span data-translate="memoHistory">Memorandum History</span>
                             <span id="sentMemosCountBadge"
                                 style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
                         </div>
@@ -3459,14 +3474,14 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>DocNumber</th>
-                                    <th>Title</th>
-                                    <th>Type</th>
-                                    <th>Recipient</th>
-                                    <th>Status</th>
-                                    <th>Preview</th>
-                                    <th style="text-align: center;">Action</th>
+                                    <th data-translate="date">Date</th>
+                                    <th data-translate="docNumber">DocNumber</th>
+                                    <th data-translate="title">Title</th>
+                                    <th data-translate="type">Type</th>
+                                    <th data-translate="recipient">Recipient</th>
+                                    <th data-translate="status">Status</th>
+                                    <th data-translate="preview">Preview</th>
+                                    <th style="text-align: center;" data-translate="action">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="sentMemosTbody">
@@ -3487,15 +3502,15 @@
             <!-- ── RECEIVED MEMOS VIEW ────────────────────── -->
             <div id="view-received-memos" class="view" style="display:none;">
                 <div class="page-header">
-                    <h2>Received Memos</h2>
-                    <p>View all memorandums sent to your followers.</p>
+                    <h2 data-translate="receivedMemos">Received Memos</h2>
+                    <p data-translate="viewMemosFollowers">View all memorandums sent to your followers.</p>
                 </div>
 
                 <div class="section-card">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">inbox</span>
-                            Incoming Memos
+                            <span data-translate="incomingMemos">Incoming Memos</span>
                             <span id="receivedMemosCountBadge"
                                 style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
                         </div>
@@ -3516,13 +3531,13 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>DocNumber</th>
-                                    <th>Title</th>
-                                    <th>Type</th>
-                                    <th>From</th>
-                                    <th>Preview</th>
-                                    <th style="text-align: center;">Action</th>
+                                    <th data-translate="date">Date</th>
+                                    <th data-translate="docNumber">DocNumber</th>
+                                    <th data-translate="title">Title</th>
+                                    <th data-translate="type">Type</th>
+                                    <th data-translate="from">From</th>
+                                    <th data-translate="preview">Preview</th>
+                                    <th style="text-align: center;" data-translate="action">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="receivedMemosTbody">
@@ -3542,15 +3557,15 @@
             <!-- ── PENDING APPROVALS VIEW ────────────── -->
             <div id="view-pending-approvals" class="view" style="display:none;">
                 <div class="page-header">
-                    <h2>Pending Memo Approvals</h2>
-                    <p>Review and approve memorandums from your department.</p>
+                    <h2 data-translate="pendingMemoApprovals">Pending Memo Approvals</h2>
+                    <p data-translate="reviewAndApprove">Review and approve memorandums from your department.</p>
                 </div>
 
                 <div class="section-card">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">pending_actions</span>
-                            Memos Awaiting Your Approval
+                            <span data-translate="memosAwaitingApproval">Memos Awaiting Your Approval</span>
                             <span id="pendingApprovalsCountBadge"
                                 style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
                         </div>
@@ -3570,14 +3585,14 @@
                                 <thead
                                     style="background: var(--surface); border-bottom: 2px solid var(--border); position: sticky; top: 0;">
                                     <tr>
-                                        <th>Date</th>
-                                        <th>DocNumber</th>
-                                        <th>Title</th>
-                                        <th>From</th>
-                                        <th>To</th>
-                                        <th>Department</th>
-                                        <th>Content</th>
-                                        <th style="text-align: center;">Action</th>
+                                        <th data-translate="date">Date</th>
+                                        <th data-translate="docNumber">DocNumber</th>
+                                        <th data-translate="title">Title</th>
+                                        <th data-translate="from">From</th>
+                                        <th data-translate="to">To</th>
+                                        <th data-translate="department">Department</th>
+                                        <th data-translate="content">Content</th>
+                                        <th style="text-align: center;" data-translate="action">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pendingApprovalsTbody">
@@ -3597,28 +3612,29 @@
                 </div>
             </div>
 
-            <!--prompt:
-            table ควรเพิ่มให้ admin user edit ได้ไหม
-            -->
+<!--
+prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo, recieved memo ,pending approval
+เห็น memo ใน table ได้ทั้งหมดทุกรายการ (ไม่จำเป็นต้องเป็น memo ที่เกี่ยวกับ admin ให้ admin เห็นทั้งหมด)
+และใน view-pending-approvals ให้ approve memo ของทุกรายการ/ทุกคน ได้โดยไม่จำเป็นต้องกำหนดใน db.ref("memoApprovers") -->
 
             <!-- ── BROADCAST VIEW ─────────────────── -->
             <div id="view-broadcast" class="view" style="display:none;">
                 <div class="page-header">
-                    <h2>Broadcast Memorandum</h2>
-                    <p>Dispatch a message to all active followers simultaneously.</p>
+                    <h2 data-translate="broadcastMemorandum">Broadcast Memorandum</h2>
+                    <p data-translate="dispatchMessage">Dispatch a message to all active followers simultaneously.</p>
                 </div>
 
                 <div class="section-card" style="max-width: 840px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">campaign</span>
-                            Mass Dispatch
+                            <span data-translate="massDispatch">Mass Dispatch</span>
                         </div>
                     </div>
                     <div class="section-body">
                         <div class="field">
-                            <label>Broadcast Message</label>
-                            <textarea id="broadcastMsg" placeholder="Type your broadcast content here..."
+                            <label data-translate="broadcastMessage">Broadcast Message</label>
+                            <textarea id="broadcastMsg" placeholder="Type your broadcast content here..." data-translate="broadcastContent"
                                 rows="6"></textarea>
                         </div>
 
@@ -3627,11 +3643,11 @@
                         </div>
 
                         <div class="btn-row" style="margin-top:16px;">
-                            <button class="btn btn-primary" onclick="broadcast()">
+                            <button class="btn btn-primary" onclick="broadcast()" data-translate="broadcastAllFollowers">
                                 <span class="material-symbols-outlined">campaign</span>
                                 Broadcast to All Followers
                             </button>
-                            <button class="btn btn-ghost" onclick="document.getElementById('broadcastMsg').value=''">
+                            <button class="btn btn-ghost" onclick="document.getElementById('broadcastMsg').value=''" data-translate="clear">
                                 <span class="material-symbols-outlined">clear</span>
                                 Clear
                             </button>
@@ -3647,31 +3663,31 @@
             <!-- ── FOLLOWERS VIEW ─────────────────── -->
             <div id="view-followers" class="view" style="display:none;">
                 <div class="page-header">
-                    <h2>Follower Registry</h2>
-                    <p>Manage and review all active LINE followers.</p>
+                    <h2 data-translate="followerRegistry">Follower Registry</h2>
+                    <p data-translate="manageReview">Manage and review all active LINE followers.</p>
                 </div>
 
                 <!-- Stats -->
                 <div class="stats-grid">
                     <div class="stat-card accent-card">
-                        <div class="stat-label">System Users</div>
+                        <div class="stat-label" data-translate="systemUsers">System Users</div>
                         <div class="stat-value" id="stat-total-users">—</div>
-                        <div class="stat-sub">Total users in system</div>
+                        <div class="stat-sub" data-translate="totalUsersInSystem">Total users in system</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">LINE Followers</div>
+                        <div class="stat-label" data-translate="lineFollowers">LINE Followers</div>
                         <div class="stat-value" id="stat-total-followers">—</div>
-                        <div class="stat-sub">Active LINE followers</div>
+                        <div class="stat-sub" data-translate="activeLINEFollowers">Active LINE followers</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Linked Users</div>
+                        <div class="stat-label" data-translate="linkedUsers">Linked Users</div>
                         <div class="stat-value" id="stat-linked-users">—</div>
-                        <div class="stat-sub">Users with linked followers</div>
+                        <div class="stat-sub" data-translate="usersWithLinkedFollowers">Users with linked followers</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Pending Approvals</div>
+                        <div class="stat-label" data-translate="pendingUsers">Pending Approvals</div>
                         <div class="stat-value" id="stat-pending-users">—</div>
-                        <div class="stat-sub">Users awaiting approval</div>
+                        <div class="stat-sub" data-translate="usersAwaitingApproval">Users awaiting approval</div>
                     </div>
                 </div>
 
@@ -3687,13 +3703,13 @@
                         <div class="section-header">
                             <div class="section-title">
                                 <span class="material-symbols-outlined">pending_actions</span>
-                                Pending User Registrations
+                                <span data-translate="pendingUserRegistrations">Pending User Registrations</span>
                                 <span id="pendingUsersCountBadge"
                                     style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--red); color:#fff; border-radius:2px; padding:2px 8px; margin-left:4px; display:none;"></span>
                             </div>
                             <button class="btn btn-ghost btn-sm" onclick="loadPendingUsers()">
                                 <span class="material-symbols-outlined">refresh</span>
-                                Refresh
+                                <span data-translate="refresh">Refresh</span>
                             </button>
                         </div>
 
@@ -3706,12 +3722,12 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Username</th>
-                                        <th>Name</th>
-                                        <th>Department (ฝ่าย)</th>
-                                        <th>Sub-Department (แผนก)</th>
-                                        <th>Applied</th>
-                                        <th style="text-align: center;">Actions</th>
+                                        <th data-translate="username">Username</th>
+                                        <th data-translate="name">Name</th>
+                                        <th data-translate="departmentTh">Department (ฝ่าย)</th>
+                                        <th data-translate="subDepartmentTh">Sub-Department (แผนก)</th>
+                                        <th data-translate="applied">Applied</th>
+                                        <th style="text-align: center;" data-translate="actions">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pendingUsersTbody">
@@ -3719,7 +3735,7 @@
                                         <td colspan="6">
                                             <div class="empty-state"><span
                                                     class="material-symbols-outlined">check_circle</span>
-                                                <p>No pending registrations.</p>
+                                                <p data-translate="noPendingReg">No pending registrations.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -3761,11 +3777,11 @@
                         <div class="section-header">
                             <div class="section-title">
                                 <span class="material-symbols-outlined">group</span>
-                                System Users
+                                <span data-translate="systemUsers">System Users</span>
                             </div>
                             <button class="btn btn-ghost btn-sm" onclick="loadAllUsers()">
                                 <span class="material-symbols-outlined">refresh</span>
-                                Refresh
+                                <span data-translate="refresh">Refresh</span>
                             </button>
                         </div>
 
@@ -3773,14 +3789,14 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Username</th>
-                                        <th>Name</th>
-                                        <th>Role</th>
-                                        <th>Department (ฝ่าย)</th>
-                                        <th>Sub-Department (แผนก)</th>
-                                        <th>Password</th>
-                                        <th>Joined</th>
-                                        <th>Action</th>
+                                        <th data-translate="username">Username</th>
+                                        <th data-translate="name">Name</th>
+                                        <th data-translate="roleColumn">Role</th>
+                                        <th data-translate="departmentTh">Department (ฝ่าย)</th>
+                                        <th data-translate="subDepartmentTh">Sub-Department (แผนก)</th>
+                                        <th data-translate="passwordColumn">Password</th>
+                                        <th data-translate="joinedColumn">Joined</th>
+                                        <th data-translate="action">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="allUsersTbody">
@@ -3788,7 +3804,7 @@
                                         <td colspan="8">
                                             <div class="empty-state"><span
                                                     class="material-symbols-outlined">person</span>
-                                                <p>Loading users...</p>
+                                                <p data-translate="loadingUsers">Loading users...</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -3804,14 +3820,14 @@
                             <div class="section-header">
                                 <div class="section-title">
                                     <span class="material-symbols-outlined">group</span>
-                                    Active Followers
+                                    <span data-translate="activeFollowers">Active Followers</span>
                                     <span id="followerCountBadge"
                                         style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
                                 </div>
                                 <div style="display:flex;gap:10px;">
                                     <button class="btn btn-ghost btn-sm" onclick="loadFollowers()">
                                         <span class="material-symbols-outlined">refresh</span>
-                                        Refresh
+                                        <span data-translate="refresh">Refresh</span>
                                     </button>
                                 </div>
                             </div>
@@ -3825,10 +3841,10 @@
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>Follower</th>
-                                            <th>User ID</th>
-                                            <th>Status Message</th>
-                                            <th>Status</th>
+                                            <th data-translate="follower">Follower</th>
+                                            <th data-translate="userId">User ID</th>
+                                            <th data-translate="statusMessage">Status Message</th>
+                                            <th data-translate="status">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody id="followersTbody">
@@ -3836,7 +3852,7 @@
                                             <td colspan="5">
                                                 <div class="empty-state"><span
                                                         class="material-symbols-outlined">group</span>
-                                                    <p>Click Refresh to load followers</p>
+                                                    <p data-translate="clickRefreshFollowers">Click Refresh to load followers</p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -3850,13 +3866,13 @@
                             <div class="section-header">
                                 <div class="section-title">
                                     <span class="material-symbols-outlined">link</span>
-                                    All Linked Followers
+                                    <span data-translate="allLinkedFollowers">All Linked Followers</span>
                                     <span id="linkedFollowerCountBadge"
                                         style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
                                 </div>
                                 <button class="btn btn-ghost btn-sm" onclick="loadLinkedFollowers()">
                                     <span class="material-symbols-outlined">refresh</span>
-                                    Refresh
+                                    <span data-translate="refresh">Refresh</span>
                                 </button>
                             </div>
 
@@ -3869,9 +3885,9 @@
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>User</th>
-                                            <th>Follower</th>
-                                            <th>Linked Date</th>
+                                            <th data-translate="user">User</th>
+                                            <th data-translate="follower">Follower</th>
+                                            <th data-translate="linkedDate">Linked Date</th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -3880,7 +3896,7 @@
                                             <td colspan="4">
                                                 <div class="empty-state"><span
                                                         class="material-symbols-outlined">link_off</span>
-                                                    <p>No linked followers yet. Link one below.</p>
+                                                    <p data-translate="noLinkedFollowers">No linked followers yet. Link one below.</p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -3898,26 +3914,26 @@
                             <div class="section-header">
                                 <div class="section-title">
                                     <span class="material-symbols-outlined">person_add</span>
-                                    Link New Follower
+                                    <span data-translate="linkNewFollower">Link New Follower</span>
                                 </div>
                             </div>
                             <div class="section-body">
                                 <div class="field">
-                                    <label>Select User</label>
+                                    <label data-translate="selectUserLabel">Select User</label>
                                     <select id="linkToUser" style="padding: 8px 12px;">
                                         <option value="">— Select a user —</option>
                                     </select>
                                 </div>
                                 <div class="field">
-                                    <label>Available Followers</label>
+                                    <label data-translate="availableFollowers">Available Followers</label>
                                     <select id="availableFollowers" style="padding: 8px 12px;">
-                                        <option value="">— Select a follower —</option>
+                                        <option value="" data-translate="selectFollowerLabel">— Select a follower —</option>
                                     </select>
                                 </div>
                                 <div class="btn-row">
                                     <button class="btn btn-primary" onclick="linkNewFollower()">
                                         <span class="material-symbols-outlined">link</span>
-                                        Link Follower
+                                        <span data-translate="linkFollower">Link Follower</span>
                                     </button>
                                 </div>
                                 <div class="status-msg" id="statusLinkFollower" style="margin-top: 12px;">
@@ -3932,19 +3948,19 @@
                                 <div class="section-header">
                                     <div class="section-title">
                                         <span class="material-symbols-outlined">admin_panel_settings</span>
-                                        Permissions
+                                        <span data-translate="permissions">Permissions</span>
                                     </div>
                                 </div>
                                 <div class="section-body" style="display: flex; flex-direction: column; gap: 15px;">
                                     <button class="btn btn-primary" onclick="openMemoApproversModal(); loadMemoApprovers()"
                                         style="padding:18px 20px; width: 100%; justify-content: flex-start;">
                                         <span class="material-symbols-outlined">verified_user</span>
-                                        Memo Approvers
+                                        <span data-translate="memoApprovers">Memo Approvers</span>
                                     </button>
                                     <button class="btn btn-primary" onclick="openTabAccessModal(); loadTabAccess()"
                                         style="padding:18px 20px; width: 100%; justify-content: flex-start;">
                                         <span class="material-symbols-outlined">security</span>
-                                        Tab Access Control
+                                        <span data-translate="tabAccessControl">Tab Access Control</span>
                                     </button>
                                 </div>
                         </div>
@@ -3958,51 +3974,51 @@
                             <div class="section-header">
                                 <div class="section-title">
                                     <span class="material-symbols-outlined">domain</span>
-                                    Department Management
+                                    <span data-translate="departmentManagement">Department Management</span>
                                 </div>
                                 <button class="btn btn-ghost btn-sm" onclick="loadDepartmentsList()">
                                     <span class="material-symbols-outlined">refresh</span>
-                                    Refresh
+                                    <span data-translate="refresh">Refresh</span>
                                 </button>
                             </div>
                             <div class="section-body">
                                 <div style="margin-bottom: 20px;">
                                     <h4
-                                        style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">
+                                        style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;" data-translate="departments">
                                         Departments (ฝ่าย)</h4>
                                     <div id="departmentsListContainer" style="margin-bottom: 12px;">
                                         <div
-                                            style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">
+                                            style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;" data-translate="loadingDots">
                                             Loading...</div>
                                     </div>
                                     <div style="display: grid; gap: 8px; grid-template-columns: 1fr auto;">
                                         <input id="newDepartmentName" type="text" placeholder="Enter new department..."
-                                            style="border: 1px solid var(--border); padding: 12px 12px; border-radius: var(--radius); font-size: 13px;">
+                                            style="border: 1px solid var(--border); padding: 12px 12px; border-radius: var(--radius); font-size: 13px;" data-translate="enterNewDepartment">
                                         <button class="btn btn-primary" onclick="addNewDepartment()"
                                             style="padding: 8px 16px; font-size: 13px;">
                                             <span class="material-symbols-outlined">add</span>
-                                            Add
+                                            <span data-translate="add">Add</span>
                                         </button>
                                     </div>
                                 </div>
 
                                 <div style="border-top: 1px solid var(--border); padding-top: 20px;">
                                     <h4
-                                        style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">
+                                        style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;" data-translate="subDepartments">
                                         Sub-Departments (แผนก)</h4>
                                     <div id="departments2ListContainer" style="margin-bottom: 12px;">
                                         <div
-                                            style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">
+                                            style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;" data-translate="loadingDots">
                                             Loading...</div>
                                     </div>
                                     <div style="display: grid; gap: 8px; grid-template-columns: 1fr auto;">
                                         <input id="newDepartment2Name" type="text"
                                             placeholder="Enter new sub-department..."
-                                            style="border: 1px solid var(--border); padding: 12px 12px; border-radius: var(--radius); font-size: 13px;">
+                                            style="border: 1px solid var(--border); padding: 12px 12px; border-radius: var(--radius); font-size: 13px;" data-translate="enterNewSubDept">
                                         <button class="btn btn-primary" onclick="addNewDepartment2()"
                                             style="padding: 8px 16px; font-size: 13px;">
                                             <span class="material-symbols-outlined">add</span>
-                                            Add
+                                            <span data-translate="add">Add</span>
                                         </button>
                                     </div>
                                 </div>
@@ -4019,32 +4035,32 @@
                             <div class="section-header">
                                 <div class="section-title">
                                     <span class="material-symbols-outlined">account_tree</span>
-                                    Department Structure
+                                    <span data-translate="departmentStructure">Department Structure</span>
                                 </div>
                                 <button class="btn btn-ghost btn-sm" onclick="loadDepartmentStructure()">
                                     <span class="material-symbols-outlined">refresh</span>
-                                    Refresh
+                                    <span data-translate="refresh">Refresh</span>
                                 </button>
                             </div>
                             <div class="section-body" style="display: flex; flex-direction: column;">
                                 <div style="margin-bottom: 20px;">
                                     <label
-                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; display: block;">Link
+                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; display: block;" data-translate="linkSubDeptsToDepts">Link
                                         Sub-Departments to Departments</label>
                                     <div style="display: grid; gap: 8px; grid-template-columns: 1fr auto;">
                                         <div style="display: flex; gap: 8px;" class="field">
                                             <select id="linkDepartment"
                                                 style="flex: 1; padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
-                                                <option value="">— Select Department —</option>
+                                                <option value="" data-translate="selectDeptLabel">— Select Department —</option>
                                             </select>
                                             <select id="linkSubDepartment"
                                                 style="flex: 1; padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
-                                                <option value="">— Select Sub-Department —</option>
+                                                <option value="" data-translate="selectSubDeptLabel">— Select Sub-Department —</option>
                                             </select>
                                                    <button class="btn btn-primary" onclick="linkDepartmentToSubDepartment()"
                                             style="padding: 8px 16px; font-size: 13px; white-space: nowrap;">
                                             <span class="material-symbols-outlined">link</span>
-                                            Link
+                                            <span data-translate="link">Link</span>
                                         </button>
                                         </div>
                                  
@@ -4054,12 +4070,12 @@
                                 <div
                                     style="border-top: 1px solid var(--border); padding-top: 20px; flex: 1; display: flex; flex-direction: column;">
                                     <h4
-                                        style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 16px;">
+                                        style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 16px;" data-translate="departmentHierarchy">
                                         Department Hierarchy</h4>
                                     <div id="departmentHierarchyContainer"
                                         style="background: linear-gradient(135deg, rgba(26, 39, 64, 0.02) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; overflow-y: auto; flex: 1; min-height: 300px;">
                                         <div
-                                            style="padding: 24px; text-align: center; color: var(--ink-muted); font-size: 13px;">
+                                            style="padding: 24px; text-align: center; color: var(--ink-muted); font-size: 13px;" data-translate="loadingDeptStructure">
                                             Loading department structure...</div>
                                     </div>
                                 </div>
@@ -4079,6 +4095,7 @@
 
             </div>
 
+<!--prompt: เพิ่ม data-translate-->
             <style>
                 /* Responsive Grid Layouts for Mobile */
                 @media (max-width: 768px) {
@@ -4092,36 +4109,36 @@
             <!-- ── LOGS VIEW ──────────────────────── -->
             <div id="view-logs" class="view" style="display:none;">
                 <div class="page-header">
-                    <h2>Activity Log</h2>
-                    <p>Live activity trail from the LINE Bot server.</p>
+                    <h2 data-translate="activityLog">Activity Log</h2>
+                    <p data-translate="liveActivityTrail">Live activity trail from the LINE Bot server.</p>
                 </div>
 
                 <div class="section-card">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">event_note</span>
-                            System Activities
+                            <span data-translate="systemActivities">System Activities</span>
                         </div>
                         <div class="logs-toolbar">
                             <div class="logs-toolbar-left">
                                 <button class="btn btn-ghost btn-sm" onclick="loadLogs()">
                                     <span class="material-symbols-outlined">refresh</span>
-                                    Refresh
+                                    <span data-translate="refresh">Refresh</span>
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="clearLogs()">
+                                <button class="btn btn-danger btn-sm" onclick="clearLogs()" style="display:none;">
                                     <span class="material-symbols-outlined">delete_sweep</span>
-                                    Clear
+                                    <span data-translate="clearBtn">Clear</span>
                                 </button>
                             </div>
 
 
 
-                            <div class="logs-counter" id="logsCount">0 entries</div>
+                            <div class="logs-counter" id="logsCount" style="display:none;"><span>0</span> <span data-translate="entries">entries</span></div>
                         </div>
                     </div>
                     <div class="section-body" style="padding: 0;">
                         <div class="activity-log" id="logsViewer">
-                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">No activity logged yet.
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;" data-translate="noActivityLogged">No activity logged yet.
                             </div>
                         </div>
                     </div>
@@ -4338,6 +4355,64 @@
                 </div>
             </div>
 
+            <!-- ── EDIT MEMO MODAL ──────────── -->
+            <div id="view-edit-memo" class="view"
+                style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 500; overflow-y: auto; padding: 20px;">
+                <div
+                    style="background: white; border-radius: var(--radius); min-width: 30vw; margin: 20px auto; box-shadow: var(--shadow-lg);">
+                    <div class="page-header"
+                        style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); margin-bottom: 0;">
+                        <div>
+                            <h2>Edit Memorandum</h2>
+                            <p>Update the memorandum details.</p>
+                        </div>
+                        <button class="btn btn-ghost" onclick="closeEditMemoModal()"
+                            style="position: relative; width: auto; padding: 8px 12px;">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div style="padding: 20px; max-height: 70vh;  overflow-y: auto;">
+                        <div class="section-card" style="max-width: 100%;">
+                            <div class="section-body">
+                                <div class="field">
+                                    <label>Document Number</label>
+                                    <input id="editMemoDocNumber" type="text" placeholder="Enter document number..." style="font-family: 'Courier New', monospace;">
+                                </div>
+                                <div class="field">
+                                    <label>Title</label>
+                                    <input id="editMemoTitle" type="text" placeholder="Enter memo title...">
+                                </div>
+                                <div class="field">
+                                    <label>Type</label>
+                                    <select id="editMemoType" style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--ink); font-family: inherit; cursor: pointer;">
+                                        <option value="เพื่อโปรดทราบ">เพื่อโปรดทราบ</option>
+                                        <option value="เพื่อโปรดดำเนินการ">เพื่อโปรดดำเนินการ</option>
+                                        <option value="เพื่อโปรดอนุมัติ">เพื่อโปรดอนุมัติ</option>
+                                        <option value="เพื่อโปรดพิจารณา">เพื่อโปรดพิจารณา</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Recipients</label>
+                                    <input id="editMemoRecipients" type="text" placeholder="Recipients..." disabled>
+                                </div>
+                                <div class="field">
+                                    <label>Message Content</label>
+                                    <textarea id="editMemoContent" placeholder="Memo content..." rows="6"></textarea>
+                                </div>
+                                <div class="status-msg" id="statusEditMemo" style="margin-top: 12px;">
+                                    <span class="material-symbols-outlined"></span>
+                                    <span class="msg-text"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
+                        <button class="btn btn-ghost" onclick="closeEditMemoModal()">Cancel</button>
+                        <button class="btn btn-primary" onclick="saveEditedMemo()">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div><!-- /main -->
@@ -4415,7 +4490,6 @@
             </button>
         </div>
     </div>
-    <!--prompt: ให้สีปุ่มเปลี่ยนพื้นหลังเป็นสี --accent และ text สีขาว -->
 
     <!-- Memo Detail Modal -->
     <div id="memoDetailOverlay" class="memo-detail-overlay">
@@ -5023,6 +5097,689 @@
             panel.style.display = isVisible ? 'none' : 'flex'
         }
 
+        // ──────────────────────────────────────────────
+        // Language Switching
+        // ──────────────────────────────────────────────
+        let currentLanguage = localStorage.getItem('preferredLanguage') || 'th'
+
+        // Translations object (imported from 0-translate.js)
+        const translations = {
+            th: {
+                dept_arch_NXT: "สถาปนิก NXT",
+                dept_sales_FFB: "ขาย FFB",
+                dept_mkt_FFB: "การตลาด FFB",
+                dept_design_FFB: "ออกแบบ FFB",
+                dept_draw_FFB: "เขียนแบบ FFB",
+                dept_admin_FFB: "บริหาร FFB",
+                dept_ds_FFB: "Design FFB",
+                quota: "สิทธิ์",
+                more: "เพิ่มเติม",
+                moreMenu: "เมนูเพิ่มเติม",
+                holidayCalendar: "ปฏิทินวันหยุด",
+                addHoliday: "เพิ่มวันหยุด",
+                editProfile: "แก้ไขข้อมูลส่วนตัว",
+                newPassword: "รหัสผ่านใหม่ (เว้นว่างถ้าไม่ต้องการเปลี่ยน)",
+                confirmPassword: "ยืนยันรหัสผ่านใหม่",
+                company_rmc: "RMC Group Coporation",
+                company_rmcbs: "RMC Building Solutions",
+                company_buildnxt: "Build NXT",
+                company_furnix: "Furnix Furniture And Built In Solution",
+                used: "ใช้สิทธิ์",
+                remain: "คงเหลือ",
+                prAnnouncement: "หน้าหลัก",
+                dashboard: "แดชบอร์ด",
+                leaveRequest: "ขอลางาน",
+                calendar: "ปฏิทินลางาน",
+                approval: "อนุมัติการลา",
+                management: "จัดการสมาชิก",
+                permissions: "กำหนดสิทธิ์",
+                activity: "ประวัติการใช้งาน",
+                allHistory: "ประวัติการลาทั้งหมด",
+                dailyReport: "รายงานประจำวัน",
+                monthlyStats: "สถิติประจำเดือน",
+                login: "เข้าสู่ระบบ",
+                logout: "ออกจากระบบ",
+                username: "ชื่อผู้ใช้",
+                password: "รหัสผ่าน",
+                loginBtn: "เข้าสู่ระบบ",
+                register: "สมัครสมาชิกใหม่",
+                activityLog: "ประวัติการใช้งาน",
+                welcomeToMemo: "ยินดีต้อนรับเข้าสู่ระบบเมมโมออนไลน์",
+                enterUsername: "กรอกชื่อผู้ใช้ของคุณ",
+                enterPassword: "กรอกรหัสผ่านของคุณ",
+                signIn: "เข้าสู่ระบบ",
+                dontHaveAccount: "ยังไม่มีบัญชี?",
+                registerHere: "สมัครที่นี่",
+                createAccount: "สร้างบัญชี",
+                joinSystem: "สมัครใช้งานระบบเมมโมออนไลน์",
+                firstName: "ชื่อจริง",
+                lastName: "นามสกุล",
+                chooseUsername: "เลือกชื่อผู้ใช้",
+                firstNamePlaceholder: "ชื่อจริงของคุณ",
+                lastNamePlaceholder: "นามสกุลของคุณ",
+                createPassword: "สร้างรหัสผ่าน",
+                confirmYourPassword: "ยืนยันรหัสผ่านของคุณ",
+                department: "ฝ่าย",
+                departmentTh: "ฝ่าย",
+                selectDepartment: "เลือกฝ่าย...",
+                subDepartment: "แผนก",
+                subDepartmentTh: "แผนก",
+                selectSubDepartment: "เลือกแผนก...",
+                createAccountBtn: "สร้างบัญชี",
+                alreadyHaveAccount: "มีบัญชีแล้ว?",
+                loginHere: "เข้าสู่ระบบที่นี่",
+                accountSettings: "การตั้งค่าบัญชี",
+                manageAccountFollowers: "จัดการบัญชีและผู้ติดตามที่เชื่อมโยง",
+                accountInformation: "ข้อมูลบัญชี",
+                currentPassword: "รหัสผ่านปัจจุบัน",
+                updatePassword: "อัปเดตรหัสผ่าน",
+                clear: "ล้าง",
+                changePassword: "เปลี่ยนรหัสผ่าน",
+                linkedLINEProfile: "โปรไฟล์ LINE ที่เชื่อมโยง",
+                refresh: "รีเฟรช",
+                noLINEProfile: "ไม่มีโปรไฟล์ LINE ที่เชื่อมโยง",
+                linkProfile: "เชื่อมโยงโปรไฟล์ LINE กับบัญชีของคุณ",
+                executiveInbox: "กล่องข้อความ",
+                manageLINE: "จัดการการแจ้งเตือน LINE และคำสั่งอย่างเป็นทางการ",
+                memoSent: "เมมโมที่ส่ง",
+                allMemosDispatched: "เมมโมทั้งหมดที่ส่ง",
+                pendingApprovals: "รอการอนุมัติ",
+                awaitingYourDecision: "รอการตัดสินใจของคุณ",
+                memosReceived: "เมมโมที่ได้รับ",
+                sentToFollowers: "ส่งให้ผู้ติดตาม",
+                approved: "อนุมัติแล้ว",
+                applied: "เข้าร่วม",
+                successfullyApproved: "อนุมัติเรียบร้อย",
+                quickActions: "การกระทำที่รวดเร็ว",
+                composeMemorandum: "เขียนเมมโม",
+                broadcastToAll: "ประกาศ",
+                viewFollowers: "จัดการสมาชิก",
+                viewLogs: "ประวัติการใช้งาน",
+                recentActivity: "กิจกรรมล่าสุด",
+                createAndDispatch: "สร้างและส่งเมมโมอย่างเป็นทางการให้ผู้รับ",
+                memoDetails: "รายละเอียดเมมโม",
+                documentNumber: "หมายเลขเอกสาร",
+                memoTitle: "หัวข้อ",
+                enterMemoTitle: "กรอกชื่อเมมโม...",
+                memoType: "ประเภท",
+                filterByDepartment: "กรองตามฝ่าย",
+                recipients: "ผู้รับ",
+                selectRecipients: "เลือกผู้รับ...",
+                recipientSingular: "ผู้รับ",
+                recipientPlural: "ผู้รับ",
+                selected: "ที่เลือก",
+                messageBody: "เนื้อหาข้อความ",
+                typeContent: "พิมพ์เนื้อหาเมมโมของคุณที่นี่...",
+                attachImage: "แนบรูปภาพ (ไม่บังคับ)",
+                clickToUpload: "คลิกเพื่ออัปโหลดหรือลากรูปภาพที่นี่",
+                sendMemorandum: "ส่งเมมโม",
+                clear: "ล้าง",
+                sentMemos: "เมมโมที่ส่ง",
+                reviewDispatched: "ตรวจสอบเมมโมทั้งหมดที่คุณส่ง",
+                memoHistory: "เมมโมที่ส่งแล้ว",
+                date: "วันที่",
+                docNumber: "หมายเลขเอกสาร",
+                title: "ชื่อ",
+                type: "ประเภท",
+                recipient: "ผู้รับ",
+                status: "สถานะ",
+                preview: "ตัวอย่าง",
+                action: "การกระทำ",
+                noSentMemos: "ยังไม่มีเมมโมที่ส่ง",
+                receivedMemos: "เมมโมที่ได้รับ",
+                viewMemosFollowers: "ดูเมมโมทั้งหมดที่ส่งไปยังผู้ติดตาม",
+                incomingMemos: "เมมโมที่ได้รับ",
+                from: "จาก",
+                noReceivedMemos: "ยังไม่มีเมมโมที่ได้รับ",
+                pendingMemoApprovals: "เมมโมที่รอการอนุมัติ",
+                reviewAndApprove: "ตรวจสอบและอนุมัติเมมโมจากฝ่ายของคุณ",
+                memosAwaitingApproval: "เมมโมที่รอการอนุมัติ",
+                to: "ถึง",
+                content: "เนื้อหา",
+                noPendingApprovals: "ไม่มีการอนุมัติที่รอดำเนินการ",
+                broadcastMemorandum: "ประกาศ",
+                dispatchMessage: "ส่งข้อความไปยังผู้ติดตามที่ใช้งานอยู่ทั้งหมด",
+                massDispatch: "การส่งกลุ่ม",
+                broadcastMessage: "ข้อความประกาศ",
+                broadcastContent: "พิมพ์เนื้อหาการประกาศของคุณที่นี่...",
+                broadcastAllFollowers: "ประกาศไปยังผู้ติดตาม LINE ทั้งหมด",
+                followerRegistry: "จัดการสมาชิก",
+                manageReview: "จัดการและตรวจสอบผู้ติดตาม LINE ที่ใช้งานอยู่",
+                systemUsers: "ผู้ใช้ระบบ",
+                totalUsersInSystem: "ผู้ใช้ทั้งหมดในระบบ",
+                lineFollowers: "ผู้ติดตาม LINE",
+                activeLINEFollowers: "ผู้ติดตาม LINE ที่ใช้งานอยู่",
+                linkedUsers: "ผู้ใช้ที่เชื่อมโยง",
+                usersWithLinkedFollowers: "ผู้ใช้ที่เชื่อมโยงผู้ติดตาม",
+                pendingUsers: "ผู้ใช้ที่รอดำเนินการ",
+                usersAwaitingApproval: "ผู้ใช้ที่รอการอนุมัติ",
+                pendingUserRegistrations: "การลงทะเบียนผู้ใช้ที่รอดำเนินการ",
+                roleColumn: "บทบาท",
+                joinedColumn: "เข้าร่วม",
+                passwordColumn: "รหัสผ่าน",
+                noWaitingApprovals: "ไม่มีการลงทะเบียนที่รอดำเนินการ",
+                activeFollowers: "ผู้ติดตามที่ใช้งานอยู่",
+                allLinkedFollowers: "ผู้ติดตามที่เชื่อมโยงทั้งหมด",
+                linkNewFollower: "เชื่อมโยงผู้ติดตามใหม่",
+                selectUser: "เลือกผู้ใช้",
+                selectUserLabel: "เลือกผู้ใช้",
+                selectAUser: "เลือกผู้ใช้",
+                availableFollowers: "ผู้ติดตามที่มี",
+                selectFollower: "เลือกผู้ติดตาม",
+                selectFollowerLabel: "เลือกผู้ติดตาม",
+                linkFollower: "เชื่อมโยงผู้ติดตาม",
+                departmentManagement: "การจัดการฝ่าย",
+                departments: "ฝ่าย",
+                subDepartments: "แผนก",
+                enterNewDepartment: "กรอกฝ่ายใหม่...",
+                enterNewSubDept: "กรอกแผนกใหม่...",
+                add: "เพิ่ม",
+                departmentStructure: "โครงสร้างฝ่าย",
+                linkSubDepartments: "เชื่อมโยงแผนกกับฝ่าย",
+                selectDepartmentLink: "เลือกฝ่าย",
+                selectDeptLabel: "เลือกฝ่าย",
+                selectSubDeptLink: "เลือกแผนก",
+                selectSubDeptLabel: "เลือกแผนก",
+                allDepartments: "ฝ่ายทั้งหมด",
+                link: "เชื่อมโยง",
+                departmentHierarchy: "ลำดับชั้นของฝ่าย",
+                memoApprovers: "ผู้อนุมัติเมมโม",
+                tabAccessControl: "การควบคุมการเข้าถึงแท็บ",
+                pendingUserRegistrations: "การลงทะเบียนผู้ใช้ที่รอดำเนินการ",
+                noPendingReg: "ไม่มีการลงทะเบียนที่รอดำเนินการ",
+                loadingUsers: "กำลังโหลดผู้ใช้...",
+                clickRefreshFollowers: "คลิกรีเฟรชเพื่อโหลดผู้ติดตาม",
+                noLinkedFollowers: "ยังไม่มีผู้ติดตามที่เชื่อมโยง เชื่อมโยงตัวหนึ่งด้านล่าง",
+                userId: "ID ผู้ใช้",
+                statusMessage: "ข้อความสถานะ",
+                loadingDots: "กำลังโหลด...",
+                loadingDeptStructure: "กำลังโหลดโครงสร้างฝ่าย...",
+                linkSubDeptsToDepts: "เชื่อมโยงแผนกกับฝ่าย",
+                loadingSentMemos: "กำลังโหลดเมมโมที่ส่ง...",
+                loadingReceivedMemos: "กำลังโหลดเมมโมที่ได้รับ...",
+                loadingPendingApprovals: "กำลังโหลดการอนุมัติที่รอดำเนินการ...",
+                refreshingProfiles: "กำลังรีเฟรชโปรไฟล์...",
+                noMatchingApprovals: "ไม่พบการอนุมัติที่ตรงกัน",
+                noMatchingMemos: "ไม่พบเมมโมที่ตรงกัน",
+                systemActivities: "กิจกรรมของระบบ",
+                liveActivityTrail: "ประวัติกิจกรรมสดจากเซิร์ฟเวอร์ LINE Bot",
+                noActivityLogged: "ยังไม่มีกิจกรรมที่บันทึก",
+                entries: "รายการ",
+                justNow: "เพิ่งเดี๋ยวนี้",
+                minutesAgo: "{0} นาที",
+                hoursAgo: "{0} ชั่วโมง",
+                daysAgo: "{0} วัน",
+                logNewUserRegister: "ลงทะเบียนผู้ใช้ใหม่",
+                logApprovedUserRegister: "อนุมัติผู้ใช้",
+                logRejectedUser: "ปฏิเสธผู้ใช้",
+                logLogin: "เข้าสู่ระบบ",
+                logLogout: "ออกจากระบบ",
+                logSendMemo: "ส่งเมมโม",
+                logApprovedMemo: "อนุมัติเมมโม",
+                logRejectedMemo: "ปฏิเสธเมมโม",
+                logNewFollowers: "ผู้ติดตามใหม่",
+                logUserDeleted: "ลบผู้ใช้",
+                logSendMemoPendingApproval: "ส่งเมมโม (รอการอนุมัติ)",
+                logFollowerLinked: "เชื่อมโยงผู้ติดตาม",
+                logFollowerUnlinked: "ยกเลิกเชื่อมโยงผู้ติดตาม",
+                logDepartmentAdded: "เพิ่มฝ่าย",
+                logDepartmentDeleted: "ลบฝ่าย",
+                logError: "ข้อผิดพลาด",
+                logActivity: "กิจกรรม",
+                from: "จาก",
+                recipient: "ผู้รับ",
+                user: "ผู้ใช้",
+                approvedBy: "อนุมัติโดย",
+                by: "โดย",
+                role_admin: "ผู้ดูแลระบบ",
+                role_user: "ผู้ใช้",
+                items: "รายการ",
+                name: "ชื่อ-นามสกุล"
+            },
+            en: {
+                dept_arch_NXT: "Architect",
+                dept_sales_FFB: "Sales",
+                dept_mkt_FFB: "Marketing",
+                dept_design_FFB: "Design",
+                dept_draw_FFB: "Drawing",
+                dept_admin_FFB: "Administration",
+                dept_ds_FFB: "Design FFB",
+                quota: "Quota",
+                more: "More",
+                moreMenu: "More Menu",
+                holidayCalendar: "Holiday Calendar",
+                addHoliday: "Add Holiday",
+                editProfile: "Edit Profile",
+                newPassword: "New Password (leave blank if no change)",
+                confirmPassword: "Confirm New Password",
+                company_rmc: "RMC Group Coporation",
+                company_rmcbs: "RMC Building Solutions",
+                company_buildnxt: "Build NXT",
+                company_furnix: "Furnix Furniture And Built In Solution",
+                used: "Used",
+                remain: "Remain",
+                prAnnouncement: "Homepage",
+                dashboard: "Dashboard",
+                leaveRequest: "Leave Request",
+                calendar: "Leave Calendar",
+                approval: "Approval",
+                management: "Users Management",
+                permissions: "Permissions",
+                activity: "Activity Log",
+                allHistory: "All Leave History",
+                dailyReport: "Daily Report",
+                monthlyStats: "Monthly Statistics",
+                login: "Login",
+                logout: "Logout",
+                username: "Username",
+                password: "Password",
+                loginBtn: "Login",
+                register: "Register",
+                activityLog: "Activity Log",
+                welcomeToMemo: "Welcome to your Executive Memorandum",
+                enterUsername: "Enter your username",
+                enterPassword: "Enter your password",
+                signIn: "Sign In",
+                dontHaveAccount: "Don't have an account?",
+                registerHere: "Register here",
+                createAccount: "Create Account",
+                joinSystem: "Join the Executive Memorandum system",
+                firstName: "First Name",
+                lastName: "Last Name",
+                chooseUsername: "Choose a username",
+                firstNamePlaceholder: "Your first name",
+                lastNamePlaceholder: "Your last name",
+                createPassword: "Create a password",
+                confirmYourPassword: "Confirm your password",
+                department: "Department",
+                departmentTh: "Department (ฝ่าย)",
+                selectDepartment: "Select department...",
+                subDepartment: "Sub-Department",
+                subDepartmentTh: "Sub-Department (แผนก)",
+                selectSubDepartment: "Select sub-department...",
+                createAccountBtn: "Create Account",
+                alreadyHaveAccount: "Already have an account?",
+                loginHere: "Login here",
+                accountSettings: "Account Settings",
+                manageAccountFollowers: "Manage your account and linked followers",
+                accountInformation: "Account Information",
+                currentPassword: "Current Password",
+                updatePassword: "Update Password",
+                clear: "Clear",
+                changePassword: "Change Password",
+                linkedLINEProfile: "Linked LINE Profile",
+                refresh: "Refresh",
+                noLINEProfile: "No LINE Profile Linked",
+                linkProfile: "Link a LINE profile to your account",
+                executiveInbox: "Executive Inbox",
+                manageLINE: "Manage LINE notifications and formal directives",
+                memoSent: "Memo Sent",
+                allMemosDispatched: "All memos dispatched",
+                pendingApprovals: "Pending Approvals",
+                awaitingYourDecision: "Awaiting your decision",
+                memosReceived: "Memos Received",
+                sentToFollowers: "Sent to followers",
+                approved: "Approved",
+                applied: "Applied",
+                successfullyApproved: "Successfully approved",
+                quickActions: "Quick Actions",
+                composeMemorandum: "Compose Memorandum",
+                broadcastToAll: "Broadcast to All",
+                viewFollowers: "Users Management",
+                viewLogs: "View Logs",
+                recentActivity: "Recent Activity",
+                createAndDispatch: "Create and dispatch formal memorandums to selected recipients",
+                memoDetails: "Memorandum Details",
+                documentNumber: "Document Number",
+                memoTitle: "Memorandum Title",
+                enterMemoTitle: "Enter memorandum title...",
+                memoType: "Type",
+                filterByDepartment: "Filter by Department",
+                recipients: "Recipients",
+                selectRecipients: "Select recipients...",
+                recipientSingular: "recipient",
+                recipientPlural: "recipients",
+                selected: "selected",
+                messageBody: "Message Body",
+                typeContent: "Type your memorandum content here...",
+                attachImage: "Attach Image (Optional)",
+                clickToUpload: "Click to upload or drag image here",
+                sendMemorandum: "Send Memorandum",
+                clear: "Clear",
+                sentMemos: "Sent Memos",
+                reviewDispatched: "Review all memorandums you have dispatched",
+                memoHistory: "Memorandum History",
+                date: "Date",
+                docNumber: "DocNumber",
+                title: "Title",
+                type: "Type",
+                recipient: "Recipient",
+                status: "Status",
+                preview: "Preview",
+                action: "Action",
+                noSentMemos: "No sent memos yet",
+                receivedMemos: "Received Memos",
+                viewMemosFollowers: "View all memorandums sent to your followers",
+                incomingMemos: "Incoming Memos",
+                from: "From",
+                noReceivedMemos: "No received memos yet",
+                pendingMemoApprovals: "Pending Memo Approvals",
+                reviewAndApprove: "Review and approve memorandums from your department",
+                memosAwaitingApproval: "Memos Awaiting Your Approval",
+                to: "To",
+                content: "Content",
+                noPendingApprovals: "No pending approvals",
+                broadcastMemorandum: "Broadcast Memorandum",
+                dispatchMessage: "Dispatch a message to all active followers simultaneously",
+                massDispatch: "Mass Dispatch",
+                broadcastMessage: "Broadcast Message",
+                broadcastContent: "Type your broadcast content here...",
+                broadcastAllFollowers: "Broadcast to All Followers",
+                followerRegistry: "User Management",
+                manageReview: "Manage and review all active LINE followers",
+                systemUsers: "System Users",
+                totalUsersInSystem: "Total users in system",
+                lineFollowers: "LINE Followers",
+                activeLINEFollowers: "Active LINE followers",
+                linkedUsers: "Linked Users",
+                usersWithLinkedFollowers: "Users with linked followers",
+                pendingUsers: "Pending Approvals",
+                usersAwaitingApproval: "Users awaiting approval",
+                pendingUserRegistrations: "Pending User Registrations",
+                loadingSentMemos: "Loading sent memos...",
+                loadingReceivedMemos: "Loading received memos...",
+                loadingPendingApprovals: "Loading pending approvals...",
+                refreshingProfiles: "Refreshing profiles...",
+                roleColumn: "Role",
+                joinedColumn: "Joined",
+                passwordColumn: "Password",
+                noWaitingApprovals: "No pending registrations",
+                activeFollowers: "Active Followers",
+                allLinkedFollowers: "All Linked Followers",
+                linkNewFollower: "Link New Follower",
+                selectUser: "Select User",
+                selectUserLabel: "Select User",
+                selectAUser: "Select a user",
+                availableFollowers: "Available Followers",
+                selectFollower: "Select a follower",
+                selectFollowerLabel: "Select a follower",
+                linkFollower: "Link Follower",
+                departmentManagement: "Department Management",
+                departments: "Departments (ฝ่าย)",
+                subDepartments: "Sub-Departments (แผนก)",
+                enterNewDepartment: "Enter new department...",
+                enterNewSubDept: "Enter new sub-department...",
+                add: "Add",
+                departmentStructure: "Department Structure",
+                linkSubDepartments: "Link Sub-Departments to Departments",
+                selectDepartmentLink: "Select Department",
+                selectDeptLabel: "Select Department",
+                selectSubDeptLink: "Select Sub-Department",
+                selectSubDeptLabel: "Select Sub-Department",
+                allDepartments: "All Departments",
+                link: "Link",
+                departmentHierarchy: "Department Hierarchy",
+                memoApprovers: "Memo Approvers",
+                tabAccessControl: "Tab Access Control",
+                pendingUserRegistrations: "Pending User Registrations",
+                noPendingReg: "No pending registrations.",
+                loadingUsers: "Loading users...",
+                clickRefreshFollowers: "Click Refresh to load followers",
+                noLinkedFollowers: "No linked followers yet. Link one below.",
+                userId: "User ID",
+                statusMessage: "Status Message",
+                loadingDots: "Loading...",
+                loadingDeptStructure: "Loading department structure...",
+                linkSubDeptsToDepts: "Link Sub-Departments to Departments",
+                noMatchingApprovals: "No matching approvals found.",
+                noMatchingMemos: "No matching memos found.",
+                systemActivities: "System Activities",
+                liveActivityTrail: "Live activity trail from the LINE Bot server.",
+                noActivityLogged: "No activity logged yet.",
+                entries: "entries",
+                justNow: "Just now",
+                minutesAgo: "{0}m ago",
+                hoursAgo: "{0}h ago",
+                daysAgo: "{0}d ago",
+                logNewUserRegister: "User Registered",
+                logApprovedUserRegister: "User Approved",
+                logRejectedUser: "User Rejected",
+                logLogin: "Login",
+                logLogout: "Logout",
+                logSendMemo: "Sent Memo",
+                logApprovedMemo: "Approved Memo",
+                logRejectedMemo: "Rejected Memo",
+                logNewFollowers: "New Follower",
+                logUserDeleted: "User Deleted",
+                logSendMemoPendingApproval: "Send Memo (Pending Approval)",
+                logFollowerLinked: "Follower Linked",
+                logFollowerUnlinked: "Follower Unlinked",
+                logDepartmentAdded: "Department Added",
+                logDepartmentDeleted: "Department Deleted",
+                logError: "Error",
+                logActivity: "Activity",
+                from: "From",
+                recipient: "Recipient",
+                user: "User",
+                approvedBy: "Approved by",
+                by: "by",
+                role_admin: "ADMIN",
+                role_user: "USER",
+                items: "items",
+                name: "Full Name",
+                "dept_บริหาร": "Administration",
+                "dept_จัดซื้อในประเทศ": "Domestic Procurement",
+                "dept_จัดซื้อต่างประเทศ": "International Procurement",
+                "dept_บัญชีและการเงิน": "Accounting and Finance",
+                "dept_ทรัพยากรมนุษย์": "Human Resources",
+                "dept_ขายและการตลาด": "Sales and Marketing",
+                "dept_โลจิสติกส์": "Logistics",
+                "dept_ผลิต": "Manufacturing",
+                "dept_วิศวกรรม": "Engineering",
+                "dept_งานโครงการ": "Project Management",
+                "dept_วิจัยและพัฒนา": "Research and Development",
+                "dept_บัญชี": "Accounting",
+                "dept_ประสานงานขาย": "Sales Coordination",
+                "dept_ขนส่ง": "Transportation",
+                "dept_คลังสินค้า": "Warehouse",
+                "dept_ซ่อมบำรุง": "Maintenance",
+                "dept_ประกันคุณภาพ": "Quality Assurance",
+                "dept_วางแผนการผลิต": "Production Planning",
+                "dept_ธุรการผลิต": "Production Administration",
+                "dept_ปิดผิว": "Wood Finishing",
+                "dept_พิมพ์เยื่อ": "Printing",
+                "dept_พีพีบอร์ด": "PP Board",
+                "dept_รีดเหล็ก": "Steel Forming",
+                "dept_แร็ปปิ้ง": "Wrapping",
+                "dept_โครงการ": "Projects"
+            }
+           
+        };
+
+        // Initialize language on page load
+        function initializeLanguage() {
+            updateCurrentLangDisplay()
+            applyTranslations()
+        }
+
+
+        function updateCurrentLangDisplay() {
+            const langDisplay = {
+                'th': 'TH',
+                'en': 'EN',
+            }
+            document.getElementById('currentLang').textContent = langDisplay[currentLanguage] || 'TH'
+        }
+
+        function toggleLanguageMenu() {
+            const menu = document.getElementById('languageMenu')
+            const isVisible = menu.style.display === 'flex'
+            menu.style.display = isVisible ? 'none' : 'flex'
+        }
+
+        function changeLanguage(lang) {
+            if (!translations[lang]) return
+            
+            currentLanguage = lang
+            updateCurrentLangDisplay()
+            applyTranslations()
+            localStorage.setItem('preferredLanguage', lang)
+            
+            // Re-render logs with new language for real-time timestamp translation
+            refreshLogsForLanguageChange()
+            
+            // Update department display in topbar (real-time)
+            updateDepartmentDisplay()
+            
+            // Refresh department lists and structure in real-time
+            const activeView = document.querySelector('[class*="show"]')?.id || null
+            if (document.getElementById('departmentsListContainer')?.innerHTML) {
+                loadDepartmentsList()
+            }
+            if (document.getElementById('departmentHierarchyContainer')?.innerHTML) {
+                loadDepartmentStructure()
+            }
+            
+            // Close the menu
+            document.getElementById('languageMenu').style.display = 'none'
+        }
+
+        // Update department display in topbar with translated department name
+        function updateDepartmentDisplay() {
+            if (!currentUser) return
+            
+            const deptKey = 'dept_' + currentUser.department
+            const deptDisplayName = (translations[currentLanguage] && translations[currentLanguage][deptKey]) 
+                ? translations[currentLanguage][deptKey]
+                : (currentUser.department || 'ไม่ระบุแผนก')
+            
+            document.getElementById('topbarUserRole').textContent = deptDisplayName
+            document.getElementById('userMenuRole').textContent = deptDisplayName
+        }
+
+        // Map message strings from backend to translation keys
+        const messageKeyMap = {
+            'new user register': 'logNewUserRegister',
+            'approved user register': 'logApprovedUserRegister',
+            'rejected user': 'logRejectedUser',
+            'login': 'logLogin',
+            'logout': 'logLogout',
+            'send memo': 'logSendMemo',
+            'approved memo': 'logApprovedMemo',
+            'rejected memo': 'logRejectedMemo',
+            'new followers': 'logNewFollowers',
+            'user deleted': 'logUserDeleted',
+            'send memo (pending approval)': 'logSendMemoPendingApproval'
+        }
+
+        // Map event titles to translation keys
+        const eventTitleMap = {
+            'User Registered': 'logNewUserRegister',
+            'User Approved': 'logApprovedUserRegister',
+            'User Rejected': 'logRejectedUser',
+            'Login': 'logLogin',
+            'Logout': 'logLogout',
+            'Sent Memo': 'logSendMemo',
+            'Approved Memo': 'logApprovedMemo',
+            'Rejected Memo': 'logRejectedMemo',
+            'New Follower': 'logNewFollowers',
+            'Follower Linked': 'logFollowerLinked',
+            'Follower Unlinked': 'logFollowerUnlinked',
+            'Department Added': 'logDepartmentAdded',
+            'Department Deleted': 'logDepartmentDeleted',
+            'Error': 'logError',
+            'Activity': 'logActivity'
+        }
+
+        // Get translated message display text
+        function getMessageDisplay(message) {
+            const key = messageKeyMap[message.toLowerCase()]
+            if (key && translations[currentLanguage] && translations[currentLanguage][key]) {
+                return translations[currentLanguage][key]
+            }
+            return message // fallback to original message
+        }
+
+        // Get translated event title
+        function getEventTitle(title) {
+            const key = eventTitleMap[title]
+            if (key && translations[currentLanguage] && translations[currentLanguage][key]) {
+                return translations[currentLanguage][key]
+            }
+            return title // fallback to original title
+        }
+
+        function refreshLogsForLanguageChange() {
+            // Re-render dashboard logs if there's cached data
+            if (cachedDashboardLogs && cachedDashboardLogs.length > 0) {
+                const dashLogsViewer = document.getElementById('dash-logs-preview')
+                if (dashLogsViewer) {
+                    renderLogs(cachedDashboardLogs.slice(0, 30), 'dash-logs-preview')
+                }
+            }
+            
+            // Re-render full logs if there's cached data
+            if (cachedFullLogs && cachedFullLogs.length > 0) {
+                const logsViewer = document.getElementById('logsViewer')
+                if (logsViewer) {
+                    renderLogs(cachedFullLogs, 'logsViewer')
+                }
+            }
+        }
+
+function applyTranslations() {
+    // Update all elements with data-translate attribute
+    document.querySelectorAll('[data-translate]').forEach((element) => {
+        const key = element.getAttribute('data-translate')
+        if (translations[currentLanguage] && translations[currentLanguage][key]) {
+            const text = translations[currentLanguage][key]
+            
+            if (element.tagName.toLowerCase() === 'input' || 
+                element.tagName.toLowerCase() === 'textarea') {
+                element.placeholder = text
+            } else if (element.tagName.toLowerCase() === 'option') {
+                element.textContent = text
+            } else if (element.tagName.toLowerCase() === 'label') {
+                // Check for icons (both <i> and <span> with material-symbols-outlined)
+                const icon = element.querySelector('i, .material-symbols-outlined')
+                if (icon) {
+                    const iconHTML = icon.outerHTML
+                    element.innerHTML = iconHTML + ' ' + text
+                } else {
+                    element.textContent = text
+                }
+            } else {
+                // Preserve icons if they exist
+                const icon = element.querySelector('i, .material-symbols-outlined')
+                if (icon) {
+                    const iconHTML = icon.outerHTML
+                    element.innerHTML = iconHTML + ' ' + text
+                } else {
+                    element.textContent = text
+                }
+            }
+        }
+    })
+}
+
+        // Close language menu when clicking outside
+        document.addEventListener('click', function (e) {
+            const menu = document.getElementById('languageMenu')
+            const btn = document.getElementById('languageBtn')
+            
+            if (!menu || !btn) return
+            
+            const isClickingMenu = menu.contains(e.target)
+            const isClickingBtn = btn.contains(e.target)
+            
+            if (!isClickingMenu && !isClickingBtn && menu.style.display === 'flex') {
+                menu.style.display = 'none'
+            }
+        })
+
+        // Initialize language when page loads
+        window.addEventListener('load', initializeLanguage)
+
         function toggleMobileAdminMenu() {
             const modal = document.getElementById('mobileAdminMenuModal')
             const isVisible = modal.style.display === 'block'
@@ -5390,10 +6147,10 @@
             // Update topbar user info
             if (currentUser) {
                 document.getElementById('topbarUserName').textContent = `${currentUser.name} ${currentUser.surname}`
-                document.getElementById('topbarUserRole').textContent = currentUser.department || 'ไม่ระบุแผนก'
+                updateDepartmentDisplay()
                 // Update user menu info as well
                 document.getElementById('userMenuName').textContent = `${currentUser.name} ${currentUser.surname}`
-                document.getElementById('userMenuRole').textContent = currentUser.department || 'ไม่ระบุแผนก'
+                updateDepartmentDisplay()
                 updateAvatarDisplay()
 
                 // console.log('👤 User logged in:', currentUser.username)
@@ -5497,8 +6254,11 @@
                     const navItem = document.getElementById('navPendingApprovals')
                     const mobileNavItem = document.querySelector('.mobile-bottom-nav-item[data-view="pending-approvals"]')
 
-                    if (data.isApprover) {
-                        // console.log('✅ User is an approver - showing Pending Approvals tab')
+                    // Show pending approvals tab if user is an approver OR is an admin
+                    const isApproverOrAdmin = data.isApprover || (currentUser && currentUser.role === 'admin')
+
+                    if (isApproverOrAdmin) {
+                        // console.log('✅ User is an approver or admin - showing Pending Approvals tab')
                         // Show the nav item regardless of tabAccess settings
                         if (navItem) {
                             navItem.style.display = 'block'
@@ -5510,8 +6270,8 @@
                         // Start real-time badge refresh
                         startPendingApprovalsRefresh()
                     } else {
-                        // Not an approver - hide the tab and badge
-                        console.log('❌ User is not an approver')
+                        // Not an approver and not admin - hide the tab and badge
+                        // console.log('❌ User is not an approver')
                         if (navItem) {
                             navItem.style.display = 'none'
                         }
@@ -6345,14 +7105,17 @@
                 if (!data.departments || data.departments.length === 0) {
                     deptContainer.innerHTML = '<div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">No departments added yet</div>'
                 } else {
-                    deptContainer.innerHTML = data.departments.map(d => `
+                    deptContainer.innerHTML = data.departments.map(d => {
+                        const deptDisplayName = translations[currentLanguage]['dept_' + d.name] || d.name
+                        return `
                         <div style="display: flex; gap: 8px; align-items: center; padding: 8px 25px; background: var(--surface); border-radius: var(--radius); font-size: 13px;">
-                            <span style="flex: 1;">${escHtml(d.name)}</span>
+                            <span style="flex: 1;">${escHtml(deptDisplayName)}</span>
                             <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteDepartment('${d.id}')">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
                             </button>
                         </div>
-                    `).join('')
+                    `
+                    }).join('')
                 }
 
                 // Display sub-departments
@@ -6360,14 +7123,17 @@
                 if (!data.departments2 || data.departments2.length === 0) {
                     dept2Container.innerHTML = '<div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">No sub-departments added yet</div>'
                 } else {
-                    dept2Container.innerHTML = data.departments2.map(d => `
+                    dept2Container.innerHTML = data.departments2.map(d => {
+                        const dept2DisplayName = translations[currentLanguage]['dept_' + d.name] || d.name
+                        return `
                         <div style="display: flex; gap: 8px; align-items: center; padding: 8px 25px; background: var(--surface); border-radius: var(--radius); font-size: 13px;">
-                            <span style="flex: 1;">${escHtml(d.name)}</span>
+                            <span style="flex: 1;">${escHtml(dept2DisplayName)}</span>
                             <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteDepartment2('${d.id}')">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
                             </button>
                         </div>
-                    `).join('')
+                    `
+                    }).join('')
                 }
 
                 setStatus('statusDepartmentManagement', 'success', 'check_circle', 'Departments loaded successfully')
@@ -6521,14 +7287,16 @@
                 const deptSelect = document.getElementById('linkDepartment')
                 const subDeptSelect = document.getElementById('linkSubDepartment')
 
-                deptSelect.innerHTML = '<option value="">— Select Department —</option>'
-                subDeptSelect.innerHTML = '<option value="">— Select Sub-Department —</option>'
+                deptSelect.innerHTML = '<option value="" data-translate="selectDeptLabel">— Select Department —</option>'
+                subDeptSelect.innerHTML = '<option value="" data-translate="selectSubDeptLabel">— Select Sub-Department —</option>'
+                applyTranslations()
 
                 if (data.departments && data.departments.length > 0) {
                     data.departments.forEach(d => {
                         const option = document.createElement('option')
                         option.value = d.id
-                        option.textContent = d.name
+                        const deptDisplayName = translations[currentLanguage]['dept_' + d.name] || d.name
+                        option.textContent = deptDisplayName
                         deptSelect.appendChild(option)
                     })
                 }
@@ -6537,7 +7305,8 @@
                     data.departments2.forEach(d => {
                         const option = document.createElement('option')
                         option.value = d.id
-                        option.textContent = d.name
+                        const dept2DisplayName = translations[currentLanguage]['dept_' + d.name] || d.name
+                        option.textContent = dept2DisplayName
                         subDeptSelect.appendChild(option)
                     })
                 }
@@ -6572,19 +7341,23 @@
 
                     let html = ''
                     for (const [deptId, group] of Object.entries(grouped)) {
+                        const deptDisplayName = translations[currentLanguage]['dept_' + group.departmentName] || group.departmentName
                         html += `
                             <div class="department-item">
                                 <div class="department-name">
                                     <span class="material-symbols-outlined" style="margin-right: 8px; color: var(--accent-2);">folder</span>
-                                    ${escHtml(group.departmentName)}
+                                    ${escHtml(deptDisplayName)}
                                 </div>
                                 <div class="subdepartment-list">
-                                    ${group.subDepartments.map(sub => `
+                                    ${group.subDepartments.map(sub => {
+                                        const subDeptDisplayName = translations[currentLanguage]['dept_' + sub.name] || sub.name
+                                        return `
                                         <div class="subdepartment-item">
-                                            <span class="subdepartment-name">${escHtml(sub.name)}</span>
+                                            <span class="subdepartment-name">${escHtml(subDeptDisplayName)}</span>
                                             <button class="unlink-btn-small" onclick="unlinkDepartmentFromSubDepartment('${sub.linkId}')" title="Unlink">Unlink</button>
                                         </div>
-                                    `).join('')}
+                                    `
+                                    }).join('')}
                                 </div>
                             </div>
                         `
@@ -6723,7 +7496,8 @@
                 const linkedFollowerIds = new Set(linkedData.linkedFollowers.map(link => link.followerId))
 
                 const select = document.getElementById('availableFollowers')
-                select.innerHTML = '<option value="">— Select a follower —</option>'
+                select.innerHTML = '<option value="" data-translate="selectFollowerLabel">— Select a follower —</option>'
+                applyTranslations()
 
                 if (data.count > 0) {
                     for (let uid in data.followers) {
@@ -6758,7 +7532,8 @@
                 const linkedUserIds = new Set(linkedData.linkedFollowers.map(link => link.userId))
 
                 const select = document.getElementById('linkToUser')
-                select.innerHTML = '<option value="">— Select a user —</option>'
+                select.innerHTML = '<option value="" data-translate="selectUserLabel">— Select a user —</option>'
+                applyTranslations()
 
                 if (data.users && data.users.length > 0) {
                     for (let user of data.users) {
@@ -6912,7 +7687,7 @@
                     rows += `<tr>
           <td><strong>${escHtml(user.username)}</strong></td>
           <td>${escHtml(user.name)} ${escHtml(user.surname || '')}</td>
-          <td><span style="${roleStyle}">${escHtml(role.toUpperCase())}</span></td>
+          <td><span style="${roleStyle}" data-translate="role_${role}">${escHtml(role.toUpperCase())}</span></td>
           <td><span style="font-size: 12px; color: var(--ink-muted);">${escHtml(department)}</span></td>
           <td><span style="font-size: 12px; color: var(--ink-muted);">${escHtml(department2)}</span></td>
           <td>
@@ -7012,7 +7787,8 @@
                 })
                 const data = await res.json()
                 const select = document.getElementById('userId')
-                select.innerHTML = '<option value="">— Select a recipient —</option>'
+                select.innerHTML = '<option value="" data-translate="selectRecipients">— Select a recipient —</option>'
+                applyTranslations()
 
                 if (data.followerCount > 0) {
                     // Get current user's full name
@@ -7187,11 +7963,12 @@
 
             // Update select dropdown
             const select = document.getElementById('depFilterSelect')
-            let html = '<option value="">— All Departments —</option>'
+            let html = '<option value="" data-translate="allDepartments">— All Departments —</option>'
             for (let dept of deptArray) {
                 html += `<option value="${escHtml(dept)}">${escHtml(dept)}</option>`
             }
             select.innerHTML = html
+            applyTranslations()
             select.value = '' // Reset to all departments
         }
 
@@ -7320,10 +8097,13 @@
             const btn = document.getElementById('recipientsSelectBtn')
 
             if (selectedItems.length === 0) {
-                label.textContent = 'Select recipients...'
+                label.textContent = translations[currentLanguage]['selectRecipients'] || 'Select recipients...'
                 btn.style.borderColor = 'var(--border)'
             } else {
-                label.textContent = `${selectedItems.length} recipient${selectedItems.length !== 1 ? 's' : ''} selected`
+                const recipientType = selectedItems.length === 1 ? 'recipientSingular' : 'recipientPlural'
+                const recipientText = translations[currentLanguage][recipientType] || (selectedItems.length === 1 ? 'recipient' : 'recipients')
+                const selectedText = translations[currentLanguage]['selected'] || 'selected'
+                label.textContent = `${selectedItems.length} ${recipientText} ${selectedText}`
                 btn.style.borderColor = 'var(--accent)'
             }
         }
@@ -7527,6 +8307,8 @@
         let cachedSentMemos = []
         let cachedReceivedMemos = []
         let cachedPendingApprovals = []
+        let cachedDashboardLogs = []
+        let cachedFullLogs = []
         let currentViewType = null // 'sent' | 'received' | 'pending' | null
         let searchDebounceTimer = null
 
@@ -7686,7 +8468,8 @@
             statusEl.className = 'status-msg'
 
             if (memos.length === 0) {
-                const emptyMsg = getSearchQuery().trim() ? 'No matching memos found.' : 'No sent memos yet.'
+                const emptyKey = getSearchQuery().trim() ? 'noMatchingMemos' : 'noSentMemos'
+                const emptyMsg = translations[currentLanguage][emptyKey] || (getSearchQuery().trim() ? 'No matching memos found.' : 'No sent memos yet.')
                 tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">send</span><p>${emptyMsg}</p></div></td></tr>`
                 return
             }
@@ -7697,13 +8480,14 @@
                 const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
                 const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
                 const preview = memo.content.substring(0, 15) + (memo.content.length > 15 ? '...' : '')
-                const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
+                const memoWithSource = { ...memo, source: 'sent' }
+                const memoJson = escHtml(JSON.stringify(memoWithSource)).replace(/"/g, '&quot;')
 
                 // Get recipient name
                 const recipientName = memo.recipientNames ? memo.recipientNames.join(', ') : (memo.recipientName || 'Unknown')
 
                 // Determine status badge
-                let statusBadge = '<span class="badge badge-pending">Sent</span>'
+                let statusBadge = '<span class="badge badge-pending">ส่งแล้ว</span>'
                 if (memo.status === 'pending_approval') {
                     statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber);">รอการอนุมัติ</span>'
                 } else if (memo.status === 'approved') {
@@ -7738,10 +8522,20 @@
             <span title="${escHtml(memo.content)}">${escHtml(preview)}</span>
           </td>
           <td data-label="Action" style="text-align: center;">
-            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
-              <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
-              View
-            </button>
+            <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
+                <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                View
+              </button>
+              ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${memoJson})" title="Edit memo">
+                <span class="material-symbols-outlined" style="font-size: 14px;">edit</span>
+                Edit
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); confirmDeleteMemo('${memo.memoId}', 'sent')" title="Delete memo">
+                <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
+                Delete
+              </button>` : ''}
+            </div>
           </td>
         </tr>`
             }
@@ -7758,7 +8552,8 @@
             statusEl.className = 'status-msg'
 
             if (memos.length === 0) {
-                const emptyMsg = getSearchQuery().trim() ? 'No matching memos found.' : 'No received memos yet.'
+                const emptyKey = getSearchQuery().trim() ? 'noMatchingMemos' : 'noReceivedMemos'
+                const emptyMsg = translations[currentLanguage][emptyKey] || (getSearchQuery().trim() ? 'No matching memos found.' : 'No received memos yet.')
                 tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">inbox</span><p>${emptyMsg}</p></div></td></tr>`
                 return
             }
@@ -7769,7 +8564,8 @@
                 const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
                 const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
                 const preview = memo.content.substring(0, 50) + (memo.content.length > 50 ? '...' : '')
-                const memoJson = escHtml(JSON.stringify(memo)).replace(/"/g, '&quot;')
+                const memoWithSource = { ...memo, source: 'received' }
+                const memoJson = escHtml(JSON.stringify(memoWithSource)).replace(/"/g, '&quot;')
 
                 rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
           <td data-label="Date" style="font-size:12px;"><span style="color:var(--ink-muted);">${dateStr}<br><span style="font-size:11px;">${timeStr}</span></span></td>
@@ -7778,7 +8574,22 @@
           <td data-label="Type"><span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span></td>
           <td data-label="From" style="font-size:12px;color:var(--ink-muted);">${escHtml(memo.senderName || 'Unknown')}</td>
           <td data-label="Preview" style="font-size:12px;color:var(--ink-faint);max-width:200px;"><span title="${escHtml(memo.content)}">${escHtml(preview)}</span></td>
-          <td data-label="Action" style="text-align: center;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})"><span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>View</button></td>
+          <td data-label="Action" style="text-align: center;">
+            <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
+                <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                View
+              </button>
+              ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${memoJson})" title="Edit memo">
+                <span class="material-symbols-outlined" style="font-size: 14px;">edit</span>
+                Edit
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); confirmDeleteMemo('${memo.memoId}', 'received')" title="Delete memo">
+                <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
+                Delete
+              </button>` : ''}
+            </div>
+          </td>
         </tr>`
             }
             tbody.innerHTML = rows
@@ -7794,7 +8605,8 @@
             statusEl.className = 'status-msg'
 
             if (memos.length === 0) {
-                const emptyMsg = getSearchQuery().trim() ? 'No matching approvals found.' : 'No pending approvals.'
+                const emptyKey = getSearchQuery().trim() ? 'noMatchingApprovals' : 'noPendingApprovals'
+                const emptyMsg = translations[currentLanguage][emptyKey] || (getSearchQuery().trim() ? 'No matching approvals found.' : 'No pending approvals.')
                 tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">pending_actions</span><p>${emptyMsg}</p></div></td></tr>`
                 return
             }
@@ -7836,12 +8648,12 @@
                         <span title="${escHtml(memo.content)}">${escHtml(contentPreview)}</span>
                     </td>
                     <td data-label="Action" style="padding: 12px; text-align: center;">
-                        <div style="display: flex; gap: 6px; justify-content: center;">
+                        <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
                             <button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); viewPendingMemo('${memo.memoId}')">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
                                 View
                             </button>
-                            <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
+                            <button class="btn btn-ghost btn-sm " onclick="event.stopPropagation(); approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
                                 Approve
                             </button>
@@ -7849,6 +8661,14 @@
                                 <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
                                 Reject
                             </button>
+                            ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${escHtml(JSON.stringify({...memo, source: 'pending'})).replace(/"/g, '&quot;')})" title="Edit memo">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">edit</span>
+                                Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); confirmDeleteMemo('${memo.memoId}', 'pending')" title="Delete memo">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
+                                Delete
+                            </button>` : ''}
                         </div>
                     </td>
                 </tr>`
@@ -7862,7 +8682,8 @@
             const statusEl = document.getElementById('sentMemosStatus')
             const searchInput = document.getElementById('topbarSearchInput')
 
-            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading sent memos...</p></div></td></tr>`
+            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingSentMemos">Loading sent memos...</p></div></td></tr>`
+            applyTranslations()
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
             statusEl.querySelector('.msg-text').textContent = 'Fetching sent memorandums...'
@@ -7907,7 +8728,8 @@
             const statusEl = document.getElementById('receivedMemosStatus')
             const searchInput = document.getElementById('topbarSearchInput')
 
-            document.getElementById('receivedMemosTbody').innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading received memos...</p></div></td></tr>`
+            document.getElementById('receivedMemosTbody').innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingReceivedMemos">Loading received memos...</p></div></td></tr>`
+            applyTranslations()
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
             statusEl.querySelector('.msg-text').textContent = 'Fetching received memorandums...'
@@ -8000,7 +8822,8 @@
             const badge = document.getElementById('followerCountBadge')
             const statusEl = document.getElementById('followersStatus')
 
-            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Refreshing profiles...</p></div></td></tr>`
+            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="refreshingProfiles">Refreshing profiles...</p></div></td></tr>`
+            applyTranslations()
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
             statusEl.querySelector('.msg-text').textContent = 'Fetching follower data...'
@@ -8125,6 +8948,9 @@
                 const fullDateStr = formatFullDateTime(timestamp)
                 const dataStr = log.data ? formatActivityData(log.data) : ''
 
+                // Get translated message display
+                let displayMessage = getMessageDisplay(log.message)
+
                 // เพิ่มรายละเอียด approved memo ใน log.message
                 let message = log.message;
                 if (
@@ -8134,7 +8960,16 @@
                 ) {
                     message = 'approved memo';
                     if (log.data.docNumber) message += ` ${log.data.docNumber}`;
-                    if (log.data.approvedByName) message += ` by ${log.data.approvedByName}`;
+                    if (log.data.approvedByName) {
+                        const byText = translations[currentLanguage]['by'] || 'by';
+                        message += ` ${byText} ${log.data.approvedByName}`;
+                    }
+                    displayMessage = getMessageDisplay('approved memo');
+                    if (log.data.docNumber) displayMessage += ` ${log.data.docNumber}`;
+                    if (log.data.approvedByName) {
+                        const byText = translations[currentLanguage]['by'] || 'by';
+                        displayMessage += ` ${byText} ${log.data.approvedByName}`;
+                    }
                 }
                 return `<div class="activity-event event-${eventInfo.type}">
                     <div class="activity-event-icon">
@@ -8143,8 +8978,8 @@
                         </span>
                     </div>
                     <div class="activity-event-content">
-                        <div class="activity-event-title">${eventInfo.title}</div>
-                        <div class="activity-event-description">${escHtml(message)}${dataStr ? ' — ' + dataStr : ''}</div>
+                        <div class="activity-event-title">${getEventTitle(eventInfo.title)}</div>
+                        <div class="activity-event-description">${escHtml(displayMessage)}${dataStr ? ' — ' + dataStr : ''}</div>
                         <div class="activity-event-time">${timeStr} <span style="color: var(--ink-faint); font-size: 11px;">(${fullDateStr})</span></div>
                     </div>
                 </div>`
@@ -8170,10 +9005,22 @@
             const diffHours = Math.floor(diffMs / 3600000)
             const diffDays = Math.floor(diffMs / 86400000)
 
-            if (diffMins < 1) return 'Just now'
-            if (diffMins < 60) return `${diffMins}m ago`
-            if (diffHours < 24) return `${diffHours}h ago`
-            if (diffDays < 7) return `${diffDays}d ago`
+            if (diffMins < 1) return translations[currentLanguage]['justNow'] || 'Just now'
+            if (diffMins < 60) {
+                const key = 'minutesAgo'
+                const template = translations[currentLanguage][key] || '{0}m ago'
+                return template.replace('{0}', diffMins)
+            }
+            if (diffHours < 24) {
+                const key = 'hoursAgo'
+                const template = translations[currentLanguage][key] || '{0}h ago'
+                return template.replace('{0}', diffHours)
+            }
+            if (diffDays < 7) {
+                const key = 'daysAgo'
+                const template = translations[currentLanguage][key] || '{0}d ago'
+                return template.replace('{0}', diffDays)
+            }
 
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
         }
@@ -8182,16 +9029,22 @@
             if (!data || typeof data !== 'object') return ''
 
             const important = []
+            const fromText = translations[currentLanguage]['from'] || 'From'
+            const recipientText = translations[currentLanguage]['recipient'] || 'Recipient'
+            const userText = translations[currentLanguage]['user'] || 'User'
+            const approvedByText = translations[currentLanguage]['approvedBy'] || 'Approved by'
+            const itemsText = translations[currentLanguage]['items'] || 'items'
+            
             if (data.senderName && data.recipientNames) {
-                important.push(`From: ${data.senderName} → ${data.recipientNames}`)
+                important.push(`${fromText}: ${data.senderName} → ${data.recipientNames}`)
             } else if (data.senderName && data.recipientUserId) {
-                important.push(`From: ${data.senderName} → Recipient`)
+                important.push(`${fromText}: ${data.senderName} → ${recipientText}`)
             } else if (data.username) {
-                important.push(`User: ${data.username}`)
+                important.push(`${userText}: ${data.username}`)
             }
-            if (data.approverUsername) important.push(`Approved by: ${data.approverUsername}`)
+            if (data.approverUsername) important.push(`${approvedByText}: ${data.approverUsername}`)
             if (data.title) important.push(`"${data.title}"`)
-            if (data.count !== undefined) important.push(`(${data.count} items)`)
+            if (data.count !== undefined) important.push(`(${data.count} ${itemsText})`)
             if (data.deptId || data.name) important.push(data.name || data.deptId)
 
             return important.slice(0, 2).join(', ')
@@ -8264,7 +9117,10 @@
                         // Filter for current user only
                         const userLogs = filterLogsForCurrentUser(logs)
                         
-                        // Show only 15 most recent logs on dashboard
+                        // Cache logs for language change refresh
+                        cachedDashboardLogs = userLogs
+                        
+                        // Show only 30 most recent logs on dashboard
                         renderLogs(userLogs.slice(0, 30), 'dash-logs-preview')
                     })
                     .catch(e => {
@@ -8282,6 +9138,7 @@
             try {
                 // Fetch logs from Firebase
                 const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+
                 // const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
                 const res = await fetch(firebaseUrl)
@@ -8299,6 +9156,9 @@
                 if (filterByCurrentUser && currentUser) {
                     logs = filterLogsForCurrentUser(logs)
                 }
+
+                // Cache logs for language change refresh
+                cachedFullLogs = logs
 
                 const logCount = logs.length
                 document.getElementById('logsCount').textContent = `${logCount} entries`
@@ -8512,6 +9372,11 @@
 
         async function checkIfUserIsApproverForMemo(memo) {
             try {
+                // Allow admins to approve any memo
+                if (currentUser && currentUser.role === 'admin') {
+                    return true
+                }
+
                 // Allow users with role "user" to approve
                 if (currentUser && currentUser.role === 'user') {
                     return true
@@ -8898,7 +9763,8 @@
 
                 // Populate dropdowns
                 const userSelect = document.getElementById('approverUserId')
-                userSelect.innerHTML = '<option value="">-- Select user --</option>'
+                userSelect.innerHTML = '<option value="" data-translate="selectUserLabel">-- Select user --</option>'
+                applyTranslations()
                 if (users.users) {
                     users.users.forEach(u => {
                         const opt = document.createElement('option')
@@ -8909,7 +9775,8 @@
                 }
 
                 const deptSelect = document.getElementById('approverDepartmentId')
-                deptSelect.innerHTML = '<option value="">-- Select department --</option>'
+                deptSelect.innerHTML = '<option value="" data-translate="selectDeptLabel">-- Select department --</option>'
+                applyTranslations()
                 if (depts.departments) {
                     depts.departments.forEach(d => {
                         const opt = document.createElement('option')
@@ -8923,7 +9790,8 @@
                             if (this.value) {
                                 const link = await fetch('/department-links-public')
                                 const linkData = await link.json()
-                                subDeptSelect.innerHTML = '<option value="">-- All Sub-Departments --</option>'
+                                subDeptSelect.innerHTML = '<option value="" data-translate="selectSubDeptLabel">-- All Sub-Departments --</option>'
+                                applyTranslations()
 
                                 const relatedSubDepts = linkData.links
                                     .filter(l => l.departmentId === this.value)
@@ -8941,7 +9809,8 @@
                                     })
                                 }
                             } else {
-                                subDeptSelect.innerHTML = '<option value="">-- All Sub-Departments --</option>'
+                                subDeptSelect.innerHTML = '<option value="" data-translate="selectSubDeptLabel">-- All Sub-Departments --</option>'
+                                applyTranslations()
                             }
                         }
                     })
@@ -9254,7 +10123,8 @@
             const statusEl = document.getElementById('pendingApprovalsStatus')
             const searchInput = document.getElementById('topbarSearchInput')
 
-            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p>Loading pending approvals...</p></div></td></tr>`
+            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingPendingApprovals">Loading pending approvals...</p></div></td></tr>`
+            applyTranslations()
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
             statusEl.querySelector('.msg-text').textContent = 'Fetching memos awaiting your approval...'
@@ -9446,8 +10316,291 @@
         })
 
         // ═══════════════════════════════════════════════════════════════
-        // Cloudinary Image Upload for Memo Compose
+        // Memo Admin Edit/Delete Functions
         // ═══════════════════════════════════════════════════════════════
+
+        let currentEditingMemoId = null
+        let currentEditingMemoSource = null
+
+        // ── Helper: Show Status Message ──────────────────────────────
+        function showStatus(elementId, type, message) {
+            const el = document.getElementById(elementId)
+            if (!el) return
+
+            // Determine icon based on type
+            let icon = 'info'
+            if (type === 'error') icon = 'error'
+            else if (type === 'success') icon = 'check_circle'
+            else if (type === 'loading') icon = 'hourglass_empty'
+            else if (type === 'warning') icon = 'warning'
+
+            // Update classes
+            el.className = `status-msg ${type} show`
+            
+            // Update icon and message
+            const iconEl = el.querySelector('.material-symbols-outlined')
+            const msgEl = el.querySelector('.msg-text')
+            
+            if (iconEl) iconEl.textContent = icon
+            if (msgEl) msgEl.textContent = message
+        }
+
+        // ── Edit Memo ────────────────────────────────────────
+        function editMemo(memoId, memoData) {
+            if (!currentUser || currentUser.role !== 'admin') {
+                showStatus('statusSingleSend', 'error', 'Only admins can edit memos')
+                return
+            }
+
+            currentEditingMemoId = memoId
+            currentEditingMemoSource = memoData.source || 'sent'
+
+            // Store original docNumber for change detection
+            window.originalDocNumber = memoData.docNumber || ''
+
+            // Populate the edit form
+            document.getElementById('editMemoDocNumber').value = memoData.docNumber || ''
+            document.getElementById('editMemoTitle').value = memoData.title || ''
+            
+            // Set Type dropdown
+            const typeSelect = document.getElementById('editMemoType')
+            if (typeSelect) {
+                typeSelect.value = memoData.type || 'เพื่อโปรดทราบ'
+            }
+            
+            // Get recipient names
+            let recipients = ''
+            if (memoData.recipientNames && Array.isArray(memoData.recipientNames)) {
+                recipients = memoData.recipientNames.join(', ')
+            } else if (memoData.recipientName) {
+                recipients = memoData.recipientName
+            } else if (memoData.senderName) {
+                recipients = memoData.senderName
+            }
+            document.getElementById('editMemoRecipients').value = recipients
+            document.getElementById('editMemoContent').value = memoData.content || ''
+
+            // Clear status
+            document.getElementById('statusEditMemo').className = 'status-msg'
+
+            // Show edit modal
+            document.getElementById('view-edit-memo').style.display = 'flex'
+        }
+/*prompt: ตอนนี้แก้ไขได้แค่ title,message content แก้ไขทำให้แก้ไขได้ทุก field
+type ให้เป็น select จาก memo-type-container , recipients ให้ดึงจาก recipientsDropdown (เลือกได้หลาย user)
+*/
+
+        // ── Close Edit Memo Modal ────────────────────────────
+        function closeEditMemoModal() {
+            document.getElementById('view-edit-memo').style.display = 'none'
+            currentEditingMemoId = null
+            currentEditingMemoSource = null
+        }
+
+        // ── Save Edited Memo ─────────────────────────────────
+        async function saveEditedMemo() {
+            if (!currentEditingMemoId) {
+                console.error('No memo ID set for editing')
+                return
+            }
+
+            if (!currentUser || currentUser.role !== 'admin') {
+                showStatus('statusEditMemo', 'error', 'Only admins can edit memos')
+                return
+            }
+
+            const docNumber = document.getElementById('editMemoDocNumber').value.trim()
+            const title = document.getElementById('editMemoTitle').value.trim()
+            const memoType = document.getElementById('editMemoType').value || 'เพื่อโปรดทราบ'
+            const content = document.getElementById('editMemoContent').value.trim()
+
+            if (!docNumber || !title || !content) {
+                showStatus('statusEditMemo', 'error', 'Document number, title and content are required')
+                return
+            }
+
+            // Check for duplicate docNumber if it has been changed
+            if (docNumber !== window.originalDocNumber) {
+                let isDuplicate = false
+                
+                // Check in all cache arrays
+                if (currentEditingMemoSource === 'sent') {
+                    isDuplicate = cachedSentMemos.some(memo => memo.docNumber === docNumber && memo.memoId !== currentEditingMemoId)
+                } else if (currentEditingMemoSource === 'received') {
+                    isDuplicate = cachedReceivedMemos.some(memo => memo.docNumber === docNumber && memo.memoId !== currentEditingMemoId)
+                } else if (currentEditingMemoSource === 'pending') {
+                    isDuplicate = cachedPendingApprovals.some(memo => memo.docNumber === docNumber && memo.memoId !== currentEditingMemoId)
+                }
+
+                if (isDuplicate) {
+                    showStatus('statusEditMemo', 'error', `Document number "${docNumber}" is already in use`)
+                    return
+                }
+            }
+
+            try {
+                showStatus('statusEditMemo', 'loading', 'Saving changes...')
+
+                const res = await fetch(`/memo/${currentEditingMemoId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        docNumber: docNumber,
+                        title: title,
+                        type: memoType,
+                        content: content
+                    })
+                })
+
+                const data = await res.json()
+
+                if (!res.ok) {
+                    showStatus('statusEditMemo', 'error', data.error || 'Failed to save memo')
+                    console.error('Error saving memo:', data)
+                    return
+                }
+
+                // Update cache in real-time
+                let memoFound = false
+                
+                if (currentEditingMemoSource === 'sent') {
+                    // Find and update memo in cachedSentMemos
+                    for (let i = 0; i < cachedSentMemos.length; i++) {
+                        if (cachedSentMemos[i].memoId === currentEditingMemoId) {
+                            cachedSentMemos[i].docNumber = docNumber
+                            cachedSentMemos[i].title = title
+                            cachedSentMemos[i].type = memoType
+                            cachedSentMemos[i].content = content
+                            memoFound = true
+                            break
+                        }
+                    }
+                    if (memoFound) {
+                        renderSentMemos(cachedSentMemos)
+                    }
+                } else if (currentEditingMemoSource === 'received') {
+                    // Find and update memo in cachedReceivedMemos
+                    for (let i = 0; i < cachedReceivedMemos.length; i++) {
+                        if (cachedReceivedMemos[i].memoId === currentEditingMemoId) {
+                            cachedReceivedMemos[i].docNumber = docNumber
+                            cachedReceivedMemos[i].title = title
+                            cachedReceivedMemos[i].type = memoType
+                            cachedReceivedMemos[i].content = content
+                            memoFound = true
+                            break
+                        }
+                    }
+                    if (memoFound) {
+                        renderReceivedMemos(cachedReceivedMemos)
+                    }
+                } else if (currentEditingMemoSource === 'pending') {
+                    // Find and update memo in cachedPendingApprovals
+                    for (let i = 0; i < cachedPendingApprovals.length; i++) {
+                        if (cachedPendingApprovals[i].memoId === currentEditingMemoId) {
+                            cachedPendingApprovals[i].docNumber = docNumber
+                            cachedPendingApprovals[i].title = title
+                            cachedPendingApprovals[i].type = memoType
+                            cachedPendingApprovals[i].content = content
+                            memoFound = true
+                            break
+                        }
+                    }
+                    if (memoFound) {
+                        renderPendingApprovals(cachedPendingApprovals)
+                    }
+                }
+
+                showStatus('statusEditMemo', 'success', 'Memo updated successfully')
+                
+                // Close modal immediately
+                setTimeout(() => {
+                    closeEditMemoModal()
+                }, 800)
+            } catch (e) {
+                showStatus('statusEditMemo', 'error', e.message)
+                console.error('Error:', e)
+            }
+        }
+
+        // ── Confirm Delete Memo ──────────────────────────────
+        function confirmDeleteMemo(memoId, source) {
+            if (!currentUser || currentUser.role !== 'admin') {
+                showStatus('statusSingleSend', 'error', 'Only admins can delete memos')
+                return
+            }
+
+            const confirmed = confirm('Are you sure you want to delete this memorandum? This action cannot be undone.')
+            if (confirmed) {
+                deleteMemo(memoId, source)
+            }
+        }
+
+        // ── Delete Memo ──────────────────────────────────────
+        async function deleteMemo(memoId, source) {
+            if (!currentUser || currentUser.role !== 'admin') {
+                console.error('Only admins can delete memos')
+                return
+            }
+
+            try {
+                const statusEl = source === 'sent' ? document.getElementById('sentMemosStatus')
+                    : source === 'received' ? document.getElementById('receivedMemosStatus')
+                    : document.getElementById('pendingApprovalsStatus')
+
+                const statusId = statusEl?.id || 'statusEditMemo'
+
+                showStatus(statusId, 'loading', 'Deleting memo...')
+
+                const res = await fetch(`/memo/${memoId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                })
+
+                const data = await res.json()
+
+                if (!res.ok) {
+                    showStatus(statusId, 'error', data.error || 'Failed to delete memo')
+                    console.error('Error deleting memo:', data)
+                    return
+                }
+
+                // Remove from cache and re-render in real-time
+                let memoFound = false
+                
+                if (source === 'sent') {
+                    // Find and remove memo from cachedSentMemos
+                    cachedSentMemos = cachedSentMemos.filter(memo => memo.memoId !== memoId)
+                    renderSentMemos(cachedSentMemos)
+                    memoFound = true
+                } else if (source === 'received') {
+                    // Find and remove memo from cachedReceivedMemos
+                    cachedReceivedMemos = cachedReceivedMemos.filter(memo => memo.memoId !== memoId)
+                    renderReceivedMemos(cachedReceivedMemos)
+                    memoFound = true
+                } else if (source === 'pending') {
+                    // Find and remove memo from cachedPendingApprovals
+                    cachedPendingApprovals = cachedPendingApprovals.filter(memo => memo.memoId !== memoId)
+                    renderPendingApprovals(cachedPendingApprovals)
+                    memoFound = true
+                }
+
+                showStatus(statusId, 'success', 'Memo deleted successfully')
+            } catch (e) {
+                console.error('Error:', e)
+                const statusEl = source === 'sent' ? document.getElementById('sentMemosStatus')
+                    : source === 'received' ? document.getElementById('receivedMemosStatus')
+                    : document.getElementById('pendingApprovalsStatus')
+                const statusId = statusEl?.id || 'statusEditMemo'
+                showStatus(statusId, 'error', e.message)
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Cloudinary Image Upload for Memo Compose
+        // ═════════════════════════════════════════════════════════════════
 
         // Cloudinary Configuration
         const CLOUDINARY_CONFIG = {

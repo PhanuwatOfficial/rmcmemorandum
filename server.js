@@ -18,12 +18,12 @@ app.use(express.static("public"))
 let logs = [] // เก็บ logs ชั่วคราว
 const MAX_LOGS = 1000 // เก็บ max 1000 logs
 
-function addLog(level, message, data = null) {
+function addLog(level, messageKey, data = null) {
   const timestamp = new Date().toISOString()
   const logEntry = {
     timestamp,
     level,
-    message,
+    message: messageKey,  // Store the translation key, frontend will translate
     data
   }
 
@@ -40,7 +40,7 @@ function addLog(level, message, data = null) {
     console.error('❌ [LOGS] Firebase write failed:', err.message)
     console.error('   Timestamp:', timestamp)
     console.error('   Level:', level)
-    console.error('   Message:', message)
+    console.error('   Message Key:', messageKey)
   })
 }
 
@@ -2120,7 +2120,7 @@ app.post("/send", async (req, res) => {
   }
 })
 
-// Get pending approvals for current user (approver only)
+// Get pending approvals for current user (approver only, or admin can see all)
 app.get("/memos/pending-approval", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
@@ -2130,89 +2130,23 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "User not found" })
     }
 
-    // Get all approver assignments for this user
-    const approversData = await firebase_get('memoApprovers')
-    const userApprovals = []
-
-    if (approversData && typeof approversData === 'object') {
-      for (const [key, approval] of Object.entries(approversData)) {
-        if (approval.approverId === userId) {
-          userApprovals.push(approval)
-        }
-      }
-    }
-
-    // If user is not an approver, return empty list
-    if (userApprovals.length === 0) {
-      return res.json({ pendingMemos: [], count: 0 })
-    }
-
-    // Get all departments mapping for name->UUID conversion
-    const allDepartments = await firebase_get('departments')
-    const departmentNameToId = {}
-    if (allDepartments && typeof allDepartments === 'object') {
-      for (const [deptId, dept] of Object.entries(allDepartments)) {
-        if (dept.name) {
-          departmentNameToId[dept.name] = deptId
-        }
-      }
-    }
-
-    // Get all sub-departments mapping for name->UUID conversion
-    const allDepartments2 = await firebase_get('departments2')
-    const subDepartmentNameToId = {}
-    if (allDepartments2 && typeof allDepartments2 === 'object') {
-      for (const [deptId, dept] of Object.entries(allDepartments2)) {
-        if (dept.name) {
-          subDepartmentNameToId[dept.name] = deptId
-        }
-      }
-    }
-
-    // Get all users and their sent_memos to find pending_approval ones
-    const allUsers = await firebase_get('users')
     const pendingMemos = []
-    let checkedCount = 0
-    let foundCount = 0
+    const allUsers = await firebase_get('users')
 
-    if (allUsers && typeof allUsers === 'object') {
-      for (let senderId in allUsers) {
-        const sender = allUsers[senderId]
-        const sentMemos = await firebase_get(`sent_memos/${senderId}`)
+    // If admin, get all pending approval memos without checking approvers
+    if (currentUser.role === 'admin') {
+      if (allUsers && typeof allUsers === 'object') {
+        for (let senderId in allUsers) {
+          const sender = allUsers[senderId]
+          const sentMemos = await firebase_get(`sent_memos/${senderId}`)
 
-        if (!sentMemos || typeof sentMemos !== 'object') continue
+          if (!sentMemos || typeof sentMemos !== 'object') continue
 
-        for (let memoId in sentMemos) {
-          checkedCount++
-          const memo = sentMemos[memoId]
+          for (let memoId in sentMemos) {
+            const memo = sentMemos[memoId]
 
-          // Check if memo is pending approval
-          if (memo.status === 'pending_approval') {
-
-            // Convert sender's department name to UUID
-            let senderDepartmentId = sender.department
-            if (departmentNameToId[sender.department]) {
-              senderDepartmentId = departmentNameToId[sender.department]
-            }
-
-            // Convert sender's sub-department name to UUID
-            let senderSubDepartmentId = sender.department2
-            if (subDepartmentNameToId[sender.department2]) {
-              senderSubDepartmentId = subDepartmentNameToId[sender.department2]
-            }
-
-            // Verify this user is one of the approvers for this sender
-            const canApprove = userApprovals.some(approval => {
-              const match = approval.departmentId === senderDepartmentId &&
-                (!approval.subDepartmentId || approval.subDepartmentId === senderSubDepartmentId)
-
-              if (!match) {
-              }
-              return match
-            })
-
-            if (canApprove) {
-              foundCount++
+            // Check if memo is pending approval
+            if (memo.status === 'pending_approval') {
               pendingMemos.push({
                 ...memo,
                 senderObject: {
@@ -2224,6 +2158,100 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
                   username: sender.username
                 }
               })
+            }
+          }
+        }
+      }
+    } else {
+      // Regular approver - check if user is in memoApprovers
+      // Get all approver assignments for this user
+      const approversData = await firebase_get('memoApprovers')
+      const userApprovals = []
+
+      if (approversData && typeof approversData === 'object') {
+        for (const [key, approval] of Object.entries(approversData)) {
+          if (approval.approverId === userId) {
+            userApprovals.push(approval)
+          }
+        }
+      }
+
+      // If user is not an approver, return empty list
+      if (userApprovals.length === 0) {
+        return res.json({ pendingMemos: [], count: 0 })
+      }
+
+      // Get all departments mapping for name->UUID conversion
+      const allDepartments = await firebase_get('departments')
+      const departmentNameToId = {}
+      if (allDepartments && typeof allDepartments === 'object') {
+        for (const [deptId, dept] of Object.entries(allDepartments)) {
+          if (dept.name) {
+            departmentNameToId[dept.name] = deptId
+          }
+        }
+      }
+
+      // Get all sub-departments mapping for name->UUID conversion
+      const allDepartments2 = await firebase_get('departments2')
+      const subDepartmentNameToId = {}
+      if (allDepartments2 && typeof allDepartments2 === 'object') {
+        for (const [deptId, dept] of Object.entries(allDepartments2)) {
+          if (dept.name) {
+            subDepartmentNameToId[dept.name] = deptId
+          }
+        }
+      }
+
+      // Get all users and their sent_memos to find pending_approval ones
+      if (allUsers && typeof allUsers === 'object') {
+        for (let senderId in allUsers) {
+          const sender = allUsers[senderId]
+          const sentMemos = await firebase_get(`sent_memos/${senderId}`)
+
+          if (!sentMemos || typeof sentMemos !== 'object') continue
+
+          for (let memoId in sentMemos) {
+            const memo = sentMemos[memoId]
+
+            // Check if memo is pending approval
+            if (memo.status === 'pending_approval') {
+
+              // Convert sender's department name to UUID
+              let senderDepartmentId = sender.department
+              if (departmentNameToId[sender.department]) {
+                senderDepartmentId = departmentNameToId[sender.department]
+              }
+
+              // Convert sender's sub-department name to UUID
+              let senderSubDepartmentId = sender.department2
+              if (subDepartmentNameToId[sender.department2]) {
+                senderSubDepartmentId = subDepartmentNameToId[sender.department2]
+              }
+
+              // Verify this user is one of the approvers for this sender
+              const canApprove = userApprovals.some(approval => {
+                const match = approval.departmentId === senderDepartmentId &&
+                  (!approval.subDepartmentId || approval.subDepartmentId === senderSubDepartmentId)
+
+                if (!match) {
+                }
+                return match
+              })
+
+              if (canApprove) {
+                pendingMemos.push({
+                  ...memo,
+                  senderObject: {
+                    userId: sender.userId,
+                    name: sender.name,
+                    surname: sender.surname,
+                    department: sender.department,
+                    department2: sender.department2,
+                    username: sender.username
+                  }
+                })
+              }
             }
           }
         }
@@ -2274,43 +2302,49 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Memo is not pending approval" })
     }
 
-    // Verify current user is an authorized approver
-    const sender = await firebase_get(`users/${memoSenderId}`)
-    const approvers = await firebase_get('memoApprovers')
-
-    // Convert sender's department name to UUID for comparison
-    const allDepartments = await firebase_get('departments')
-    let senderDepartmentId = sender.department
-    if (allDepartments && typeof allDepartments === 'object') {
-      for (const [deptId, dept] of Object.entries(allDepartments)) {
-        if (dept.name === sender.department) {
-          senderDepartmentId = deptId
-          break
-        }
-      }
-    }
-
-    // Convert sender's sub-department name to UUID for comparison
-    const allDepartments2 = await firebase_get('departments2')
-    let senderSubDepartmentId = sender.department2
-    if (allDepartments2 && typeof allDepartments2 === 'object') {
-      for (const [subDeptId, subDept] of Object.entries(allDepartments2)) {
-        if (subDept.name === sender.department2) {
-          senderSubDepartmentId = subDeptId
-          break
-        }
-      }
-    }
-
+    // Check if user is admin - admins can approve any memo without memoApprovers check
     let isAuthorizedApprover = false
+    
+    if (currentUser.role === 'admin') {
+      // Admins can approve any memo
+      isAuthorizedApprover = true
+    } else {
+      // Verify current user is an authorized approver
+      const sender = await firebase_get(`users/${memoSenderId}`)
+      const approvers = await firebase_get('memoApprovers')
 
-    if (approvers && typeof approvers === 'object') {
-      for (const approver of Object.values(approvers)) {
-        if (approver.approverId === req.userId &&
-          approver.departmentId === senderDepartmentId &&
-          (!approver.subDepartmentId || approver.subDepartmentId === senderSubDepartmentId)) {
-          isAuthorizedApprover = true
-          break
+      // Convert sender's department name to UUID for comparison
+      const allDepartments = await firebase_get('departments')
+      let senderDepartmentId = sender.department
+      if (allDepartments && typeof allDepartments === 'object') {
+        for (const [deptId, dept] of Object.entries(allDepartments)) {
+          if (dept.name === sender.department) {
+            senderDepartmentId = deptId
+            break
+          }
+        }
+      }
+
+      // Convert sender's sub-department name to UUID for comparison
+      const allDepartments2 = await firebase_get('departments2')
+      let senderSubDepartmentId = sender.department2
+      if (allDepartments2 && typeof allDepartments2 === 'object') {
+        for (const [subDeptId, subDept] of Object.entries(allDepartments2)) {
+          if (subDept.name === sender.department2) {
+            senderSubDepartmentId = subDeptId
+            break
+          }
+        }
+      }
+
+      if (approvers && typeof approvers === 'object') {
+        for (const approver of Object.values(approvers)) {
+          if (approver.approverId === req.userId &&
+            approver.departmentId === senderDepartmentId &&
+            (!approver.subDepartmentId || approver.subDepartmentId === senderSubDepartmentId)) {
+            isAuthorizedApprover = true
+            break
+          }
         }
       }
     }
@@ -2932,22 +2966,41 @@ app.post("/broadcast", async (req, res) => {
   }
 })
 
-// Get sent memos for current user
+// Get sent memos for current user (or all memos if admin)
 app.get("/sent-memos", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
+    const currentUser = await firebase_get(`users/${userId}`)
 
-    const sentMemos = await firebase_get(`sent_memos/${userId}`)
+    let memosArray = []
 
-    if (!sentMemos || typeof sentMemos !== 'object') {
+    // If admin, get all sent memos from all users
+    if (currentUser && currentUser.role === 'admin') {
+      const allUsers = await firebase_get('users')
+      if (allUsers && typeof allUsers === 'object') {
+        for (let uid in allUsers) {
+          const sentMemos = await firebase_get(`sent_memos/${uid}`)
+          if (sentMemos && typeof sentMemos === 'object') {
+            memosArray.push(...Object.values(sentMemos))
+          }
+        }
+      }
+    } else {
+      // Regular user gets only their own sent memos
+      const sentMemos = await firebase_get(`sent_memos/${userId}`)
+      if (sentMemos && typeof sentMemos === 'object') {
+        memosArray.push(...Object.values(sentMemos))
+      }
+    }
+
+    if (memosArray.length === 0) {
       return res.json({ memos: [], count: 0 })
     }
 
-    // Convert to array and sort by sentAt descending (newest first)
-    const memosArray = Object.values(sentMemos)
     memosArray.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))
 
     // Enrich each memo with recipient name
+    const allUsers = await firebase_get('users')
     for (let memo of memosArray) {
       try {
         // Handle system user recipient (recipientUserId)
@@ -2958,16 +3011,13 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
           }
         }
         // Handle LINE follower recipient (recipientId) - find which user linked this follower
-        else if (memo.recipientId) {
-          const allUsers = await firebase_get('users')
-          if (allUsers) {
-            for (let uid in allUsers) {
-              const user = allUsers[uid]
-              if (user.linkedFollowers && user.linkedFollowers[memo.recipientId]) {
-                // Found the user who linked this follower
-                memo.recipientName = `${user.name} ${user.surname}`
-                break
-              }
+        else if (memo.recipientId && allUsers) {
+          for (let uid in allUsers) {
+            const user = allUsers[uid]
+            if (user.linkedFollowers && user.linkedFollowers[memo.recipientId]) {
+              // Found the user who linked this follower
+              memo.recipientName = `${user.name} ${user.surname}`
+              break
             }
           }
         }
@@ -2982,49 +3032,85 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
   }
 })
 
-// Get received memos for current user (memos sent to this user's linked followers)
+// Get received memos for current user (or all received memos if admin)
 app.get("/received-memos", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
 
     // Get current user to access linked followers
     const currentUser = await firebase_get(`users/${userId}`)
-
-    const linkedFollowerIds = currentUser?.linkedFollowers ? Object.keys(currentUser.linkedFollowers) : []
-
-    // Get all users' sent memos to find ones sent to this user's followers
     const allUsers = await firebase_get('users')
 
     const receivedMemos = []
 
-    // 1. Search through all users' sent_memos for memos sent to this user's followers
-    if (allUsers && typeof allUsers === 'object' && linkedFollowerIds.length > 0) {
-      for (let senderId in allUsers) {
-        const senderMemos = await firebase_get(`sent_memos/${senderId}`)
-        if (!senderMemos || typeof senderMemos !== 'object') continue
+    // If admin, get all memos sent to any follower
+    if (currentUser && currentUser.role === 'admin') {
+      if (allUsers && typeof allUsers === 'object') {
+        // Get all sent memos from all users that have follower recipients
+        for (let senderId in allUsers) {
+          const senderMemos = await firebase_get(`sent_memos/${senderId}`)
+          if (!senderMemos || typeof senderMemos !== 'object') continue
 
-        // Check each memo - if it was sent to one of this user's followers, include it
-        for (let memoId in senderMemos) {
-          const memo = senderMemos[memoId]
-          if (linkedFollowerIds.includes(memo.recipientId)) {
-            // Enrich with sender info
-            const sender = allUsers[senderId]
-            if (sender) {
-              memo.senderName = `${sender.name} ${sender.surname}`
-              memo.senderUserId = senderId
+          for (let memoId in senderMemos) {
+            const memo = senderMemos[memoId]
+            // Include only memos sent to followers (not system users)
+            if (memo.recipientId && memo.recipientId.startsWith('U')) {
+              const sender = allUsers[senderId]
+              if (sender) {
+                memo.senderName = `${sender.name} ${sender.surname}`
+                memo.senderUserId = senderId
+              }
+              receivedMemos.push(memo)
             }
-            receivedMemos.push(memo)
           }
         }
       }
-    }
 
-    // 2. Get memos sent directly to this system user (from received_memos collection)
-    const directReceivedMemos = await firebase_get(`received_memos/${userId}`)
-    if (directReceivedMemos && typeof directReceivedMemos === 'object') {
-      for (let memoId in directReceivedMemos) {
-        const memo = directReceivedMemos[memoId]
-        receivedMemos.push(memo)
+      // Also include all direct received memos to system users
+      if (allUsers && typeof allUsers === 'object') {
+        for (let uid in allUsers) {
+          const directReceivedMemos = await firebase_get(`received_memos/${uid}`)
+          if (directReceivedMemos && typeof directReceivedMemos === 'object') {
+            for (let memoId in directReceivedMemos) {
+              const memo = directReceivedMemos[memoId]
+              receivedMemos.push(memo)
+            }
+          }
+        }
+      }
+    } else {
+      // Regular user gets only memos for their linked followers
+      const linkedFollowerIds = currentUser?.linkedFollowers ? Object.keys(currentUser.linkedFollowers) : []
+
+      // 1. Search through all users' sent_memos for memos sent to this user's followers
+      if (allUsers && typeof allUsers === 'object' && linkedFollowerIds.length > 0) {
+        for (let senderId in allUsers) {
+          const senderMemos = await firebase_get(`sent_memos/${senderId}`)
+          if (!senderMemos || typeof senderMemos !== 'object') continue
+
+          // Check each memo - if it was sent to one of this user's followers, include it
+          for (let memoId in senderMemos) {
+            const memo = senderMemos[memoId]
+            if (linkedFollowerIds.includes(memo.recipientId)) {
+              // Enrich with sender info
+              const sender = allUsers[senderId]
+              if (sender) {
+                memo.senderName = `${sender.name} ${sender.surname}`
+                memo.senderUserId = senderId
+              }
+              receivedMemos.push(memo)
+            }
+          }
+        }
+      }
+
+      // 2. Get memos sent directly to this system user (from received_memos collection)
+      const directReceivedMemos = await firebase_get(`received_memos/${userId}`)
+      if (directReceivedMemos && typeof directReceivedMemos === 'object') {
+        for (let memoId in directReceivedMemos) {
+          const memo = directReceivedMemos[memoId]
+          receivedMemos.push(memo)
+        }
       }
     }
 
@@ -3033,6 +3119,258 @@ app.get("/received-memos", verifyToken, async (req, res) => {
 
     res.json({ memos: receivedMemos, count: receivedMemos.length })
   } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── Admin: Edit Memo ────────────────────────────────────
+app.put("/memo/:memoId", verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId
+    const memoId = req.params.memoId
+    const { docNumber, title, type, content } = req.body
+
+    // Check authorization - only admin can edit
+    const user = await firebase_get(`users/${userId}`)
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only administrators can edit memos' })
+    }
+
+    if (!docNumber || !title || !content) {
+      return res.status(400).json({ error: 'Document number, title and content are required' })
+    }
+
+    // Find the memo - it could be in any user's sent_memos or received_memos
+    const allUsers = await firebase_get('users')
+    if (!allUsers || typeof allUsers !== 'object') {
+      return res.status(404).json({ error: 'Memo not found' })
+    }
+
+    let memoFound = false
+    let memoPath = null
+    let isReceivedMemo = false
+
+    // First, search in sent_memos
+    for (const [uid, userObj] of Object.entries(allUsers)) {
+      const sentMemos = await firebase_get(`sent_memos/${uid}`)
+      if (sentMemos && sentMemos[memoId]) {
+        memoPath = `sent_memos/${uid}/${memoId}`
+        memoFound = true
+        break
+      }
+    }
+
+    // If not found in sent_memos, search in received_memos
+    if (!memoFound) {
+      for (const [uid, userObj] of Object.entries(allUsers)) {
+        const receivedMemos = await firebase_get(`received_memos/${uid}`)
+        if (receivedMemos && receivedMemos[memoId]) {
+          memoPath = `received_memos/${uid}/${memoId}`
+          memoFound = true
+          isReceivedMemo = true
+          break
+        }
+      }
+    }
+
+    if (!memoFound) {
+      return res.status(404).json({ error: 'Memo not found' })
+    }
+
+    // Get the existing memo
+    const existingMemo = await firebase_get(memoPath)
+    const oldDocNumber = existingMemo.docNumber
+    
+    // Check for duplicate docNumber if it's being changed
+    if (docNumber !== oldDocNumber) {
+      const allUsers = await firebase_get('users')
+      if (allUsers && typeof allUsers === 'object') {
+        for (const [uid, userObj] of Object.entries(allUsers)) {
+          const sentMemos = await firebase_get(`sent_memos/${uid}`)
+          if (sentMemos && typeof sentMemos === 'object') {
+            for (const [sentMemoId, sentMemo] of Object.entries(sentMemos)) {
+              if (sentMemo.docNumber === docNumber && sentMemoId !== memoId) {
+                return res.status(400).json({ error: `Document number "${docNumber}" is already in use` })
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Update title, type, content, and docNumber
+    const updatedMemo = {
+      ...existingMemo,
+      docNumber: docNumber,
+      title: title,
+      type: type || 'เพื่อโปรดทราบ',
+      content: content,
+      updatedAt: new Date().toISOString(),
+      updatedBy: userId
+    }
+
+    // Save updated memo in sent_memos
+    await firebase_set(memoPath, updatedMemo)
+
+    // Update all received_memos with the OLD docNumber to use the NEW docNumber
+    if (oldDocNumber) {
+      const allUsers = await firebase_get('users')
+      if (allUsers && typeof allUsers === 'object') {
+        for (const [uid, userObj] of Object.entries(allUsers)) {
+          const receivedMemos = await firebase_get(`received_memos/${uid}`)
+          if (receivedMemos && typeof receivedMemos === 'object') {
+            for (const [receivedMemoId, receivedMemo] of Object.entries(receivedMemos)) {
+              // Check if this received memo has the same OLD docNumber
+              if (receivedMemo.docNumber === oldDocNumber) {
+                const updatedReceivedMemo = {
+                  ...receivedMemo,
+                  docNumber: docNumber,
+                  title: title,
+                  type: type || 'เพื่อโปรดทราบ',
+                  content: content,
+                  updatedAt: new Date().toISOString(),
+                  updatedBy: userId
+                }
+                await firebase_set(`received_memos/${uid}/${receivedMemoId}`, updatedReceivedMemo)
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Log activity
+    try {
+      const logEntry = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: new Date().toISOString(),
+        action: 'memo_edited',
+        admin: user.username,
+        memoId: memoId,
+        title: title
+      }
+      await firebase_set(`logs/${logEntry.id}`, logEntry)
+    } catch (e) {
+      // Silent logging error
+    }
+
+    res.json({ success: true, message: 'Memo updated successfully' })
+  } catch (err) {
+    console.error('Error editing memo:', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── Admin: Delete Memo ──────────────────────────────────
+app.delete("/memo/:memoId", verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId
+    const memoId = req.params.memoId
+
+    // Check authorization - only admin can delete
+    const user = await firebase_get(`users/${userId}`)
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only administrators can delete memos' })
+    }
+
+    // Find the memo - it could be in any user's sent_memos or received_memos
+    const allUsers = await firebase_get('users')
+    if (!allUsers || typeof allUsers !== 'object') {
+      return res.status(404).json({ error: 'Memo not found' })
+    }
+
+    let memoFound = false
+    let memoPath = null
+    let memoData = null
+    let isReceivedMemo = false
+
+    // Search in sent_memos first
+    for (const [uid, userObj] of Object.entries(allUsers)) {
+      const sentMemos = await firebase_get(`sent_memos/${uid}`)
+      if (sentMemos && sentMemos[memoId]) {
+        memoPath = `sent_memos/${uid}/${memoId}`
+        memoData = sentMemos[memoId]
+        memoFound = true
+        break
+      }
+    }
+
+    // If not found in sent_memos, search in received_memos
+    if (!memoFound) {
+      for (const [uid, userObj] of Object.entries(allUsers)) {
+        const receivedMemos = await firebase_get(`received_memos/${uid}`)
+        if (receivedMemos && receivedMemos[memoId]) {
+          memoPath = `received_memos/${uid}/${memoId}`
+          memoData = receivedMemos[memoId]
+          memoFound = true
+          isReceivedMemo = true
+          break
+        }
+      }
+    }
+
+    if (!memoFound) {
+      return res.status(404).json({ error: 'Memo not found' })
+    }
+
+    // Delete from the found path
+    await firebase_delete(memoPath)
+
+    // If deleted from sent_memos, also delete all related received_memos with the same docNumber
+    // If deleted from received_memos, only delete that one memo
+    if (!isReceivedMemo) {
+      const docNumber = memoData?.docNumber
+      if (docNumber) {
+        const allUsers = await firebase_get('users')
+        if (allUsers && typeof allUsers === 'object') {
+          for (const [uid, userObj] of Object.entries(allUsers)) {
+            const receivedMemos = await firebase_get(`received_memos/${uid}`)
+            if (receivedMemos && typeof receivedMemos === 'object') {
+              for (const [receivedMemoId, receivedMemo] of Object.entries(receivedMemos)) {
+                // Delete if docNumber matches
+                if (receivedMemo.docNumber === docNumber) {
+                  try {
+                    await firebase_delete(`received_memos/${uid}/${receivedMemoId}`)
+                  } catch (e) {
+                    // Silent error - memo might not exist
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Also delete if it was sent via recipientIds (backward compatibility)
+    if (memoData && memoData.recipientIds && Array.isArray(memoData.recipientIds)) {
+      for (const recipientId of memoData.recipientIds) {
+        try {
+          await firebase_delete(`received_memos/${recipientId}/${memoId}`)
+        } catch (e) {
+          // Silent error - memo might not exist in received
+        }
+      }
+    }
+
+    // Log activity
+    try {
+      const logEntry = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: new Date().toISOString(),
+        action: 'memo_deleted',
+        admin: user.username,
+        memoId: memoId,
+        title: memoData?.title || 'Unknown'
+      }
+      await firebase_set(`logs/${logEntry.id}`, logEntry)
+    } catch (e) {
+      // Silent logging error
+    }
+
+    res.json({ success: true, message: 'Memo deleted successfully' })
+  } catch (err) {
+    console.error('Error deleting memo:', err)
     res.status(500).json({ error: err.message })
   }
 })

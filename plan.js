@@ -284,3 +284,82 @@ Bug
 
 */
 
+/*
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem("preferredLanguage", lang);
+
+            // Update UI elements
+            const currentLang = document.getElementById("currentLang");
+            const currentFlag = document.getElementById("currentFlag");
+
+            if (currentLang) {
+                currentLang.textContent = lang.toUpperCase();
+            }
+
+            if (currentFlag) {
+                currentFlag.src = `flags/${lang === 'en' ? 'us' : lang}.png`;
+                currentFlag.alt = `${lang.toUpperCase()} flag`;
+            }
+
+            // Update translations
+            changeLanguage(lang);
+            
+            // Update emergency contacts table if it exists
+            if (typeof renderEmergencyContacts === 'function') {
+                renderEmergencyContacts();
+            }
+        }
+
+        // Add event listener for language buttons
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add click handlers for language selection buttons
+            document.querySelectorAll('[data-lang]').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const lang = e.currentTarget.dataset.lang;
+                    setLanguage(lang);
+                });
+            });
+
+            // Set initial language
+            const savedLang = localStorage.getItem("preferredLanguage") || "th";
+            setLanguage(savedLang);
+        });
+
+        function changeLanguage(lang) {
+            // currentLanguage = lang;
+
+            // Update all translatable elements
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.dataset.translate;
+                if (translations[lang] && translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+
+            // Update any placeholders
+            document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
+                const key = element.dataset.translatePlaceholder;
+                if (translations[lang] && translations[lang][key]) {
+                    element.placeholder = translations[lang][key];
+                }
+            });
+
+
+            // Refresh any dynamic content that needs translation
+            if (currentUser) {
+                updateDashboard();
+                updateNotifications();
+            }
+        }
+
+
+*/
+
+/*
+1.เพิ่มแปลภาษา
+2.แก้ให้ admin ดู sentmemo , receive memo , pending memo ได้ทั้งหมด
+3.ให้ admin กดอนุมัติได้ทั้งหมด
+
+
+*/
