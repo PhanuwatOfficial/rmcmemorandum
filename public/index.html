@@ -334,7 +334,7 @@
         }
 
         .page-header {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             animation: slideUp 0.5s ease-out backwards;
         }
 
@@ -415,9 +415,9 @@
         }
 
         .stat-label {
-            font-size: 9px;
+            font-size: 14px;
             font-weight: 700;
-            letter-spacing: 0.18em;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
             color: var(--ink-faint);
             margin-bottom: 10px;
@@ -440,7 +440,7 @@
         }
 
         .stat-sub {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--ink-faint);
             margin-top: 6px;
         }
@@ -504,7 +504,7 @@
 
         .field label {
             display: block;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
@@ -3066,7 +3066,7 @@
             <div id="view-manage-user" class="view" style="display:none;">
                 <div class="page-header">
                     <h2 data-translate="accountSettings">Account Settings</h2>
-                    <p data-translate="manageAccountFollowers">Manage your account and linked followers.</p>
+                    <!-- <p data-translate="manageAccountFollowers">Manage your account and linked followers.</p> -->
                 </div>
 
                 <div class="manage-user-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
@@ -3083,20 +3083,20 @@
                                 <div style="display: grid; gap: 12px;">
                                     <div>
                                         <label data-translate="username"
-                                            style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase;">Username</label>
+                                            style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase;">Username</label>
                                         <div style="font-size: 14px; color: var(--ink); font-weight: 600;" id="userUsername">—
                                         </div>
                                     </div>
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                         <div>
                                             <label data-translate="firstName"
-                                                style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase;">First
+                                                style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase;">First
                                                 Name</label>
                                             <div style="font-size: 14px; color: var(--ink);" id="userName">—</div>
                                         </div>
                                         <div>
                                             <label data-translate="lastName"
-                                                style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase;">Last
+                                                style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase;">Last
                                                 Name</label>
                                             <div style="font-size: 14px; color: var(--ink);" id="userSurname">—</div>
                                         </div>
@@ -3191,14 +3191,14 @@
                                     style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; background: var(--surface); border-radius: var(--radius); padding: 16px;">
                                     <div style="border-right: 1px solid var(--border); padding-right: 16px;">
                                         <div data-translate="userId"
-                                            style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
+                                            style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 500; letter-spacing: 0.08em; margin-bottom: 6px;">
                                             User ID</div>
                                         <div style="font-size: 12px; color: var(--ink); font-family: 'Courier New', monospace; word-break: break-all; font-weight: 500;"
                                             id="linkedProfileUserId">—</div>
                                     </div>
                                     <div>
                                         <div data-translate="linkedDate"
-                                            style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
+                                            style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 500; letter-spacing: 0.08em; margin-bottom: 6px;">
                                             Linked Date</div>
                                         <div style="font-size: 12px; color: var(--ink); font-weight: 500;"
                                             id="linkedProfileDate">—</div>
@@ -3209,7 +3209,7 @@
                                 <div
                                     style="background: var(--surface); border-radius: var(--radius); padding: 12px; margin-bottom: 20px; border-left: 3px solid var(--accent-2);">
                                     <div data-translate="statusMessage"
-                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
+                                        style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 500; letter-spacing: 0.08em; margin-bottom: 6px;">
                                         Status Message</div>
                                     <div style="font-size: 13px; color: var(--ink); line-height: 1.5; font-style: italic;"
                                         id="linkedProfileStatusMessage">—</div>
@@ -3281,7 +3281,7 @@
             <div id="view-dashboard" class="view">
                 <div class="page-header">
                     <h2 data-translate="executiveInbox">Home Page</h2>
-                    <p data-translate="manageLINE">Manage LINE notifications and formal directives.</p>
+                    <!-- <p  data-translate="manageLINE">Manage LINE notifications and formal directives.</p> -->
                 </div>
 
                 <!-- User Dashboard Stats -->
@@ -3292,7 +3292,7 @@
                         <div class="stat-sub" data-translate="allMemosDispatched">All memos dispatched</div>
                     </div>
                     <div class="stat-card" id="stat-pending-approvals-card">
-                        <div class="stat-label" data-translate="pendingApprovals">Pending Approvals</div>
+                        <div class="stat-label" data-translate="pendingApprovals2">Pending Approvals</div>
                         <div class="stat-value" id="stat-pending-approvals">—</div>
                         <div class="stat-sub" data-translate="awaitingYourDecision">Awaiting your decision</div>
                     </div>
@@ -3351,7 +3351,7 @@
                         </button>
                     </div>
                     <div class="section-body" style="padding: 0;">
-                        <div class="activity-log" id="dash-logs-preview" style="border-radius: 0; max-height: 450px;">
+                        <div class="activity-log" id="dash-logs-preview" style="border-radius: 0; max-height: 500px;">
                             <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading activity...
                             </div>
                         </div>
@@ -3363,7 +3363,7 @@
             <div id="view-compose" class="view" style="display:none;">
                 <div class="page-header">
                     <h2 data-translate="composeMemorandum">Compose Memorandum</h2>
-                    <p data-translate="createAndDispatch">Create and dispatch formal memorandums to selected recipients.
+                    <!-- <p data-translate="createAndDispatch">Create and dispatch formal memorandums to selected recipients. -->
                     </p>
                 </div>
 
@@ -3525,7 +3525,7 @@
             <div id="view-sent-memos" class="view" style="display:none;">
                 <div class="page-header">
                     <h2 data-translate="sentMemos">Sent Memos</h2>
-                    <p data-translate="reviewDispatched">Review all memorandums you have dispatched.</p>
+                    <!-- <p data-translate="reviewDispatched">Review all memorandums you have dispatched.</p> -->
                 </div>
 
                 <div class="section-card">
@@ -3582,7 +3582,7 @@
             <div id="view-received-memos" class="view" style="display:none;">
                 <div class="page-header">
                     <h2 data-translate="receivedMemos">Received Memos</h2>
-                    <p data-translate="viewMemosFollowers">View all memorandums sent to your followers.</p>
+                    <!-- <p data-translate="viewMemosFollowers">View all memorandums sent to your followers.</p> -->
                 </div>
 
                 <div class="section-card">
@@ -3637,7 +3637,7 @@
             <div id="view-pending-approvals" class="view" style="display:none;">
                 <div class="page-header">
                     <h2 data-translate="pendingMemoApprovals">Pending Memo Approvals</h2>
-                    <p data-translate="reviewAndApprove">Review and approve memorandums from your department.</p>
+                    <!-- <p data-translate="reviewAndApprove">Review and approve memorandums from your department.</p> -->
                 </div>
 
                 <div class="section-card">
@@ -3691,16 +3691,11 @@
                 </div>
             </div>
 
-            <!--
-prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo, recieved memo ,pending approval
-เห็น memo ใน table ได้ทั้งหมดทุกรายการ (ไม่จำเป็นต้องเป็น memo ที่เกี่ยวกับ admin ให้ admin เห็นทั้งหมด)
-และใน view-pending-approvals ให้ approve memo ของทุกรายการ/ทุกคน ได้โดยไม่จำเป็นต้องกำหนดใน db.ref("memoApprovers") -->
-
             <!-- ── BROADCAST VIEW ─────────────────── -->
             <div id="view-broadcast" class="view" style="display:none;">
                 <div class="page-header">
                     <h2 data-translate="broadcastMemorandum">Broadcast Memorandum</h2>
-                    <p data-translate="dispatchMessage">Dispatch a message to all active followers simultaneously.</p>
+                    <!-- <p data-translate="dispatchMessage">Dispatch a message to all active followers simultaneously.</p> -->
                 </div>
 
                 <div class="section-card" style="max-width: 840px;">
@@ -3745,7 +3740,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             <div id="view-followers" class="view" style="display:none;">
                 <div class="page-header">
                     <h2 data-translate="followerRegistry">Follower Registry</h2>
-                    <p data-translate="manageReview">Manage and review all active LINE followers.</p>
+                    <!-- <p data-translate="manageReview">Manage and review all active LINE followers.</p> -->
                 </div>
 
                 <!-- Stats -->
@@ -4185,7 +4180,6 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
 
             </div>
 
-            <!--prompt: เพิ่ม data-translate-->
             <style>
                 /* Responsive Grid Layouts for Mobile */
                 @media (max-width: 768px) {
@@ -4201,7 +4195,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             <div id="view-logs" class="view" style="display:none;">
                 <div class="page-header">
                     <h2 data-translate="activityLog">Activity Log</h2>
-                    <p data-translate="liveActivityTrail">Live activity trail from the LINE Bot server.</p>
+                    <!-- <p data-translate="liveActivityTrail">Live activity trail from the LINE Bot server.</p> -->
                 </div>
 
                 <div class="section-card">
@@ -5309,14 +5303,15 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 executiveInbox: "หน้าหลัก",
                 manageLINE: "จัดการการแจ้งเตือน LINE และคำสั่งอย่างเป็นทางการ",
                 memoSent: "เมมโมที่ส่ง",
-                allMemosDispatched: "เมมโมทั้งหมดที่ส่ง",
+                allMemosDispatched: "จำนวนเมมโมทั้งหมดที่ส่ง",
                 pendingApprovals: "อนุมัติเมมโม",
-                awaitingYourDecision: "รอการตัดสินใจของคุณ",
+                pendingApprovals2: "เมมโมที่รออนุมัติ",
+                awaitingYourDecision: "จำนวนเมมโมที่รอการอนุมัติ",
                 memosReceived: "เมมโมที่ได้รับ",
-                sentToFollowers: "ส่งให้ผู้ติดตาม",
-                approved: "อนุมัติแล้ว",
+                sentToFollowers: "จำนวนเมมโมที่ได้รับ",
+                approved: "เมมโมที่อนุมัติแล้ว",
                 applied: "เข้าร่วม",
-                successfullyApproved: "อนุมัติเรียบร้อย",
+                successfullyApproved: "จำนวนเมมโมที่ได้รับการอนุมัติ",
                 quickActions: "การกระทำที่รวดเร็ว",
                 composeMemorandum: "เขียนเมมโม",
                 broadcastToAll: "ประกาศ",
@@ -5614,6 +5609,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 memoSent: "Memo Sent",
                 allMemosDispatched: "All memos dispatched",
                 pendingApprovals: "Pending Approvals",
+                pendingApprovals2: "Pending Approvals",
                 awaitingYourDecision: "Awaiting your decision",
                 memosReceived: "Memos Received",
                 sentToFollowers: "Sent to followers",
@@ -5825,7 +5821,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 "dept_วางแผนการผลิต": "Production Planning",
                 "dept_ธุรการผลิต": "Production Administration",
                 "dept_ปิดผิว": "Wood Finishing",
-                "dept_พิมพ์เยื่อ": "Printing",
+                "dept_พิมพ์เยื่อ": "Laminate Printing",
                 "dept_พีพีบอร์ด": "PP Board",
                 "dept_รีดเหล็ก": "Steel Forming",
                 "dept_แร็ปปิ้ง": "Wrapping",
