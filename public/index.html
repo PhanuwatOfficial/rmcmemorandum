@@ -375,7 +375,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .stat-card {
@@ -2318,6 +2318,10 @@
                 max-width: 100% !important;
             }
 
+            .manage-user-grid {
+                grid-template-columns: 1fr !important;
+            }
+
             .section-header {
                 flex-direction: column;
                 align-items: flex-start;
@@ -2644,11 +2648,11 @@
             <div id="authNav">
                 <a class="nav-item" onclick="showView('login')">
                     <span class="material-symbols-outlined">login</span>
-                    Login
+                    <span data-translate="login">Login</span>
                 </a>
                 <a class="nav-item" onclick="showView('register')">
                     <span class="material-symbols-outlined">person_add</span>
-                    Register
+                    <span data-translate="register">Register</span>
                 </a>
             </div>
             <div id="mainNav" style="display:none;">
@@ -2717,7 +2721,7 @@
                     <span data-translate="signOut">Sign Out</span>
                 </a>
             </div>
-            <div id="guestSection">
+            <div id="guestSection" style="display:none;">
                 <a class="nav-item" href="#">
                     <span class="material-symbols-outlined">help_outline</span>
                     <span data-translate="support">Support</span>
@@ -2821,7 +2825,7 @@
                             onmouseout="this.style.background='none'">
                             <span class="material-symbols-outlined"
                                 style="vertical-align: middle; font-size: 18px; margin-right: 8px;">manage_accounts</span>
-                            Account Settings
+                            <span data-translate="accountSettings">Account Settings</span>
                         </button>
                         <button onclick="toggleUserMenu(); logout()"
                             style="padding: 12px 16px; background: none; border: none; color: var(--red); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%;"
@@ -2829,7 +2833,7 @@
                             onmouseout="this.style.background='none'">
                             <span class="material-symbols-outlined"
                                 style="vertical-align: middle; font-size: 18px; margin-right: 8px;">logout</span>
-                            Sign Out
+                            <span data-translate="signOut">Sign Out</span>
                         </button>
                     </div>
                 </div>
@@ -3065,181 +3069,218 @@
                     <p data-translate="manageAccountFollowers">Manage your account and linked followers.</p>
                 </div>
 
-                <div class="section-card" style="max-width: 840px;">
-                    <div class="section-header">
-                        <div class="section-title">
-                            <span class="material-symbols-outlined">person</span>
-                            <span data-translate="accountInformation">Account Information</span>
-                        </div>
-                    </div>
-                    <div class="section-body">
-                        <div style="display: grid; gap: 12px;">
-                            <div>
-                                <label
-                                    style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase;">Username</label>
-                                <div style="font-size: 14px; color: var(--ink); font-weight: 600;" id="userUsername">—
+                <div class="manage-user-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+                    <!-- Left Side: Account Info + Password -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <div class="section-card" style="margin-bottom: 0px;">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <span class="material-symbols-outlined">person</span>
+                                    <span data-translate="accountInformation">Account Information</span>
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                <div>
-                                    <label
-                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase;">First
-                                        Name</label>
-                                    <div style="font-size: 14px; color: var(--ink);" id="userName">—</div>
-                                </div>
-                                <div>
-                                    <label
-                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase;">Last
-                                        Name</label>
-                                    <div style="font-size: 14px; color: var(--ink);" id="userSurname">—</div>
+                            <div class="section-body">
+                                <div style="display: grid; gap: 12px;">
+                                    <div>
+                                        <label data-translate="username"
+                                            style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase;">Username</label>
+                                        <div style="font-size: 14px; color: var(--ink); font-weight: 600;" id="userUsername">—
+                                        </div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                        <div>
+                                            <label data-translate="firstName"
+                                                style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase;">First
+                                                Name</label>
+                                            <div style="font-size: 14px; color: var(--ink);" id="userName">—</div>
+                                        </div>
+                                        <div>
+                                            <label data-translate="lastName"
+                                                style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase;">Last
+                                                Name</label>
+                                            <div style="font-size: 14px; color: var(--ink);" id="userSurname">—</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="section-card" style="max-width: 840px;">
-                    <div class="section-header">
-                        <div class="section-title">
-                            <span class="material-symbols-outlined">lock</span>
-                            <span data-translate="changePassword">Change Password</span>
+                        <div class="section-card">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <span class="material-symbols-outlined">lock</span>
+                                    <span data-translate="changePassword">Change Password</span>
+                                </div>
+                            </div>
+                            <div class="section-body">
+                                <div style="display: grid; gap: 12px;">
+                                    <div class="field">
+                                        <label data-translate="currentPassword">Current Password</label>
+                                        <input id="currentPassword" type="password" placeholder="Enter your current password" data-translate="enterCurrentPassword">
+                                    </div>
+                                    <div class="field">
+                                        <label data-translate="newPassword">New Password</label>
+                                        <input id="newPassword" type="password" placeholder="Enter your new password" data-translate="enterNewPassword">
+                                    </div>
+                                    <div class="field">
+                                        <label data-translate="confirmPassword">Confirm New Password</label>
+                                        <input id="confirmPassword" type="password" placeholder="Confirm your new password" data-translate="confirmYourPassword">
+                                    </div>
+                                    <div class="btn-row" style="margin-top: 16px;">
+                                        <button class="btn btn-primary" onclick="changePassword()"
+                                            data-translate="updatePassword">
+                                            <span class="material-symbols-outlined">check_circle</span>
+                                            Update Password
+                                        </button>
+                                        <button class="btn btn-ghost" onclick="clearPasswordForm()" data-translate="clear">
+                                            <span class="material-symbols-outlined">clear</span>
+                                            Clear
+                                        </button>
+                                    </div>
+                                    <div class="status-msg" id="statusChangePassword">
+                                        <span class="material-symbols-outlined"></span>
+                                        <span class="msg-text"></span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="section-body">
-                        <div style="display: grid; gap: 12px;">
-                            <div class="field">
-                                <label data-translate="currentPassword">Current Password</label>
-                                <input id="currentPassword" type="password" placeholder="Enter your current password">
+
+                    <!-- Right Side: Linked Profile -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="material-symbols-outlined">link</span>
+                                <span data-translate="linkedLINEProfile">Linked LINE Profile</span>
                             </div>
-                            <div class="field">
-                                <label data-translate="newPassword">New Password</label>
-                                <input id="newPassword" type="password" placeholder="Enter your new password">
-                            </div>
-                            <div class="field">
-                                <label data-translate="confirmPassword">Confirm New Password</label>
-                                <input id="confirmPassword" type="password" placeholder="Confirm your new password">
-                            </div>
-                            <div class="btn-row" style="margin-top: 16px;">
-                                <button class="btn btn-primary" onclick="changePassword()"
-                                    data-translate="updatePassword">
-                                    <span class="material-symbols-outlined">check_circle</span>
-                                    Update Password
-                                </button>
-                                <button class="btn btn-ghost" onclick="clearPasswordForm()" data-translate="clear">
-                                    <span class="material-symbols-outlined">clear</span>
-                                    Clear
-                                </button>
-                            </div>
-                            <div class="status-msg" id="statusChangePassword">
+                            <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()" data-translate="refresh"
+                                title="Refresh profile data">
+                                <span class="material-symbols-outlined">refresh</span>
+                                Refresh
+                            </button>
+                        </div>
+                        <div class="section-body">
+                            <div id="linkedProfileStatus" class="status-msg" style="margin-bottom: 16px; display:none;">
                                 <span class="material-symbols-outlined"></span>
                                 <span class="msg-text"></span>
                             </div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="section-card" style="max-width: 840px;">
-                    <div class="section-header">
-                        <div class="section-title">
-                            <span class="material-symbols-outlined">link</span>
-                            <span data-translate="linkedLINEProfile">Linked LINE Profile</span>
-                        </div>
-                        <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()" data-translate="refresh"
-                            title="Refresh profile data">
-                            <span class="material-symbols-outlined">refresh</span>
-                            Refresh
-                        </button>
-                    </div>
-                    <div class="section-body">
-                        <div id="linkedProfileStatus" class="status-msg" style="margin-bottom: 16px; display:none;">
-                            <span class="material-symbols-outlined"></span>
-                            <span class="msg-text"></span>
-                        </div>
-
-                        <!-- Linked Profile Display -->
-                        <div id="linkedProfileContainer"
-                            style="display: none; background: linear-gradient(135deg, rgba(26, 39, 64, 0.05) 0%, rgba(200, 169, 110, 0.05) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-align: center;">
-                            <!-- Profile Picture Section -->
-                            <div style="margin-bottom: 24px; display: flex; justify-content: center;">
-                                <div
-                                    style="width: 100px; height: 100px; border-radius: 50%; background: var(--paper); border: 3px solid var(--accent-2); overflow: hidden; box-shadow: 0 4px 12px rgba(200, 169, 110, 0.15); display: flex; align-items: center; justify-content: center;">
-                                    <img id="linkedProfilePicture" src="" alt="Profile"
-                                        style="width: 100%; height: 100%; object-fit: cover;">
-                                </div>
-                            </div>
-
-                            <!-- Profile Name -->
-                            <div style="margin-bottom: 20px;">
-                                <div style="font-size: 18px; font-weight: 700; color: var(--ink);"
-                                    id="linkedProfileName">—</div>
-                                <div
-                                    style="font-size: 11px; color: var(--ink-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px;">
-                                    LINE Profile Connected</div>
-                            </div>
-
-                            <!-- Profile Details Grid -->
-                            <div
-                                style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; background: var(--surface); border-radius: var(--radius); padding: 16px;">
-                                <div style="border-right: 1px solid var(--border); padding-right: 16px;">
+                            <!-- Linked Profile Display -->
+                            <div id="linkedProfileContainer"
+                                style="display: none; background: linear-gradient(135deg, rgba(26, 39, 64, 0.05) 0%, rgba(200, 169, 110, 0.05) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-align: center;">
+                                <!-- Profile Picture Section -->
+                                <div style="margin-bottom: 24px; display: flex; justify-content: center;">
                                     <div
-                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
-                                        User ID</div>
-                                    <div style="font-size: 12px; color: var(--ink); font-family: 'Courier New', monospace; word-break: break-all; font-weight: 500;"
-                                        id="linkedProfileUserId">—</div>
+                                        style="width: 100px; height: 100px; border-radius: 50%; background: var(--paper); border: 3px solid var(--accent-2); overflow: hidden; box-shadow: 0 4px 12px rgba(200, 169, 110, 0.15); display: flex; align-items: center; justify-content: center;">
+                                        <img id="linkedProfilePicture" src="" alt="Profile"
+                                            style="width: 100%; height: 100%; object-fit: cover;">
+                                    </div>
                                 </div>
-                                <div>
-                                    <div
-                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
-                                        Linked Date</div>
-                                    <div style="font-size: 12px; color: var(--ink); font-weight: 500;"
-                                        id="linkedProfileDate">—</div>
-                                </div>
-                            </div>
 
-                            <!-- Status Message -->
-                            <div
-                                style="background: var(--surface); border-radius: var(--radius); padding: 12px; margin-bottom: 20px; border-left: 3px solid var(--accent-2);">
+                                <!-- Profile Name -->
+                                <div style="margin-bottom: 20px;">
+                                    <div style="font-size: 18px; font-weight: 700; color: var(--ink);"
+                                        id="linkedProfileName">—</div>
+                                    <div data-translate="lineProfileConnected"
+                                        style="font-size: 11px; color: var(--ink-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px;">
+                                        LINE Profile Connected</div>
+                                </div>
+
+                                <!-- Profile Details Grid -->
                                 <div
-                                    style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
-                                    Status Message</div>
-                                <div style="font-size: 13px; color: var(--ink); line-height: 1.5; font-style: italic;"
-                                    id="linkedProfileStatusMessage">—</div>
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; background: var(--surface); border-radius: var(--radius); padding: 16px;">
+                                    <div style="border-right: 1px solid var(--border); padding-right: 16px;">
+                                        <div data-translate="userId"
+                                            style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
+                                            User ID</div>
+                                        <div style="font-size: 12px; color: var(--ink); font-family: 'Courier New', monospace; word-break: break-all; font-weight: 500;"
+                                            id="linkedProfileUserId">—</div>
+                                    </div>
+                                    <div>
+                                        <div data-translate="linkedDate"
+                                            style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
+                                            Linked Date</div>
+                                        <div style="font-size: 12px; color: var(--ink); font-weight: 500;"
+                                            id="linkedProfileDate">—</div>
+                                    </div>
+                                </div>
+
+                                <!-- Status Message -->
+                                <div
+                                    style="background: var(--surface); border-radius: var(--radius); padding: 12px; margin-bottom: 20px; border-left: 3px solid var(--accent-2);">
+                                    <div data-translate="statusMessage"
+                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 6px;">
+                                        Status Message</div>
+                                    <div style="font-size: 13px; color: var(--ink); line-height: 1.5; font-style: italic;"
+                                        id="linkedProfileStatusMessage">—</div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div
+                                    style="display: none; gap: 10px; justify-content: center; padding-top: 16px; border-top: 1px solid var(--border);">
+                                    <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()" style="flex: 1;" data-translate="syncProfile">
+                                        <span class="material-symbols-outlined">sync</span>
+                                        Sync Profile
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="unlinkCurrentProfile()" style="flex: 1;" data-translate="unlink">
+                                        <span class="material-symbols-outlined">link_off</span>
+                                        Unlink
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Action Buttons -->
-                            <div
-                                style="display: none; gap: 10px; justify-content: center; padding-top: 16px; border-top: 1px solid var(--border);">
-                                <button class="btn btn-ghost btn-sm" onclick="loadUserLinkedProfile()" style="flex: 1;">
-                                    <span class="material-symbols-outlined">sync</span>
-                                    Sync Profile
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="unlinkCurrentProfile()" style="flex: 1;">
-                                    <span class="material-symbols-outlined">link_off</span>
-                                    Unlink
-                                </button>
+                            <!-- Empty State -->
+                            <div id="noLinkedProfileContainer"
+                                style="text-align: center; padding: 50px 24px; background: linear-gradient(135deg, rgba(26, 39, 64, 0.03) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px dashed var(--border); border-radius: var(--radius); color: var(--ink-faint);">
+                                <span class="material-symbols-outlined"
+                                    style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.35; color: var(--accent-2);">link_off</span>
+                                <p style="font-size: 14px; font-weight: 500; margin-bottom: 12px;"
+                                    data-translate="noLINEProfile">No LINE Profile Linked
+                                </p>
+                                
+                                <!-- QR Code Section -->
+                                <div style="margin: 24px 0; display: flex; justify-content: center;">
+                                    <div style="padding: 12px; background: var(--paper); border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+                                        <img src="https://qr-official.line.me/gs/M_141uudgn_BW.png?oat_content=qr" alt="LINE QR Code" 
+                                            style="width: 160px; height: 160px; display: block;">
+                                    </div>
+                                </div>
+                                <p style="font-size: 12px; color: var(--ink-muted); margin: 12px 0;"
+                                    data-translate="scanQRCode">Scan the QR code with your LINE app to link your profile</p>
+                                
+                                <!-- Direct Add Option -->
+                                <div style="margin: 16px 0; padding: 12px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);">
+                                    <p style="font-size: 11px; color: var(--ink-muted); text-transform: uppercase; font-weight: 600; margin: 0 0 12px 0;">or</p>
+                                    <a href="https://lin.ee/TDVhSGi" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; background: linear-gradient(135deg, var(--accent) 0%, #2a3a60 100%); color: white; border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(26, 39, 64, 0.15);"
+                                        onmouseover="this.style.boxShadow='0 4px 12px rgba(26, 39, 64, 0.25)'; this.style.transform='translateY(-2px)';"
+                                        onmouseout="this.style.boxShadow='0 2px 8px rgba(26, 39, 64, 0.15)'; this.style.transform='translateY(0)';">
+                                        <span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
+                                        <span data-translate="addLineID">Add @141uudgn</span>
+                                    </a>
+                                    
+                                </div>
+                                
+                                <p style="font-size: 12px; color: var(--ink-muted); line-height: 1.6;"
+                                    data-translate="linkProfile">Link a LINE profile
+                                    to your account in the <strong>Followers Management</strong> section to get started.</p>
                             </div>
-                        </div>
-
-                        <!-- Empty State -->
-                        <div id="noLinkedProfileContainer"
-                            style="text-align: center; padding: 50px 24px; background: linear-gradient(135deg, rgba(26, 39, 64, 0.03) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px dashed var(--border); border-radius: var(--radius); color: var(--ink-faint);">
-                            <span class="material-symbols-outlined"
-                                style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.35; color: var(--accent-2);">link_off</span>
-                            <p style="font-size: 14px; font-weight: 500; margin-bottom: 12px;"
-                                data-translate="noLINEProfile">No LINE Profile Linked
-                            </p>
-                            <p style="font-size: 12px; color: var(--ink-muted); line-height: 1.6;"
-                                data-translate="linkProfile">Link a LINE profile
-                                to your account in the <strong>Followers Management</strong> section to get started.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
+    <!--prompt:
+    ฝั่ง section ด้านขวาเพิ่ม qrcode เพื่อ add line ทำเป็น link user
+    
+    โดยใช้ 
+    <img src="https://qr-official.line.me/gs/M_141uudgn_BW.png?oat_content=qr">
+    
+    -->
+
             <!-- ── DASHBOARD VIEW ─────────────────── -->
             <div id="view-dashboard" class="view">
                 <div class="page-header">
-                    <h2 data-translate="executiveInbox">Executive Inbox</h2>
+                    <h2 data-translate="executiveInbox">Home Page</h2>
                     <p data-translate="manageLINE">Manage LINE notifications and formal directives.</p>
                 </div>
 
@@ -3765,8 +3806,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                                     <tr>
                                         <th data-translate="username">Username</th>
                                         <th data-translate="name">Name</th>
-                                        <th data-translate="departmentTh">Department (ฝ่าย)</th>
-                                        <th data-translate="subDepartmentTh">Sub-Department (แผนก)</th>
+                                        <th data-translate="departmentTh">Department</th>
+                                        <th data-translate="subDepartmentTh">Sub-Department</th>
                                         <th data-translate="applied">Applied</th>
                                         <th style="text-align: center;" data-translate="actions">Actions</th>
                                     </tr>
@@ -3785,7 +3826,6 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                         </div>
                     </div>
 
-                    <!--prompt: แก้ไขส่วนนี้ถ้าไม่มีผู้ที่รอการอนุมัติ ไม่ต้องให้แสดง section นี้เลยได้ไหม-->
 
                     <script>
                         // Auto-hide pending approvals section when no pending users
@@ -3833,8 +3873,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                                         <th data-translate="username">Username</th>
                                         <th data-translate="name">Name</th>
                                         <th data-translate="roleColumn">Role</th>
-                                        <th data-translate="departmentTh">Department (ฝ่าย)</th>
-                                        <th data-translate="subDepartmentTh">Sub-Department (แผนก)</th>
+                                        <th data-translate="departmentTh">Department</th>
+                                        <th data-translate="subDepartmentTh">Sub-Department</th>
                                         <th data-translate="passwordColumn">Password</th>
                                         <th data-translate="joinedColumn">Joined</th>
                                         <th data-translate="action">Action</th>
@@ -4479,32 +4519,32 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             <button class="mobile-bottom-nav-item" data-view="dashboard"
                 onclick="showView('dashboard'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">dashboard</span>
-                <span>Dashboard</span>
+                <span data-translate="dashboard">Dashboard</span>
             </button>
             <button class="mobile-bottom-nav-item" data-view="compose"
                 onclick="showView('compose'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">edit_note</span>
-                <span>Compose</span>
+                <span data-translate="composeMemo">Compose</span>
             </button>
             <button class="mobile-bottom-nav-item" data-view="sent-memos"
                 onclick="showView('sent-memos'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">send</span>
-                <span>Sent</span>
+                <span data-translate="sentMemos">Sent</span>
             </button>
             <button class="mobile-bottom-nav-item" data-view="received-memos"
                 onclick="showView('received-memos'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">inbox</span>
-                <span>Received</span>
+                <span data-translate="receivedMemos">Received</span>
             </button>
             <button class="mobile-bottom-nav-item" data-view="pending-approvals" style="display:none;"
                 onclick="showView('pending-approvals'); activateMobileNavItem(this); loadPendingApprovals()">
                 <span class="material-symbols-outlined">pending_actions</span>
-                <span>Pending</span>
+                <span data-translate="pendingApprovals">Pending</span>
             </button>
             <button class="mobile-bottom-nav-item" id="mobileAdminMenuBtn" data-view="admin-menu" style="display:none;"
                 onclick="toggleMobileAdminMenu()">
                 <span class="material-symbols-outlined">more_vert</span>
-                <span>More</span>
+                <span data-translate="more">More</span>
             </button>
         </div>
     </nav>
@@ -4516,33 +4556,28 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
         style="display: none; position: fixed; bottom: 90px; left: 0; right: 0; background: var(--paper); border-top: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 98; max-height: 60vh; overflow-y: auto;">
         <div style="padding: 16px;">
             <div
-                style="font-size: 12px; color: var(--ink-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 12px; padding: 0 8px;">
-                Admin Options</div>
+                style="font-size: 12px; color: var(--ink-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 12px; padding: 0 8px;" data-translate="moreOptions">
+                More Options</div>
             <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('broadcast')"
                 style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);"
                 onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                 <span class="material-symbols-outlined">campaign</span>
-                <span>Broadcast</span>
+                <span data-translate="broadcastMemorandum">Broadcast</span>
             </button>
             <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('followers')"
                 style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);"
                 onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                 <span class="material-symbols-outlined">group</span>
-                <span>Users Management</span>
+                <span data-translate="followerRegistry">Users Management</span>
             </button>
             <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('logs'); loadLogs()"
                 style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; display: flex; align-items: center; gap: 8px; border-radius: var(--radius);"
                 onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                 <span class="material-symbols-outlined">event_note</span>
-                <span>Activity Log</span>
+                <span data-translate="activityLog">Activity Log</span>
             </button>
         </div>
     </div>
-
-        <!--
-    prompt
-    ใน mobileBottomNav ให้ลบ myaccount ออก และให้ pending-approvals แสดงผลสำหรับ admin/can approve user 
-    และใน mobileAdminMenuModal ให้เอา pending-approvals ออก-->
 
     <!-- Memo Detail Modal -->
     <div id="memoDetailOverlay" class="memo-detail-overlay">
@@ -4706,7 +4741,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     <span class="material-symbols-outlined">content_copy</span>
                     <span data-translate="copyContent">Copy Content</span>
                 </button>
-                <button class="btn btn-ghost" onclick="printMemoDetail()">
+                <button class="btn btn-ghost" onclick="printMemoDetail()" style="display:none;">
                     <span class="material-symbols-outlined">print</span>
                     <span data-translate="print">Print</span>
                 </button>
@@ -5185,7 +5220,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 dept_ds_FFB: "Design FFB",
                 quota: "สิทธิ์",
                 more: "เพิ่มเติม",
-                dashboard: "แดชบอร์ด",
+                dashboard: "หน้าหลัก",
                 composeMemo: "เขียนเมมโม",
                 sentMemos: "เมมโมที่ส่ง",
                 receivedMemos: "เมมโมที่ได้รับ",
@@ -5210,7 +5245,6 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 used: "ใช้สิทธิ์",
                 remain: "คงเหลือ",
                 prAnnouncement: "หน้าหลัก",
-                dashboard: "แดชบอร์ด",
                 leaveRequest: "ขอลางาน",
                 calendar: "ปฏิทินลางาน",
                 approval: "อนุมัติการลา",
@@ -5249,6 +5283,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 subDepartmentTh: "แผนก",
                 selectSubDepartment: "เลือกแผนก...",
                 createAccountBtn: "สร้างบัญชี",
+                creatingAccount: "กำลังสร้างบัญชี...",
+                registrationFailed: "การลงทะเบียนล้มเหลว",
                 alreadyHaveAccount: "มีบัญชีแล้ว?",
                 loginHere: "เข้าสู่ระบบที่นี่",
                 accountSettings: "การตั้งค่าบัญชี",
@@ -5257,12 +5293,20 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 currentPassword: "รหัสผ่านปัจจุบัน",
                 updatePassword: "อัปเดตรหัสผ่าน",
                 clear: "ล้าง",
+                search: "ค้นหา...",
+                enterCurrentPassword: "กรอกรหัสผ่านปัจจุบันของคุณ",
+                enterNewPassword: "กรอกรหัสผ่านใหม่ของคุณ",
+                searchSentMemosPlaceholder: "ค้นหาเมมโมที่ส่งโดยหัวข้อเมมโม เลขที่เอกสาร หรือผู้รับ...",
+                searchReceivedMemosPlaceholder: "ค้นหาเมมโมที่ได้รับโดยหัวข้อเมมโม เลขที่เอกสาร หรือผู้ส่ง...",
+                searchPendingApprovalsPlaceholder: "ค้นหาการอนุมัติโดยหัวข้อเมมโม เลขที่เอกสาร หรือผู้ส่ง...",
                 changePassword: "เปลี่ยนรหัสผ่าน",
                 linkedLINEProfile: "โปรไฟล์ LINE ที่เชื่อมโยง",
                 refresh: "รีเฟรช",
                 noLINEProfile: "ไม่มีโปรไฟล์ LINE ที่เชื่อมโยง",
                 linkProfile: "เชื่อมโยงโปรไฟล์ LINE กับบัญชีของคุณ",
-                executiveInbox: "กล่องข้อความ",
+                scanQRCode: "สแกน QR Code ด้วยแอป LINE เพื่อเชื่อมโยงโปรไฟล์ของคุณ",
+                addLineID: "เพิ่ม @141uudgn",
+                executiveInbox: "หน้าหลัก",
                 manageLINE: "จัดการการแจ้งเตือน LINE และคำสั่งอย่างเป็นทางการ",
                 memoSent: "เมมโมที่ส่ง",
                 allMemosDispatched: "เมมโมทั้งหมดที่ส่ง",
@@ -5306,7 +5350,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 type: "ประเภท",
                 recipient: "ผู้รับ",
                 status: "สถานะ",
-                preview: "ตัวอย่าง",
+                preview: "เนื้อหา",
                 action: "การกระทำ",
                 noSentMemos: "ยังไม่มีเมมโมที่ส่ง",
                 receivedMemos: "เมมโมที่ได้รับ",
@@ -5374,7 +5418,11 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 clickRefreshFollowers: "คลิกรีเฟรชเพื่อโหลดผู้ติดตาม",
                 noLinkedFollowers: "ยังไม่มีผู้ติดตามที่เชื่อมโยง เชื่อมโยงตัวหนึ่งด้านล่าง",
                 userId: "ID ผู้ใช้",
+                linkedDate: "วันที่เชื่อมโยง",
                 statusMessage: "ข้อความสถานะ",
+                lineProfileConnected: "เชื่อมโยง LINE Profile แล้ว",
+                syncProfile: "ซิงโครไนซ์โปรไฟล์",
+                unlink: "ยกเลิกการเชื่อมโยง",
                 loadingDots: "กำลังโหลด...",
                 loadingDeptStructure: "กำลังโหลดโครงสร้างฝ่าย...",
                 linkSubDeptsToDepts: "เชื่อมโยงแผนกกับฝ่าย",
@@ -5439,7 +5487,25 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 enterYourInput: "กรอกข้อมูลของคุณ:",
                 enterTextHere: "กรอกข้อความที่นี่...",
                 ok: "ตกลง",
-                pressEscToClose: "กด ESC เพื่อปิด | คลิกนอกพื้นที่เพื่อปิด"
+                pressEscToClose: "กด ESC เพื่อปิด | คลิกนอกพื้นที่เพื่อปิด",
+                moreOptions: "เพิ่มเติม",
+                loginSuccessful: "เข้าสู่ระบบสำเร็จ!",
+                signingIn: "กำลังเข้าสู่ระบบ...",
+                usernamePasswordRequired: "ต้องระบุชื่อผู้ใช้และรหัสผ่าน",
+                accountCreatedWaiting: "บัญชีถูกสร้างแล้ว รอการอนุมัติจากแอดมิน...",
+                passwordsDoNotMatch: "รหัสผ่านไม่ตรงกัน",
+                passwordMinLength: "รหัสผ่านต้องมีอักขระอย่างน้อย 4 ตัว",
+                allFieldsRequired: "ต้องกรอกข้อมูลทั้งหมด",
+                updatingPassword: "กำลังอัปเดตรหัสผ่าน...",
+                passwordUpdatedSuccessfully: "อัปเดตรหัสผ่านสำเร็จ!",
+                newPasswordsDoNotMatch: "รหัสผ่านใหม่ไม่ตรงกัน",
+                newPasswordMinLength: "รหัสผ่านใหม่ต้องมีอักขระอย่างน้อย 4 ตัว",
+                invalidCredentials: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+                view: "ดู",
+                edit: "แก้ไข",
+                delete: "ลบ",
+                approve: "อนุมัติ",
+                reject: "ปฏิเสธ"
             },
             en: {
                 dept_arch_NXT: "Architect",
@@ -5451,7 +5517,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 dept_ds_FFB: "Design FFB",
                 quota: "Quota",
                 more: "More",
-                dashboard: "Dashboard",
+                dashboard: "Homepage",
                 composeMemo: "Compose Memo",
                 sentMemos: "Sent Memos",
                 receivedMemos: "Received Memos",
@@ -5476,7 +5542,6 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 used: "Used",
                 remain: "Remain",
                 prAnnouncement: "Homepage",
-                dashboard: "Dashboard",
                 leaveRequest: "Leave Request",
                 calendar: "Leave Calendar",
                 approval: "Approval",
@@ -5509,12 +5574,14 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 createPassword: "Create a password",
                 confirmYourPassword: "Confirm your password",
                 department: "Department",
-                departmentTh: "Department (ฝ่าย)",
+                departmentTh: "Department",
                 selectDepartment: "Select department...",
                 subDepartment: "Sub-Department",
-                subDepartmentTh: "Sub-Department (แผนก)",
+                subDepartmentTh: "Sub-Department",
                 selectSubDepartment: "Select sub-department...",
                 createAccountBtn: "Create Account",
+                creatingAccount: "Creating account...",
+                registrationFailed: "Registration failed.",
                 alreadyHaveAccount: "Already have an account?",
                 loginHere: "Login here",
                 accountSettings: "Account Settings",
@@ -5523,12 +5590,26 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 currentPassword: "Current Password",
                 updatePassword: "Update Password",
                 clear: "Clear",
+                search: "Search...",
+                enterCurrentPassword: "Enter your current password",
+                enterNewPassword: "Enter your new password",
+                userId: "User ID",
+                linkedDate: "Linked Date",
+                statusMessage: "Status Message",
+                lineProfileConnected: "LINE Profile Connected",
+                syncProfile: "Sync Profile",
+                unlink: "Unlink",
+                searchSentMemosPlaceholder: "Search sent memos by title, doc Number, or recipient...",
+                searchReceivedMemosPlaceholder: "Search received memos by title, doc Number, or sender...",
+                searchPendingApprovalsPlaceholder: "Search pending approvals by title, doc Number, or sender...",
                 changePassword: "Change Password",
                 linkedLINEProfile: "Linked LINE Profile",
                 refresh: "Refresh",
                 noLINEProfile: "No LINE Profile Linked",
                 linkProfile: "Link a LINE profile to your account",
-                executiveInbox: "Executive Inbox",
+                scanQRCode: "Scan the QR code with your LINE app to link your profile",
+                addLineID: "Add @141uudgn",
+                executiveInbox: "Home Page",
                 manageLINE: "Manage LINE notifications and formal directives",
                 memoSent: "Memo Sent",
                 allMemosDispatched: "All memos dispatched",
@@ -5706,6 +5787,24 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 enterTextHere: "Enter text here...",
                 ok: "OK",
                 pressEscToClose: "Press ESC to close | Click outside to close",
+                moreOptions: "More Options",
+                loginSuccessful: "Login successful!",
+                signingIn: "Signing in...",
+                usernamePasswordRequired: "Username and password required.",
+                accountCreatedWaiting: "Account created! Waiting for admin approval...",
+                passwordsDoNotMatch: "Passwords do not match.",
+                passwordMinLength: "Password must be at least 4 characters.",
+                allFieldsRequired: "All fields are required.",
+                updatingPassword: "Updating password...",
+                passwordUpdatedSuccessfully: "Password updated successfully!",
+                newPasswordsDoNotMatch: "New passwords do not match.",
+                newPasswordMinLength: "New password must be at least 4 characters.",
+                invalidCredentials: "Invalid username or password.",
+                view: "View",
+                edit: "Edit",
+                delete: "Delete",
+                approve: "Approve",
+                reject: "Reject",
                 "dept_บริหาร": "Administration",
                 "dept_จัดซื้อในประเทศ": "Domestic Procurement",
                 "dept_จัดซื้อต่างประเทศ": "International Procurement",
@@ -5777,6 +5876,16 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             }
             if (document.getElementById('departmentHierarchyContainer')?.innerHTML) {
                 loadDepartmentStructure()
+            }
+
+            // Refresh pending users table for real-time translation
+            if (document.getElementById('pendingUsersTbody')?.innerHTML && currentUser?.role === 'admin') {
+                loadPendingUsers()
+            }
+
+            // Refresh all users table for real-time translation
+            if (document.getElementById('allUsersTbody')?.innerHTML && currentUser?.role === 'admin') {
+                loadAllUsers()
             }
 
             // Close the menu
@@ -6713,21 +6822,21 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             const department2 = document.getElementById('regDepartment2').value.trim()
 
             if (!username || !name || !surname || !password || !confirmPassword) {
-                setStatus('statusRegister', 'error', 'error', 'All fields are required.')
+                setStatus('statusRegister', 'error', 'error', 'allFieldsRequired')
                 return
             }
 
             if (password !== confirmPassword) {
-                setStatus('statusRegister', 'error', 'error', 'Passwords do not match.')
+                setStatus('statusRegister', 'error', 'error', 'passwordsDoNotMatch')
                 return
             }
 
             if (password.length < 4) {
-                setStatus('statusRegister', 'error', 'error', 'Password must be at least 4 characters.')
+                setStatus('statusRegister', 'error', 'error', 'passwordMinLength')
                 return
             }
 
-            setStatus('statusRegister', 'loading', 'hourglass_empty', 'Creating account...')
+            setStatus('statusRegister', 'loading', 'hourglass_empty', 'creatingAccount')
             try {
                 const res = await fetch('/register', {
                     method: 'POST',
@@ -6736,10 +6845,10 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 })
                 const data = await res.json()
                 if (!res.ok) {
-                    setStatus('statusRegister', 'error', 'error', data.error || 'Registration failed.')
+                    setStatus('statusRegister', 'error', 'error', data.error || 'registrationFailed')
                     return
                 }
-                setStatus('statusRegister', 'success', 'check_circle', 'Account created! Waiting for admin approval...')
+                setStatus('statusRegister', 'success', 'check_circle', 'accountCreatedWaiting')
                 setTimeout(() => {
                     document.getElementById('regUsername').value = ''
                     document.getElementById('regName').value = ''
@@ -6760,11 +6869,11 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             const password = document.getElementById('loginPassword').value.trim()
 
             if (!username || !password) {
-                setStatus('statusLogin', 'error', 'error', 'Username and password required.')
+                setStatus('statusLogin', 'error', 'error', 'usernamePasswordRequired')
                 return
             }
 
-            setStatus('statusLogin', 'loading', 'hourglass_empty', 'Signing in...')
+            setStatus('statusLogin', 'loading', 'hourglass_empty', 'signingIn')
             try {
                 const res = await fetch('/login', {
                     method: 'POST',
@@ -6786,7 +6895,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 currentUser = data.user
                 localStorage.setItem('authToken', authToken)
 
-                setStatus('statusLogin', 'success', 'check_circle', 'Login successful!')
+                setStatus('statusLogin', 'success', 'check_circle', 'loginSuccessful')
 
                 setTimeout(async () => {
                     // Refresh user data from server to get complete info including department
@@ -6849,21 +6958,21 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             const confirmPassword = document.getElementById('confirmPassword').value.trim()
 
             if (!currentPassword || !newPassword || !confirmPassword) {
-                setStatus('statusChangePassword', 'error', 'error', 'All fields are required.')
+                setStatus('statusChangePassword', 'error', 'error', 'allFieldsRequired')
                 return
             }
 
             if (newPassword !== confirmPassword) {
-                setStatus('statusChangePassword', 'error', 'error', 'New passwords do not match.')
+                setStatus('statusChangePassword', 'error', 'error', 'newPasswordsDoNotMatch')
                 return
             }
 
             if (newPassword.length < 4) {
-                setStatus('statusChangePassword', 'error', 'error', 'New password must be at least 4 characters.')
+                setStatus('statusChangePassword', 'error', 'error', 'newPasswordMinLength')
                 return
             }
 
-            setStatus('statusChangePassword', 'loading', 'hourglass_empty', 'Updating password...')
+            setStatus('statusChangePassword', 'loading', 'hourglass_empty', 'updatingPassword')
             try {
                 const res = await fetch('/user/change-password', {
                     method: 'POST',
@@ -6879,7 +6988,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     return
                 }
 
-                setStatus('statusChangePassword', 'success', 'check_circle', 'Password updated successfully!')
+                setStatus('statusChangePassword', 'success', 'check_circle', 'passwordUpdatedSuccessfully')
                 setTimeout(() => {
                     clearPasswordForm()
                 }, 2000)
@@ -7018,29 +7127,32 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 let rows = ''
                 for (let user of data.pendingUsers) {
                     const date = new Date(user.createdAt)
-                    const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
-                    const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                    // const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+                    const dateStr = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'
+                    // const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                    const timeStr = user.createdAt ? new Date(user.createdAt).toLocaleTimeString() : 'N/A'
 
                     rows += `<tr>
-          <td style="font-weight:500;">${escHtml(user.username)}</td>
-          <td style="font-size:12px;color:var(--ink-muted);">${escHtml(user.name)} ${escHtml(user.surname)}</td>
-          <td style="font-size:12px;color:var(--ink-muted);">${escHtml(user.department || '—')}</td>
-          <td style="font-size:12px;color:var(--ink-muted);">${escHtml(user.department2 || '—')}</td>
-          <td style="font-size:12px;color:var(--ink-muted);">
-            <span>${dateStr}</span><br>
-            <span style="font-size:11px;">${timeStr}</span>
-          </td>
-          <td style="text-align: center; display: flex; gap: 8px; justify-content: center;">
-            <button class="btn btn-ghost btn-sm" onclick="approvePendingUser('${user.userId}')" title="Approve">
-              <span class="material-symbols-outlined" style="font-size: 16px; color: var(--green);">check_circle</span> Approve
-            </button>
-            <button class="btn btn-ghost btn-sm" onclick="rejectPendingUser('${user.userId}', '${escHtml(user.username)}')" title="Reject">
-              <span class="material-symbols-outlined" style="font-size: 16px; color: var(--red);">cancel</span> Reject
-            </button>
-          </td>
-        </tr>`
+                    <td style="font-weight:500;">${escHtml(user.username)}</td>
+                    <td style="font-size:12px;color:var(--ink-muted);">${escHtml(user.name)} ${escHtml(user.surname)}</td>
+                    <td style="font-size:12px;color:var(--ink-muted);">${translations[currentLanguage]['dept_' + user.department] || escHtml(user.department || '—')}</td>
+                    <td style="font-size:12px;color:var(--ink-muted);">${translations[currentLanguage]['dept_' + user.department2] || escHtml(user.department2 || '—')}</td>
+                    <td style="font-size:12px;color:var(--ink-muted);">
+                        <span>${dateStr}</span><br>
+                        <span style="font-size:11px;">${timeStr}</span>
+                    </td>
+                    <td style="text-align: center; display: flex; gap: 8px; justify-content: center;">
+                        <button class="btn btn-ghost btn-sm" onclick="approvePendingUser('${user.userId}')" title="Approve">
+                        <span class="material-symbols-outlined" style="font-size: 16px; color: var(--green);">check_circle</span> <span data-translate="approve">Approve</span>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" onclick="rejectPendingUser('${user.userId}', '${escHtml(user.username)}')" title="Reject">
+                        <span class="material-symbols-outlined" style="font-size: 16px; color: var(--red);">cancel</span> <span data-translate="reject">Reject</span>
+                        </button>
+                    </td>
+                    </tr>`
                 }
                 tbody.innerHTML = rows
+                applyTranslations()
                 updatePendingApprovalsVisibility()
             } catch (e) {
                 console.error('❌ Error loading pending users:', e)
@@ -7196,7 +7308,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
 
                 document.getElementById('linkedProfileName').textContent = followerData.displayName || '—'
                 document.getElementById('linkedProfileUserId').textContent = followerData.userId || '—'
-                document.getElementById('linkedProfileStatusMessage').textContent = followerData.statusMessage || 'No status message'
+                document.getElementById('linkedProfileStatusMessage').textContent = followerData.statusMessage || '—'
 
                 // Format linked date
                 const linkedDate = linkedInfo.linkedAt ? new Date(linkedInfo.linkedAt).toLocaleDateString() : '—'
@@ -7812,9 +7924,14 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
 
         function setStatus(elId, type, icon, text) {
             const el = document.getElementById(elId)
+            // Check if text is a translation key and translate it
+            let displayText = text
+            if (translations[currentLanguage] && translations[currentLanguage][text]) {
+                displayText = translations[currentLanguage][text]
+            }
             el.className = `status-msg show ${type}`
             el.querySelector('.material-symbols-outlined').textContent = icon
-            el.querySelector('.msg-text').textContent = text
+            el.querySelector('.msg-text').textContent = displayText
         }
         function hideStatus(elId) {
             document.getElementById(elId).className = 'status-msg'
@@ -7854,8 +7971,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
           <td><strong>${escHtml(user.username)}</strong></td>
           <td>${escHtml(user.name)} ${escHtml(user.surname || '')}</td>
           <td><span style="${roleStyle}" data-translate="role_${role}">${escHtml(role.toUpperCase())}</span></td>
-          <td><span style="font-size: 12px; color: var(--ink-muted);">${escHtml(department)}</span></td>
-          <td><span style="font-size: 12px; color: var(--ink-muted);">${escHtml(department2)}</span></td>
+          <td><span style="font-size: 12px; color: var(--ink-muted);">${translations[currentLanguage]['dept_' + department] || escHtml(department)}</span></td>
+          <td><span style="font-size: 12px; color: var(--ink-muted);">${translations[currentLanguage]['dept_' + department2] || escHtml(department2)}</span></td>
           <td>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span style="font-size: 12px;" id="pwd-display-${escHtml(userId)}">●●●●●●</span>
@@ -7867,12 +7984,13 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
           <td><small>${joinDate}</small></td>
           <td style="text-align: center;">
             <button class="btn btn-danger btn-sm" onclick="deleteSystemUser('${escHtml(userId)}', '${escHtml(user.username)}')" style="margin: 0;">
-              <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
+              <span class="material-symbols-outlined" style="font-size: 14px;">delete</span><span data-translate="delete">ลบ</span>
             </button>
           </td>
         </tr>`
                 }
                 tbody.innerHTML = rows
+                applyTranslations()
             } catch (err) {
                 const tbody = document.getElementById('allUsersTbody')
                 tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">error</span><p>Error loading users: ${err.message}</p></div></td></tr>`
@@ -8484,19 +8602,19 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             if (!searchInput) return
             switch (currentViewType) {
                 case 'sent':
-                    searchInput.placeholder = 'Search sent memos by title, doc #, or recipient...'
+                    searchInput.placeholder = translations[currentLanguage]['searchSentMemosPlaceholder'] || 'Search sent memos by title, doc Number, or recipient...'
                     searchInput.disabled = false
                     break
                 case 'received':
-                    searchInput.placeholder = 'Search received memos by title, doc #, or sender...'
+                    searchInput.placeholder = translations[currentLanguage]['searchReceivedMemosPlaceholder'] || 'Search received memos by title, doc Number, or sender...'
                     searchInput.disabled = false
                     break
                 case 'pending':
-                    searchInput.placeholder = 'Search pending approvals by title, doc #, or sender...'
+                    searchInput.placeholder = translations[currentLanguage]['searchPendingApprovalsPlaceholder'] || 'Search pending approvals by title, doc Number, or sender...'
                     searchInput.disabled = false
                     break
                 default:
-                    searchInput.placeholder = 'Search...'
+                    searchInput.placeholder = translations[currentLanguage]['search'] || 'Search...'
                     searchInput.disabled = true
                     searchInput.value = ''
             }
@@ -8691,21 +8809,22 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
               <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
                 <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
-                View
+                <span data-translate="view">View</span>
               </button>
               ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${memoJson})" title="Edit memo">
                 <span class="material-symbols-outlined" style="font-size: 14px;">edit</span>
-                Edit
+                <span data-translate="edit">Edit</span>
               </button>
               <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); confirmDeleteMemo('${memo.memoId}', 'sent')" title="Delete memo">
                 <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
-                Delete
+                <span data-translate="delete">Delete</span>
               </button>` : ''}
             </div>
           </td>
         </tr>`
             }
             tbody.innerHTML = rows
+            applyTranslations()
         }
 
         // ── Render Received Memos (from cache) ──────────────
@@ -8744,21 +8863,22 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
               <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
                 <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
-                View
+                <span data-translate="view">View</span>
               </button>
               ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${memoJson})" title="Edit memo">
                 <span class="material-symbols-outlined" style="font-size: 14px;">edit</span>
-                Edit
+                <span data-translate="edit">Edit</span>
               </button>
               <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); confirmDeleteMemo('${memo.memoId}', 'received')" title="Delete memo">
                 <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
-                Delete
+                <span data-translate="delete">Delete</span>
               </button>` : ''}
             </div>
           </td>
         </tr>`
             }
             tbody.innerHTML = rows
+            applyTranslations()
         }
 
         // ── Render Pending Approvals (from cache) ──────────────
@@ -8817,29 +8937,30 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                         <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
                             <button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); viewPendingMemo('${memo.memoId}')">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
-                                View
+                                <span data-translate="view">View</span>
                             </button>
                             <button class="btn btn-ghost btn-sm " onclick="event.stopPropagation(); approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
-                                Approve
+                                <span data-translate="approve">Approve</span>
                             </button>
                             <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); rejectMemoDialog('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
-                                Reject
+                                <span data-translate="reject">Reject</span>
                             </button>
                             ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${escHtml(JSON.stringify({ ...memo, source: 'pending' })).replace(/"/g, '&quot;')})" title="Edit memo">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">edit</span>
-                                Edit
+                                <span data-translate="edit">Edit</span>
                             </button>
                             <button class="btn btn-danger btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); confirmDeleteMemo('${memo.memoId}', 'pending')" title="Delete memo">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
-                                Delete
+                                <span data-translate="delete">Delete</span>
                             </button>` : ''}
                         </div>
                     </td>
                 </tr>`
             }
             tbody.innerHTML = rows
+            applyTranslations()
         }
 
         // ── Load Sent Memos ─────────────────────────
@@ -9790,6 +9911,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             printWindow.document.close()
             setTimeout(() => printWindow.print(), 250)
         }
+//เพิ่มข้อมูลให้ครบ , ปรับ css ให้สวยๆ
 
         // Close memo detail when clicking outside
         document.addEventListener('click', function (e) {

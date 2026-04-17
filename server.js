@@ -191,7 +191,7 @@ app.post("/login", async (req, res) => {
     // หา user ด้วย username
     const userRef = await firebase_get(`users_by_username/${username}`)
     if (!userRef) {
-      return res.status(401).json({ error: "Invalid credentials" })
+      return res.status(401).json({ error: "invalidCredentials" })
     }
 
     const userId = userRef.userId
@@ -204,7 +204,7 @@ app.post("/login", async (req, res) => {
 
     // เช็คพาสเวิร์ด
     if (user.password !== password) {
-      return res.status(401).json({ error: "Invalid credentials" })
+      return res.status(401).json({ error: "invalidCredentials" })
     }
 
     // สร้าง token
