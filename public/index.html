@@ -2440,6 +2440,7 @@
                 animation: slideUpIn 0.4s ease-out backwards;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             }
+
             /* Empty state rows should not have grid layout */
             tbody tr:has(.empty-state) {
                 display: flex !important;
@@ -2683,7 +2684,11 @@
                 </a>
                 <a class="nav-item" data-view="followers" onclick="showView('followers')">
                     <span class="material-symbols-outlined">group</span>
-                    <span data-translate="usersManagement">Users Management</span>
+                    <span style="display: inline-block; position: relative;">
+                        <span data-translate="usersManagement">Users Management</span>
+                        <span id="followersPendingBadge"
+                            style="display:none; position: absolute; top: -8px; right: -20px; background: #c8a96e; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;">0</span>
+                    </span>
                 </a>
                 <a class="nav-item" data-view="logs" onclick="showView('logs')">
                     <span class="material-symbols-outlined">event_note</span>
@@ -2701,7 +2706,8 @@
 
         <div class="sidebar-footer">
             <div id="userSection" style="display:none; padding: 12px 16px; ">
-                <div style="font-size:11px; color: rgba(255,255,255,0.55); margin-bottom: 8px;" data-translate="account">ACCOUNT</div>
+                <div style="font-size:11px; color: rgba(255,255,255,0.55); margin-bottom: 8px;"
+                    data-translate="account">ACCOUNT</div>
                 <a class="nav-item" onclick="showView('manage-user')" style="font-size: 12px;">
                     <span class="material-symbols-outlined">manage_accounts</span>
                     <span data-translate="myAccount">My Account</span>
@@ -2736,6 +2742,33 @@
             </div>
             <div class="topbar-right">
                 <div style="position: relative;">
+                    <button class="icon-btn" title="Language" onclick="toggleLanguageMenu()" id="languageBtn">
+                        <span class="material-symbols-outlined">language</span>
+                        <span id="currentLang"
+                            style="display:none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; font-weight: 700; color: var(--accent);">TH</span>
+                    </button>
+                    <div id="languageMenu"
+                        style="display: none; flex-direction: column; position: absolute; top: 100%; right: 0; width: 140px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; animation: slideDown 0.25s ease-out; margin-top: 4px;">
+                        <button onclick="changeLanguage('th'); toggleLanguageMenu()"
+                            style="padding: 12px 16px; background: none; border: none; color: var(--ink); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%;"
+                            onmouseover="this.style.background='var(--surface)'"
+                            onmouseout="this.style.background='none'">
+                            ไทย (Thai)
+                        </button>
+                        <button onclick="changeLanguage('en'); toggleLanguageMenu()"
+                            style="padding: 12px 16px; background: none; border: none; color: var(--ink); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; border-top: 1px solid var(--border);"
+                            onmouseover="this.style.background='var(--surface)'"
+                            onmouseout="this.style.background='none'">
+                            English (EN)
+                        </button>
+                    </div>
+                </div>
+
+                <button class="icon-btn" title="Settings"
+                    onclick="if (!authToken || !currentUser) return; showView('manage-user')">
+                    <span class="material-symbols-outlined">settings</span>
+                </button>
+                <div style="position: relative;">
                     <button class="icon-btn" title="Notifications" onclick="toggleNotificationPanel()">
                         <span class="material-symbols-outlined">notifications</span>
                         <span id="notificationBadge"
@@ -2757,38 +2790,19 @@
                         </div>
                     </div>
                 </div>
-                <button class="icon-btn" title="Settings"
-                    onclick="if (!authToken || !currentUser) return; showView('manage-user')">
-                    <span class="material-symbols-outlined">settings</span>
-                </button>
-                <div style="position: relative;">
-                    <button class="icon-btn" title="Language" onclick="toggleLanguageMenu()" id="languageBtn">
-                        <span class="material-symbols-outlined">language</span>
-                        <span id="currentLang" style="display:none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; font-weight: 700; color: var(--accent);">TH</span>
-                    </button>
-                    <div id="languageMenu"
-                        style="display: none; flex-direction: column; position: absolute; top: 100%; right: 0; width: 140px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; animation: slideDown 0.25s ease-out; margin-top: 4px;">
-                        <button onclick="changeLanguage('th'); toggleLanguageMenu()"
-                            style="padding: 12px 16px; background: none; border: none; color: var(--ink); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%;"
-                            onmouseover="this.style.background='var(--surface)'"
-                            onmouseout="this.style.background='none'">
-                            ไทย (Thai)
-                        </button>
-                        <button onclick="changeLanguage('en'); toggleLanguageMenu()"
-                            style="padding: 12px 16px; background: none; border: none; color: var(--ink); text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; border-top: 1px solid var(--border);"
-                            onmouseover="this.style.background='var(--surface)'"
-                            onmouseout="this.style.background='none'">
-                            English (EN)
-                        </button>
-                    </div>
-                </div>
+
                 <div class="divider-v"></div>
                 <div style="display: flex; align-items: center; gap: 8px; position: relative;">
-                    <div class="user-info" style="cursor: pointer; padding: 6px 8px; border-radius: var(--radius); transition: background 0.15s;" onclick="toggleUserMenu()" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">
+                    <div class="user-info"
+                        style="cursor: pointer; padding: 6px 8px; border-radius: var(--radius); transition: background 0.15s;"
+                        onclick="toggleUserMenu()" onmouseover="this.style.background='var(--surface)'"
+                        onmouseout="this.style.background='transparent'">
                         <div class="name" id="topbarUserName">ชื่อผู้ใช้</div>
                         <div class="role" id="topbarUserRole">ฝ่าย</div>
                     </div>
-                    <div class="avatar" id="topbarAvatar" style="cursor: pointer; transition: all 0.15s;" onclick="toggleUserMenu()" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'"></div>
+                    <div class="avatar" id="topbarAvatar" style="cursor: pointer; transition: all 0.15s;"
+                        onclick="toggleUserMenu()" onmouseover="this.style.transform='scale(1.08)'"
+                        onmouseout="this.style.transform='scale(1)'"></div>
                     <div id="userMenuPanel"
                         style="display: none; flex-direction: column; position: absolute; top: calc(100% + 8px); right: 0; width: 280px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; animation: slideDown 0.25s ease-out;">
                         <div
@@ -2831,12 +2845,12 @@
                 <div
                     style="width: 100%; max-width: 520px; margin: 0; margin-left: 27.5%; padding: 0 16px; animation: slideInUp 0.6s ease-out;">
                     <div class="page-header" style="text-align: center; margin-bottom: 25px;">
-                        <h2
-                            data-translate="login"
+                        <h2 data-translate="login"
                             style="font-size: 32px; color: var(--accent); font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px;">
-                            
+
                             Login</h2>
-                        <p data-translate="welcomeToMemo" style="color: var(--ink-faint); font-size: 14px; margin: 0;">Welcome to your Executive
+                        <p data-translate="welcomeToMemo" style="color: var(--ink-faint); font-size: 14px; margin: 0;">
+                            Welcome to your Executive
                             Memorandum</p>
                     </div>
 
@@ -2851,7 +2865,8 @@
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">person</span>Username</label>
-                                <input id="loginUsername" type="text" placeholder="Enter your username" data-translate="enterUsername"
+                                <input id="loginUsername" type="text" placeholder="Enter your username"
+                                    data-translate="enterUsername"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onkeypress="if(event.key==='Enter') doLogin()"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
@@ -2862,7 +2877,8 @@
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">lock</span>Password</label>
-                                <input id="loginPassword" type="password" placeholder="Enter your password" data-translate="enterPassword"
+                                <input id="loginPassword" type="password" placeholder="Enter your password"
+                                    data-translate="enterPassword"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onkeypress="if(event.key==='Enter') doLogin()"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
@@ -2885,7 +2901,8 @@
                             </div>
                             <div
                                 style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); border-top: 1px solid var(--border); padding-top: 20px;">
-                                <span data-translate="dontHaveAccount">Don't have an account?</span> <a onclick="showView('register')" data-translate="registerHere"
+                                <span data-translate="dontHaveAccount">Don't have an account?</span> <a
+                                    onclick="showView('register')" data-translate="registerHere"
                                     style="color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; transition: all 0.2s ease; position: relative; display: inline-block;"
                                     onmouseover="this.style.color='var(--accent-2)'; this.style.textDecoration='underline';"
                                     onmouseout="this.style.color='var(--accent)'; this.style.textDecoration='none';">Register
@@ -2906,7 +2923,8 @@
                         <h2 data-translate="createAccount"
                             style="font-size: 32px; color: var(--accent); font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px;">
                             Create Account</h2>
-                        <p data-translate="joinSystem" style="color: var(--ink-faint); font-size: 14px; margin: 0;">Join the Executive Memorandum
+                        <p data-translate="joinSystem" style="color: var(--ink-faint); font-size: 14px; margin: 0;">Join
+                            the Executive Memorandum
                             system</p>
                     </div>
 
@@ -2921,7 +2939,8 @@
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">person</span>Username</label>
-                                <input id="regUsername" type="text" placeholder="Choose a username" data-translate="chooseUsername"
+                                <input id="regUsername" type="text" placeholder="Choose a username"
+                                    data-translate="chooseUsername"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
@@ -2931,7 +2950,8 @@
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">badge</span>First Name</label>
-                                <input id="regName" type="text" placeholder="Your first name" data-translate="firstNamePlaceholder"
+                                <input id="regName" type="text" placeholder="Your first name"
+                                    data-translate="firstNamePlaceholder"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
@@ -2941,7 +2961,8 @@
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">badge</span>Last Name</label>
-                                <input id="regSurname" type="text" placeholder="Your last name" data-translate="lastNamePlaceholder"
+                                <input id="regSurname" type="text" placeholder="Your last name"
+                                    data-translate="lastNamePlaceholder"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
@@ -2951,7 +2972,8 @@
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">lock</span>Password</label>
-                                <input id="regPassword" type="password" placeholder="Create a password" data-translate="createPassword"
+                                <input id="regPassword" type="password" placeholder="Create a password"
+                                    data-translate="createPassword"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
@@ -2962,7 +2984,8 @@
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">verified_user</span>Confirm
                                     Password</label>
-                                <input id="regConfirmPassword" type="password" placeholder="Confirm your password" data-translate="confirmYourPassword"
+                                <input id="regConfirmPassword" type="password" placeholder="Confirm your password"
+                                    data-translate="confirmYourPassword"
                                     style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                     onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                     onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
@@ -2974,8 +2997,9 @@
                                         style="font-size: 18px; color: var(--accent-2);">domain</span>Department
                                     (ฝ่าย)</label>
                                 <div class="custom-autocomplete-wrapper" style="position: relative;">
-                                    <input id="regDepartment" type="text" placeholder="Select department..." data-translate="selectDepartment"
-                                        class="custom-autocomplete-input" autocomplete="off"
+                                    <input id="regDepartment" type="text" placeholder="Select department..."
+                                        data-translate="selectDepartment" class="custom-autocomplete-input"
+                                        autocomplete="off"
                                         style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                         onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                         onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
@@ -2992,8 +3016,9 @@
                                         style="font-size: 18px; color: var(--accent-2);">work</span>Sub-Department
                                     (แผนก)</label>
                                 <div class="custom-autocomplete-wrapper" style="position: relative;">
-                                    <input id="regDepartment2" type="text" placeholder="Select sub-department..." data-translate="selectSubDepartment"
-                                        class="custom-autocomplete-input" autocomplete="off"
+                                    <input id="regDepartment2" type="text" placeholder="Select sub-department..."
+                                        data-translate="selectSubDepartment" class="custom-autocomplete-input"
+                                        autocomplete="off"
                                         style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
                                         onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
                                         onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
@@ -3021,7 +3046,8 @@
                             </div>
                             <div
                                 style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-muted); border-top: 1px solid var(--border); padding-top: 20px; animation: slideInUp 0.5s ease-out 0.45s backwards;">
-                                <span data-translate="alreadyHaveAccount">Already have an account?</span> <a onclick="showView('login')" data-translate="loginHere"
+                                <span data-translate="alreadyHaveAccount">Already have an account?</span> <a
+                                    onclick="showView('login')" data-translate="loginHere"
                                     style="color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; transition: all 0.2s ease; position: relative; display: inline-block;"
                                     onmouseover="this.style.color='var(--accent-2)'; this.style.textDecoration='underline';"
                                     onmouseout="this.style.color='var(--accent)'; this.style.textDecoration='none';">Login
@@ -3094,7 +3120,8 @@
                                 <input id="confirmPassword" type="password" placeholder="Confirm your new password">
                             </div>
                             <div class="btn-row" style="margin-top: 16px;">
-                                <button class="btn btn-primary" onclick="changePassword()" data-translate="updatePassword">
+                                <button class="btn btn-primary" onclick="changePassword()"
+                                    data-translate="updatePassword">
                                     <span class="material-symbols-outlined">check_circle</span>
                                     Update Password
                                 </button>
@@ -3198,9 +3225,11 @@
                             style="text-align: center; padding: 50px 24px; background: linear-gradient(135deg, rgba(26, 39, 64, 0.03) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px dashed var(--border); border-radius: var(--radius); color: var(--ink-faint);">
                             <span class="material-symbols-outlined"
                                 style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.35; color: var(--accent-2);">link_off</span>
-                            <p style="font-size: 14px; font-weight: 500; margin-bottom: 12px;" data-translate="noLINEProfile">No LINE Profile Linked
+                            <p style="font-size: 14px; font-weight: 500; margin-bottom: 12px;"
+                                data-translate="noLINEProfile">No LINE Profile Linked
                             </p>
-                            <p style="font-size: 12px; color: var(--ink-muted); line-height: 1.6;" data-translate="linkProfile">Link a LINE profile
+                            <p style="font-size: 12px; color: var(--ink-muted); line-height: 1.6;"
+                                data-translate="linkProfile">Link a LINE profile
                                 to your account in the <strong>Followers Management</strong> section to get started.</p>
                         </div>
                     </div>
@@ -3247,7 +3276,8 @@
                         </div>
                     </div>
                     <div class="section-body" style="display:flex; gap:12px; flex-wrap:wrap;">
-                        <button class="btn btn-primary" onclick="showView('compose')" data-translate="composeMemorandum">
+                        <button class="btn btn-primary" onclick="showView('compose')"
+                            data-translate="composeMemorandum">
                             <span class="material-symbols-outlined">edit_note</span>
                             Compose Memorandum
                         </button>
@@ -3255,7 +3285,8 @@
                             <span class="material-symbols-outlined">campaign</span>
                             Broadcast to All
                         </button>
-                        <button class="btn btn-ghost" onclick="showView('followers'); loadFollowers()" data-translate="viewFollowers">
+                        <button class="btn btn-ghost" onclick="showView('followers'); loadFollowers()"
+                            data-translate="viewFollowers">
                             <span class="material-symbols-outlined">group</span>
                             View Followers
                         </button>
@@ -3273,7 +3304,8 @@
                             <span class="material-symbols-outlined">history</span>
                             <span data-translate="recentActivity">Recent Activity</span>
                         </div>
-                        <button id="dashViewAllLogsBtn" class="btn btn-ghost btn-sm" onclick="showView('logs'); loadLogs(false)" style="display: none;">
+                        <button id="dashViewAllLogsBtn" class="btn btn-ghost btn-sm"
+                            onclick="showView('logs'); loadLogs(false)" style="display: none;">
                             View All
                         </button>
                     </div>
@@ -3290,7 +3322,8 @@
             <div id="view-compose" class="view" style="display:none;">
                 <div class="page-header">
                     <h2 data-translate="composeMemorandum">Compose Memorandum</h2>
-                    <p data-translate="createAndDispatch">Create and dispatch formal memorandums to selected recipients.</p>
+                    <p data-translate="createAndDispatch">Create and dispatch formal memorandums to selected recipients.
+                    </p>
                 </div>
 
                 <div class="section-card" style="max-width: 840px;">
@@ -3301,10 +3334,11 @@
                         </div>
                     </div>
                     <div class="section-body">
-             
+
                         <div class="field">
                             <label data-translate="documentNumber">
-                                <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">article</span>
+                                <span class="material-symbols-outlined"
+                                    style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">article</span>
                                 Document Number
                             </label>
                             <div style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-weight: 600; color: var(--accent); font-family: 'Courier New', monospace;"
@@ -3314,7 +3348,8 @@
                             <label data-translate="memoTitle"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">edit_note</span>Memorandum
                                 Title</label>
-                            <input id="memoTitle" type="text" placeholder="Enter memorandum title..." data-translate="enterMemoTitle">
+                            <input id="memoTitle" type="text" placeholder="Enter memorandum title..."
+                                data-translate="enterMemoTitle">
                         </div>
 
                         <div class="field">
@@ -3366,7 +3401,8 @@
                                 <button type="button" id="recipientsSelectBtn" class="recipients-select-btn"
                                     style="width: 100%; padding: 11px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease;"
                                     onclick="toggleRecipientsDropdown()">
-                                    <span id="recipientsSelectLabel" style="flex: 1;" data-translate="selectRecipients">Select recipients...</span>
+                                    <span id="recipientsSelectLabel" style="flex: 1;"
+                                        data-translate="selectRecipients">Select recipients...</span>
                                     <span class="material-symbols-outlined"
                                         style="font-size: 18px; flex-shrink: 0; transition: transform 0.2s;">expand_more</span>
                                 </button>
@@ -3384,7 +3420,8 @@
                             <label data-translate="messageBody"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">message</span>Message
                                 Body</label>
-                            <textarea id="msg" placeholder="Type your memorandum content here..." rows="6" data-translate="typeContent"></textarea>
+                            <textarea id="msg" placeholder="Type your memorandum content here..." rows="6"
+                                data-translate="typeContent"></textarea>
                         </div>
 
                         <!-- Image Upload Field -->
@@ -3399,7 +3436,8 @@
                                     onclick="document.getElementById('memoImageInput').click()"
                                     style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
                                     <span class="material-symbols-outlined">upload_file</span>
-                                    <span id="uploadBtnText" data-translate="clickToUpload">Click to upload or drag image here</span>
+                                    <span id="uploadBtnText" data-translate="clickToUpload">Click to upload or drag
+                                        image here</span>
                                 </button>
                                 <!-- Image Preview -->
                                 <div id="memoImagePreview" class="image-preview-container"
@@ -3612,7 +3650,7 @@
                 </div>
             </div>
 
-<!--
+            <!--
 prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo, recieved memo ,pending approval
 เห็น memo ใน table ได้ทั้งหมดทุกรายการ (ไม่จำเป็นต้องเป็น memo ที่เกี่ยวกับ admin ให้ admin เห็นทั้งหมด)
 และใน view-pending-approvals ให้ approve memo ของทุกรายการ/ทุกคน ได้โดยไม่จำเป็นต้องกำหนดใน db.ref("memoApprovers") -->
@@ -3634,8 +3672,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     <div class="section-body">
                         <div class="field">
                             <label data-translate="broadcastMessage">Broadcast Message</label>
-                            <textarea id="broadcastMsg" placeholder="Type your broadcast content here..." data-translate="broadcastContent"
-                                rows="6"></textarea>
+                            <textarea id="broadcastMsg" placeholder="Type your broadcast content here..."
+                                data-translate="broadcastContent" rows="6"></textarea>
                         </div>
 
                         <div class="progress-bar-wrap" id="broadcastProgress">
@@ -3643,11 +3681,13 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                         </div>
 
                         <div class="btn-row" style="margin-top:16px;">
-                            <button class="btn btn-primary" onclick="broadcast()" data-translate="broadcastAllFollowers">
+                            <button class="btn btn-primary" onclick="broadcast()"
+                                data-translate="broadcastAllFollowers">
                                 <span class="material-symbols-outlined">campaign</span>
                                 Broadcast to All Followers
                             </button>
-                            <button class="btn btn-ghost" onclick="document.getElementById('broadcastMsg').value=''" data-translate="clear">
+                            <button class="btn btn-ghost" onclick="document.getElementById('broadcastMsg').value=''"
+                                data-translate="clear">
                                 <span class="material-symbols-outlined">clear</span>
                                 Clear
                             </button>
@@ -3682,7 +3722,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     <div class="stat-card">
                         <div class="stat-label" data-translate="linkedUsers">Linked Users</div>
                         <div class="stat-value" id="stat-linked-users">—</div>
-                        <div class="stat-sub" data-translate="usersWithLinkedFollowers">Users with linked followers</div>
+                        <div class="stat-sub" data-translate="usersWithLinkedFollowers">Users with linked followers
+                        </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label" data-translate="pendingUsers">Pending Approvals</div>
@@ -3852,7 +3893,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                                             <td colspan="5">
                                                 <div class="empty-state"><span
                                                         class="material-symbols-outlined">group</span>
-                                                    <p data-translate="clickRefreshFollowers">Click Refresh to load followers</p>
+                                                    <p data-translate="clickRefreshFollowers">Click Refresh to load
+                                                        followers</p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -3876,7 +3918,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                                 </button>
                             </div>
 
-                            <div id="linkedFollowersStatus" class="status-msg" style="margin:16px 28px 0; display:none;">
+                            <div id="linkedFollowersStatus" class="status-msg"
+                                style="margin:16px 28px 0; display:none;">
                                 <span class="material-symbols-outlined"></span>
                                 <span class="msg-text"></span>
                             </div>
@@ -3896,7 +3939,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                                             <td colspan="4">
                                                 <div class="empty-state"><span
                                                         class="material-symbols-outlined">link_off</span>
-                                                    <p data-translate="noLinkedFollowers">No linked followers yet. Link one below.</p>
+                                                    <p data-translate="noLinkedFollowers">No linked followers yet. Link
+                                                        one below.</p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -3927,7 +3971,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                                 <div class="field">
                                     <label data-translate="availableFollowers">Available Followers</label>
                                     <select id="availableFollowers" style="padding: 8px 12px;">
-                                        <option value="" data-translate="selectFollowerLabel">— Select a follower —</option>
+                                        <option value="" data-translate="selectFollowerLabel">— Select a follower —
+                                        </option>
                                     </select>
                                 </div>
                                 <div class="btn-row">
@@ -3945,24 +3990,24 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
 
                         <!-- Admin Navigation (Permissions) - Right Column -->
                         <div class="section-card" id="adminNav" style="display: none;">
-                                <div class="section-header">
-                                    <div class="section-title">
-                                        <span class="material-symbols-outlined">admin_panel_settings</span>
-                                        <span data-translate="permissions">Permissions</span>
-                                    </div>
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                                    <span data-translate="permissions">Permissions</span>
                                 </div>
-                                <div class="section-body" style="display: flex; flex-direction: column; gap: 15px;">
-                                    <button class="btn btn-primary" onclick="openMemoApproversModal(); loadMemoApprovers()"
-                                        style="padding:18px 20px; width: 100%; justify-content: flex-start;">
-                                        <span class="material-symbols-outlined">verified_user</span>
-                                        <span data-translate="memoApprovers">Memo Approvers</span>
-                                    </button>
-                                    <button class="btn btn-primary" onclick="openTabAccessModal(); loadTabAccess()"
-                                        style="padding:18px 20px; width: 100%; justify-content: flex-start;">
-                                        <span class="material-symbols-outlined">security</span>
-                                        <span data-translate="tabAccessControl">Tab Access Control</span>
-                                    </button>
-                                </div>
+                            </div>
+                            <div class="section-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                <button class="btn btn-primary" onclick="openMemoApproversModal(); loadMemoApprovers()"
+                                    style="padding:18px 20px; width: 100%; justify-content: flex-start;">
+                                    <span class="material-symbols-outlined">verified_user</span>
+                                    <span data-translate="memoApprovers">Memo Approvers</span>
+                                </button>
+                                <button class="btn btn-primary" onclick="openTabAccessModal(); loadTabAccess()"
+                                    style="padding:18px 20px; width: 100%; justify-content: flex-start;">
+                                    <span class="material-symbols-outlined">security</span>
+                                    <span data-translate="tabAccessControl">Tab Access Control</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -3983,17 +4028,18 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                             </div>
                             <div class="section-body">
                                 <div style="margin-bottom: 20px;">
-                                    <h4
-                                        style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;" data-translate="departments">
+                                    <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;"
+                                        data-translate="departments">
                                         Departments (ฝ่าย)</h4>
                                     <div id="departmentsListContainer" style="margin-bottom: 12px;">
-                                        <div
-                                            style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;" data-translate="loadingDots">
+                                        <div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;"
+                                            data-translate="loadingDots">
                                             Loading...</div>
                                     </div>
                                     <div style="display: grid; gap: 8px; grid-template-columns: 1fr auto;">
                                         <input id="newDepartmentName" type="text" placeholder="Enter new department..."
-                                            style="border: 1px solid var(--border); padding: 12px 12px; border-radius: var(--radius); font-size: 13px;" data-translate="enterNewDepartment">
+                                            style="border: 1px solid var(--border); padding: 12px 12px; border-radius: var(--radius); font-size: 13px;"
+                                            data-translate="enterNewDepartment">
                                         <button class="btn btn-primary" onclick="addNewDepartment()"
                                             style="padding: 8px 16px; font-size: 13px;">
                                             <span class="material-symbols-outlined">add</span>
@@ -4003,18 +4049,19 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                                 </div>
 
                                 <div style="border-top: 1px solid var(--border); padding-top: 20px;">
-                                    <h4
-                                        style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;" data-translate="subDepartments">
+                                    <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;"
+                                        data-translate="subDepartments">
                                         Sub-Departments (แผนก)</h4>
                                     <div id="departments2ListContainer" style="margin-bottom: 12px;">
-                                        <div
-                                            style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;" data-translate="loadingDots">
+                                        <div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;"
+                                            data-translate="loadingDots">
                                             Loading...</div>
                                     </div>
                                     <div style="display: grid; gap: 8px; grid-template-columns: 1fr auto;">
                                         <input id="newDepartment2Name" type="text"
                                             placeholder="Enter new sub-department..."
-                                            style="border: 1px solid var(--border); padding: 12px 12px; border-radius: var(--radius); font-size: 13px;" data-translate="enterNewSubDept">
+                                            style="border: 1px solid var(--border); padding: 12px 12px; border-radius: var(--radius); font-size: 13px;"
+                                            data-translate="enterNewSubDept">
                                         <button class="btn btn-primary" onclick="addNewDepartment2()"
                                             style="padding: 8px 16px; font-size: 13px;">
                                             <span class="material-symbols-outlined">add</span>
@@ -4045,37 +4092,40 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                             <div class="section-body" style="display: flex; flex-direction: column;">
                                 <div style="margin-bottom: 20px;">
                                     <label
-                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; display: block;" data-translate="linkSubDeptsToDepts">Link
+                                        style="font-size: 10px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; display: block;"
+                                        data-translate="linkSubDeptsToDepts">Link
                                         Sub-Departments to Departments</label>
                                     <div style="display: grid; gap: 8px; grid-template-columns: 1fr auto;">
                                         <div style="display: flex; gap: 8px;" class="field">
                                             <select id="linkDepartment"
                                                 style="flex: 1; padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
-                                                <option value="" data-translate="selectDeptLabel">— Select Department —</option>
+                                                <option value="" data-translate="selectDeptLabel">— Select Department —
+                                                </option>
                                             </select>
                                             <select id="linkSubDepartment"
                                                 style="flex: 1; padding: 8px 12px; border-radius: var(--radius); font-size: 13px;">
-                                                <option value="" data-translate="selectSubDeptLabel">— Select Sub-Department —</option>
+                                                <option value="" data-translate="selectSubDeptLabel">— Select
+                                                    Sub-Department —</option>
                                             </select>
-                                                   <button class="btn btn-primary" onclick="linkDepartmentToSubDepartment()"
-                                            style="padding: 8px 16px; font-size: 13px; white-space: nowrap;">
-                                            <span class="material-symbols-outlined">link</span>
-                                            <span data-translate="link">Link</span>
-                                        </button>
+                                            <button class="btn btn-primary" onclick="linkDepartmentToSubDepartment()"
+                                                style="padding: 8px 16px; font-size: 13px; white-space: nowrap;">
+                                                <span class="material-symbols-outlined">link</span>
+                                                <span data-translate="link">Link</span>
+                                            </button>
                                         </div>
-                                 
+
                                     </div>
                                 </div>
 
                                 <div
                                     style="border-top: 1px solid var(--border); padding-top: 20px; flex: 1; display: flex; flex-direction: column;">
-                                    <h4
-                                        style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 16px;" data-translate="departmentHierarchy">
+                                    <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 16px;"
+                                        data-translate="departmentHierarchy">
                                         Department Hierarchy</h4>
                                     <div id="departmentHierarchyContainer"
                                         style="background: linear-gradient(135deg, rgba(26, 39, 64, 0.02) 0%, rgba(200, 169, 110, 0.03) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; overflow-y: auto; flex: 1; min-height: 300px;">
-                                        <div
-                                            style="padding: 24px; text-align: center; color: var(--ink-muted); font-size: 13px;" data-translate="loadingDeptStructure">
+                                        <div style="padding: 24px; text-align: center; color: var(--ink-muted); font-size: 13px;"
+                                            data-translate="loadingDeptStructure">
                                             Loading department structure...</div>
                                     </div>
                                 </div>
@@ -4095,12 +4145,13 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
 
             </div>
 
-<!--prompt: เพิ่ม data-translate-->
+            <!--prompt: เพิ่ม data-translate-->
             <style>
                 /* Responsive Grid Layouts for Mobile */
                 @media (max-width: 768px) {
+
                     /* Make grid layouts stack vertically on mobile */
-                    #adminOnlyFollowerMgmt > div[style*="grid-template-columns: 1fr 1fr"] {
+                    #adminOnlyFollowerMgmt>div[style*="grid-template-columns: 1fr 1fr"] {
                         grid-template-columns: 1fr !important;
                     }
                 }
@@ -4133,12 +4184,14 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
 
 
 
-                            <div class="logs-counter" id="logsCount" style="display:none;"><span>0</span> <span data-translate="entries">entries</span></div>
+                            <div class="logs-counter" id="logsCount" style="display:none;"><span>0</span> <span
+                                    data-translate="entries">entries</span></div>
                         </div>
                     </div>
                     <div class="section-body" style="padding: 0;">
                         <div class="activity-log" id="logsViewer">
-                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;" data-translate="noActivityLogged">No activity logged yet.
+                            <div style="color: #4a5568; font-style: italic; padding: 24px 28px;"
+                                data-translate="noActivityLogged">No activity logged yet.
                             </div>
                         </div>
                     </div>
@@ -4376,7 +4429,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                             <div class="section-body">
                                 <div class="field">
                                     <label>Document Number</label>
-                                    <input id="editMemoDocNumber" type="text" placeholder="Enter document number..." style="font-family: 'Courier New', monospace;">
+                                    <input id="editMemoDocNumber" type="text" placeholder="Enter document number..."
+                                        style="font-family: 'Courier New', monospace;">
                                 </div>
                                 <div class="field">
                                     <label>Title</label>
@@ -4384,7 +4438,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                                 </div>
                                 <div class="field">
                                     <label>Type</label>
-                                    <select id="editMemoType" style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--ink); font-family: inherit; cursor: pointer;">
+                                    <select id="editMemoType"
+                                        style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--ink); font-family: inherit; cursor: pointer;">
                                         <option value="เพื่อโปรดทราบ">เพื่อโปรดทราบ</option>
                                         <option value="เพื่อโปรดดำเนินการ">เพื่อโปรดดำเนินการ</option>
                                         <option value="เพื่อโปรดอนุมัติ">เพื่อโปรดอนุมัติ</option>
@@ -4406,7 +4461,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                             </div>
                         </div>
                     </div>
-                    <div style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
+                    <div
+                        style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
                         <button class="btn btn-ghost" onclick="closeEditMemoModal()">Cancel</button>
                         <button class="btn btn-primary" onclick="saveEditedMemo()">Save Changes</button>
                     </div>
@@ -4440,10 +4496,10 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 <span class="material-symbols-outlined">inbox</span>
                 <span>Received</span>
             </button>
-            <button class="mobile-bottom-nav-item" data-view="manage-user"
-                onclick="showView('manage-user'); activateMobileNavItem(this)">
-                <span class="material-symbols-outlined">person</span>
-                <span>My Account</span>
+            <button class="mobile-bottom-nav-item" data-view="pending-approvals" style="display:none;"
+                onclick="showView('pending-approvals'); activateMobileNavItem(this); loadPendingApprovals()">
+                <span class="material-symbols-outlined">pending_actions</span>
+                <span>Pending</span>
             </button>
             <button class="mobile-bottom-nav-item" id="mobileAdminMenuBtn" data-view="admin-menu" style="display:none;"
                 onclick="toggleMobileAdminMenu()">
@@ -4453,6 +4509,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
         </div>
     </nav>
 
+
+
     <!-- Mobile Admin Menu Modal -->
     <div id="mobileAdminMenuModal"
         style="display: none; position: fixed; bottom: 90px; left: 0; right: 0; background: var(--paper); border-top: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 98; max-height: 60vh; overflow-y: auto;">
@@ -4460,29 +4518,19 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             <div
                 style="font-size: 12px; color: var(--ink-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 12px; padding: 0 8px;">
                 Admin Options</div>
-            <button class="mobile-admin-menu-item"
-                onclick="toggleMobileAdminMenu(); showView('pending-approvals'); loadPendingApprovals()"
-                style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);"
-                onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-                <span class="material-symbols-outlined">pending_actions</span>
-                <span>Pending Approvals</span>
-            </button>
-            <button class="mobile-admin-menu-item"
-                onclick="toggleMobileAdminMenu(); showView('broadcast')"
+            <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('broadcast')"
                 style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);"
                 onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                 <span class="material-symbols-outlined">campaign</span>
                 <span>Broadcast</span>
             </button>
-            <button class="mobile-admin-menu-item"
-                onclick="toggleMobileAdminMenu(); showView('followers')"
+            <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('followers')"
                 style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);"
                 onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                 <span class="material-symbols-outlined">group</span>
                 <span>Users Management</span>
             </button>
-            <button class="mobile-admin-menu-item"
-                onclick="toggleMobileAdminMenu(); showView('logs'); loadLogs()"
+            <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('logs'); loadLogs()"
                 style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; display: flex; align-items: center; gap: 8px; border-radius: var(--radius);"
                 onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                 <span class="material-symbols-outlined">event_note</span>
@@ -4490,6 +4538,11 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             </button>
         </div>
     </div>
+
+        <!--
+    prompt
+    ใน mobileBottomNav ให้ลบ myaccount ออก และให้ pending-approvals แสดงผลสำหรับ admin/can approve user 
+    และใน mobileAdminMenuModal ให้เอา pending-approvals ออก-->
 
     <!-- Memo Detail Modal -->
     <div id="memoDetailOverlay" class="memo-detail-overlay">
@@ -4523,7 +4576,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 </div>
 
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label" id="memoDetailRecipientLabel" data-translate="recipient">Sent To</div>
+                    <div class="memo-detail-label" id="memoDetailRecipientLabel" data-translate="recipient">Sent To
+                    </div>
                     <div class="memo-detail-value" id="memoDetailRecipient">—</div>
                 </div>
 
@@ -4547,7 +4601,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                             onmouseover="this.style.transform='scale(1.02)'"
                             onmouseout="this.style.transform='scale(1)'"
                             onclick="event.stopPropagation(); openImageModal(this.src)">
-                        <p style="font-size: 11px; color: var(--ink-faint); margin-top: 8px; text-align: center;" data-translate="clickToViewFullSize">Click
+                        <p style="font-size: 11px; color: var(--ink-faint); margin-top: 8px; text-align: center;"
+                            data-translate="clickToViewFullSize">Click
                             to view in full size</p>
                     </div>
                 </div>
@@ -4558,7 +4613,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     <div
                         style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 12px;">
                         <div style="flex: 0 0 auto;">
-                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;" data-translate="status">Status</div>
+                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;"
+                                data-translate="status">Status</div>
                             <div id="memoApprovalStatus"
                                 style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,0,0,0.05); border-radius: 4px;">
                                 <span id="memoStatusIcon" class="material-symbols-outlined"
@@ -4567,14 +4623,16 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                             </div>
                         </div>
                         <div style="flex: 1; min-width: 200px;">
-                            <div class="memo-detail-label" style=" font-size: 12px; margin-bottom: 6px;" data-translate="approvedBy">
+                            <div class="memo-detail-label" style=" font-size: 12px; margin-bottom: 6px;"
+                                data-translate="approvedBy">
                                 Approved/Rejected By</div>
                             <div class="memo-detail-value" id="memoApprovalBy"
                                 style="padding: 8px 12px; background: transparent; color: var(--ink); font-weight: 500;">
                                 —</div>
                         </div>
                         <div style="flex: 1; min-width: 200px;">
-                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;" data-translate="dateAndTime">Date & Time
+                            <div class="memo-detail-label" style="font-size: 12px; margin-bottom: 6px;"
+                                data-translate="dateAndTime">Date & Time
                             </div>
                             <div class="memo-detail-value" id="memoApprovalDateTime"
                                 style="padding: 8px 12px; background: transparent; color: var(--ink); font-weight: 500;">
@@ -4584,7 +4642,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     <div id="memoRejectionReasonSection"
                         style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.08);">
                         <div class="memo-detail-label"
-                            style="font-size: 12px; margin-bottom: 8px; color: var(--red); font-weight: 600;" data-translate="rejectionReason">Rejection
+                            style="font-size: 12px; margin-bottom: 8px; color: var(--red); font-weight: 600;"
+                            data-translate="rejectionReason">Rejection
                             Reason</div>
                         <div class="memo-detail-content" id="memoRejectionReason"
                             style="padding: 12px; background: rgba(220, 66, 59, 0.05); border-left: 3px solid var(--red); font-size: 13px; color: var(--ink); line-height: 1.5;">
@@ -4596,7 +4655,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 <div id="memoApprovalActionsSection"
                     style="margin-top: 20px; padding: 16px; background: var(--surface); border-radius: var(--radius); display: none;">
                     <div style="margin-bottom: 16px;">
-                        <p style="margin: 0 0 12px 0; font-weight: 500; color: var(--ink);" data-translate="memoRequiresApproval">This memo requires your
+                        <p style="margin: 0 0 12px 0; font-weight: 500; color: var(--ink);"
+                            data-translate="memoRequiresApproval">This memo requires your
                             approval</p>
                         <div style="display: flex; gap: 12px;">
                             <button class="btn btn-app" style=" flex: 1;" onclick="showApprovalConfirm('approve')">
@@ -4615,9 +4675,11 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 <div id="memoRejectionInputSection"
                     style="margin-top: 16px; padding: 16px; background: var(--surface); border-radius: var(--radius); border: 2px solid var(--red); display: none;">
                     <div class="memo-detail-field">
-                        <label for="rejectionReasonInput" class="memo-detail-label" data-translate="provideRejectionReason">Please provide a reason for
+                        <label for="rejectionReasonInput" class="memo-detail-label"
+                            data-translate="provideRejectionReason">Please provide a reason for
                             rejection</label>
-                        <textarea id="rejectionReasonInput" placeholder="Enter rejection reason..." data-translate-placeholder="enterRejectionReason"
+                        <textarea id="rejectionReasonInput" placeholder="Enter rejection reason..."
+                            data-translate-placeholder="enterRejectionReason"
                             style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; line-height: 1.5; resize: vertical; min-height: 80px; color: var(--ink);"
                             spellcheck="false"></textarea>
                     </div>
@@ -4663,11 +4725,13 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
         <div
             style="position: relative; background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 420px; width: 90%; max-height: 80vh; overflow: auto; border: 1px solid var(--border);">
             <div style="padding: 24px; border-bottom: 1px solid var(--border);">
-                <h2 id="modalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;" data-translate="confirmation">
+                <h2 id="modalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;"
+                    data-translate="confirmation">
                     Confirmation</h2>
             </div>
             <div style="padding: 24px;">
-                <p id="modalMessage" style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0;" data-translate="areYouSure">Are you
+                <p id="modalMessage" style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0;"
+                    data-translate="areYouSure">Are you
                     sure?</p>
             </div>
             <div
@@ -4678,7 +4742,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     onmouseout="this.style.background='var(--paper)'" data-translate="cancel">Cancle</button>
                 <button id="modalConfirmBtn" onclick="closeCustomModal(true)"
                     style="padding: 10px 24px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; outline: none;"
-                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'" data-translate="confirm">Confirm</button>
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'"
+                    data-translate="confirm">Confirm</button>
             </div>
         </div>
     </div>
@@ -4690,14 +4755,17 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
         <div
             style="position: relative; background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 420px; width: 90%; max-height: 80vh; overflow: auto; border: 1px solid var(--border);">
             <div style="padding: 24px; border-bottom: 1px solid var(--border);">
-                <h2 id="promptModalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;" data-translate="input">
+                <h2 id="promptModalTitle" style="font-size: 18px; font-weight: 600; color: var(--ink); margin: 0;"
+                    data-translate="input">
                     Input</h2>
             </div>
             <div style="padding: 24px;">
                 <p id="promptModalMessage"
-                    style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0 0 16px 0;" data-translate="enterYourInput">Enter your input:
+                    style="font-size: 14px; color: var(--ink); line-height: 1.5; margin: 0 0 16px 0;"
+                    data-translate="enterYourInput">Enter your input:
                 </p>
-                <input id="promptModalInput" type="text" placeholder="Enter text here..." data-translate-placeholder="enterTextHere"
+                <input id="promptModalInput" type="text" placeholder="Enter text here..."
+                    data-translate-placeholder="enterTextHere"
                     style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-size: 14px; box-sizing: border-box; transition: border-color 0.15s;"
                     onkeydown="if(event.key==='Enter') confirmPromptModal(); if(event.key==='Escape') cancelPromptModal()"
                     onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
@@ -4710,7 +4778,8 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     onmouseout="this.style.background='var(--paper)'" data-translate="cancel">Cancel</button>
                 <button id="promptModalConfirmBtn" onclick="confirmPromptModal()"
                     style="padding: 10px 24px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; outline: none;"
-                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'" data-translate="ok">OK</button>
+                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'"
+                    data-translate="ok">OK</button>
             </div>
         </div>
     </div>
@@ -4882,9 +4951,11 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             if (pendingApprovalsRefreshInterval) clearInterval(pendingApprovalsRefreshInterval)
             // Refresh immediately on start
             refreshPendingApprovalsBadge()
+            refreshFollowersPendingBadge()
             // Then refresh every 10 seconds for real-time updates
             pendingApprovalsRefreshInterval = setInterval(() => {
                 refreshPendingApprovalsBadge()
+                refreshFollowersPendingBadge()
             }, 3000)
             // console.log removed (not error handle)
         }
@@ -5661,7 +5732,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                 "dept_แร็ปปิ้ง": "Wrapping",
                 "dept_โครงการ": "Projects"
             }
-           
+
         };
 
         // Initialize language on page load
@@ -5687,18 +5758,18 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
 
         function changeLanguage(lang) {
             if (!translations[lang]) return
-            
+
             currentLanguage = lang
             updateCurrentLangDisplay()
             applyTranslations()
             localStorage.setItem('preferredLanguage', lang)
-            
+
             // Re-render logs with new language for real-time timestamp translation
             refreshLogsForLanguageChange()
-            
+
             // Update department display in topbar (real-time)
             updateDepartmentDisplay()
-            
+
             // Refresh department lists and structure in real-time
             const activeView = document.querySelector('[class*="show"]')?.id || null
             if (document.getElementById('departmentsListContainer')?.innerHTML) {
@@ -5707,7 +5778,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             if (document.getElementById('departmentHierarchyContainer')?.innerHTML) {
                 loadDepartmentStructure()
             }
-            
+
             // Close the menu
             document.getElementById('languageMenu').style.display = 'none'
         }
@@ -5715,12 +5786,12 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
         // Update department display in topbar with translated department name
         function updateDepartmentDisplay() {
             if (!currentUser) return
-            
+
             const deptKey = 'dept_' + currentUser.department
-            const deptDisplayName = (translations[currentLanguage] && translations[currentLanguage][deptKey]) 
+            const deptDisplayName = (translations[currentLanguage] && translations[currentLanguage][deptKey])
                 ? translations[currentLanguage][deptKey]
                 : (currentUser.department || 'ไม่ระบุแผนก')
-            
+
             document.getElementById('topbarUserRole').textContent = deptDisplayName
             document.getElementById('userMenuRole').textContent = deptDisplayName
         }
@@ -5785,7 +5856,7 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
                     renderLogs(cachedDashboardLogs.slice(0, 30), 'dash-logs-preview')
                 }
             }
-            
+
             // Re-render full logs if there's cached data
             if (cachedFullLogs && cachedFullLogs.length > 0) {
                 const logsViewer = document.getElementById('logsViewer')
@@ -5795,51 +5866,51 @@ prompt: แก้ไขใหม่ ให้ admin user เห็น sent memo,
             }
         }
 
-function applyTranslations() {
-    // Update all elements with data-translate attribute
-    document.querySelectorAll('[data-translate]').forEach((element) => {
-        const key = element.getAttribute('data-translate')
-        if (translations[currentLanguage] && translations[currentLanguage][key]) {
-            const text = translations[currentLanguage][key]
-            
-            if (element.tagName.toLowerCase() === 'input' || 
-                element.tagName.toLowerCase() === 'textarea') {
-                element.placeholder = text
-            } else if (element.tagName.toLowerCase() === 'option') {
-                element.textContent = text
-            } else if (element.tagName.toLowerCase() === 'label') {
-                // Check for icons (both <i> and <span> with material-symbols-outlined)
-                const icon = element.querySelector('i, .material-symbols-outlined')
-                if (icon) {
-                    const iconHTML = icon.outerHTML
-                    element.innerHTML = iconHTML + ' ' + text
-                } else {
-                    element.textContent = text
+        function applyTranslations() {
+            // Update all elements with data-translate attribute
+            document.querySelectorAll('[data-translate]').forEach((element) => {
+                const key = element.getAttribute('data-translate')
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    const text = translations[currentLanguage][key]
+
+                    if (element.tagName.toLowerCase() === 'input' ||
+                        element.tagName.toLowerCase() === 'textarea') {
+                        element.placeholder = text
+                    } else if (element.tagName.toLowerCase() === 'option') {
+                        element.textContent = text
+                    } else if (element.tagName.toLowerCase() === 'label') {
+                        // Check for icons (both <i> and <span> with material-symbols-outlined)
+                        const icon = element.querySelector('i, .material-symbols-outlined')
+                        if (icon) {
+                            const iconHTML = icon.outerHTML
+                            element.innerHTML = iconHTML + ' ' + text
+                        } else {
+                            element.textContent = text
+                        }
+                    } else {
+                        // Preserve icons if they exist
+                        const icon = element.querySelector('i, .material-symbols-outlined')
+                        if (icon) {
+                            const iconHTML = icon.outerHTML
+                            element.innerHTML = iconHTML + ' ' + text
+                        } else {
+                            element.textContent = text
+                        }
+                    }
                 }
-            } else {
-                // Preserve icons if they exist
-                const icon = element.querySelector('i, .material-symbols-outlined')
-                if (icon) {
-                    const iconHTML = icon.outerHTML
-                    element.innerHTML = iconHTML + ' ' + text
-                } else {
-                    element.textContent = text
-                }
-            }
+            })
         }
-    })
-}
 
         // Close language menu when clicking outside
         document.addEventListener('click', function (e) {
             const menu = document.getElementById('languageMenu')
             const btn = document.getElementById('languageBtn')
-            
+
             if (!menu || !btn) return
-            
+
             const isClickingMenu = menu.contains(e.target)
             const isClickingBtn = btn.contains(e.target)
-            
+
             if (!isClickingMenu && !isClickingBtn && menu.style.display === 'flex') {
                 menu.style.display = 'none'
             }
@@ -6180,7 +6251,7 @@ function applyTranslations() {
                 }
                 const user = await res.json()
                 currentUser = user
-                updateUIForLoggedIn()
+                await updateUIForLoggedIn()
                 // Load user data and linked profile after successful auth
                 await loadUserData()
                 showView('dashboard')
@@ -6191,7 +6262,7 @@ function applyTranslations() {
             }
         }
 
-        function updateUIForLoggedIn() {
+        async function updateUIForLoggedIn() {
             // console.log('🔄 [LOGIN] updateUIForLoggedIn() called')
             // console.log('👤 [LOGIN] Current user:', currentUser)
             // console.log('🔑 [LOGIN] Auth token exists:', !!authToken)
@@ -6207,6 +6278,12 @@ function applyTranslations() {
             document.getElementById('mobileBottomNav').style.display = window.innerWidth <= 480 ? 'block' : 'none'
             // Show admin menu button on mobile for admin users
             document.getElementById('mobileAdminMenuBtn').style.display = (currentUser && currentUser.role === 'admin') ? 'flex' : 'none'
+            
+            // Initialize pending-approvals button visibility (will be updated by checkApproverStatusAndLoadPending)
+            const pendingApprovalsBtn = document.querySelector('.mobile-bottom-nav-item[data-view="pending-approvals"]')
+            if (pendingApprovalsBtn) {
+                pendingApprovalsBtn.style.display = 'none'
+            }
 
             // Activate first bottom nav item (dashboard)
             const dashboardNavItem = document.querySelector('.mobile-bottom-nav-item[data-view="dashboard"]')
@@ -6237,14 +6314,20 @@ function applyTranslations() {
                 // Apply tab access restrictions first
                 applyTabAccessRestrictions()
 
-                // Check if user is an approver and load pending approvals
+                // Check if user is an approver and load pending approvals - MUST AWAIT
                 // This runs AFTER tab access to override and show the tab if user is an approver
-                checkApproverStatusAndLoadPending()
+                await checkApproverStatusAndLoadPending()
 
                 // Load dashboard stats (sent, received, approved, pending approvals)
                 // console.log('📊 [LOGIN] Calling loadDashboardStats()...')
                 loadDashboardStats()
                 // console.log('📊 [LOGIN] loadDashboardStats() called')
+
+                // Load pending users for admins and start refresh cycle
+                if (currentUser.role === 'admin') {
+                    loadPendingUsers()
+                    startPendingApprovalsRefresh()
+                }
             }
         }
 
@@ -6305,49 +6388,61 @@ function applyTranslations() {
 
         async function checkApproverStatusAndLoadPending() {
             try {
-                const res = await fetch('/user/is-approver', {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                })
-                if (res.ok) {
-                    const data = await res.json()
-                    const navItem = document.getElementById('navPendingApprovals')
-                    const mobileNavItem = document.querySelector('.mobile-bottom-nav-item[data-view="pending-approvals"]')
-
-                    // Show pending approvals tab if user is an approver OR is an admin
-                    const isApproverOrAdmin = data.isApprover || (currentUser && currentUser.role === 'admin')
-
-                    if (isApproverOrAdmin) {
-                        // console.log('✅ User is an approver or admin - showing Pending Approvals tab')
-                        // Show the nav item regardless of tabAccess settings
-                        if (navItem) {
-                            navItem.style.display = 'block'
-                        }
-
-                        if (mobileNavItem) {
-                            mobileNavItem.style.display = ''
-                        }
-                        // Start real-time badge refresh
-                        startPendingApprovalsRefresh()
-                    } else {
-                        // Not an approver and not admin - hide the tab and badge
-                        // console.log('❌ User is not an approver')
-                        if (navItem) {
-                            navItem.style.display = 'none'
-                        }
-                        if (mobileNavItem) {
-                            mobileNavItem.style.display = 'none'
-                        }
-                        // Explicitly hide badge
-                        const badge = document.getElementById('pendingBadge')
-                        if (badge) {
-                            badge.style.display = 'none'
-                        }
-                        // Stop refresh if not an approver
-                        stopPendingApprovalsRefresh()
+                // First, check the admin role from currentUser
+                const isAdmin = currentUser && currentUser.role === 'admin'
+                
+                // Try to check approver status from server
+                let isApprover = false
+                try {
+                    const res = await fetch('/user/is-approver', {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                    if (res.ok) {
+                        const data = await res.json()
+                        isApprover = data.isApprover || false
                     }
+                } catch (err) {
+                    // If fetch fails, just use admin status
+                    console.warn('Could not check approver status:', err)
+                }
+
+                const navItem = document.getElementById('navPendingApprovals')
+                const mobileNavItem = document.querySelector('.mobile-bottom-nav-item[data-view="pending-approvals"]')
+
+                // Show pending approvals tab if user is an approver OR is an admin
+                const isApproverOrAdmin = isApprover || isAdmin
+
+                if (isApproverOrAdmin) {
+                    // console.log('✅ User is an approver or admin - showing Pending Approvals tab')
+                    // Show the nav item regardless of tabAccess settings
+                    if (navItem) {
+                        navItem.style.display = 'block'
+                    }
+
+                    if (mobileNavItem) {
+                        mobileNavItem.style.display = 'flex'
+                    }
+                    // Start real-time badge refresh
+                    startPendingApprovalsRefresh()
+                } else {
+                    // Not an approver and not admin - hide the tab and badge
+                    // console.log('❌ User is not an approver')
+                    if (navItem) {
+                        navItem.style.display = 'none'
+                    }
+                    if (mobileNavItem) {
+                        mobileNavItem.style.display = 'none'
+                    }
+                    // Explicitly hide badge
+                    const badge = document.getElementById('pendingBadge')
+                    if (badge) {
+                        badge.style.display = 'none'
+                    }
+                    // Stop refresh if not an approver
+                    stopPendingApprovalsRefresh()
                 }
             } catch (err) {
-                console.error('Error checking approver status:', err)
+                console.error('Error in checkApproverStatusAndLoadPending:', err)
             }
         }
 
@@ -6709,7 +6804,7 @@ function applyTranslations() {
 
                     document.getElementById('loginUsername').value = ''
                     document.getElementById('loginPassword').value = ''
-                    updateUIForLoggedIn()
+                    await updateUIForLoggedIn()
                     // Load user data and linked profile after successful login
                     await loadUserData()
                     await initializeTabAccess()
@@ -6747,12 +6842,6 @@ function applyTranslations() {
             showView('login')
         }
 
-        /*confirm  เปลี่ยนให้เป็น custom modal แทน  popup ของ browser
-
-        ตัวอย่างโค้ด
-
-        
-        */
 
         async function changePassword() {
             const currentPassword = document.getElementById('currentPassword').value.trim()
@@ -6871,6 +6960,22 @@ function applyTranslations() {
             }
         }
 
+        // ── Refresh Followers Badge with Pending Users Count ───────
+        function refreshFollowersPendingBadge() {
+            const pendingBadge = document.getElementById('pendingUsersCountBadge')
+            const followersBadge = document.getElementById('followersPendingBadge')
+            
+            if (pendingBadge && followersBadge) {
+                const count = pendingBadge.textContent
+                if (count && parseInt(count) > 0) {
+                    followersBadge.textContent = count > 9 ? '9+' : count
+                    followersBadge.style.display = 'flex'
+                } else {
+                    followersBadge.style.display = 'none'
+                }
+            }
+        }
+
         // ── Pending User Approvals (Admin Only) ────────────────────
         async function loadPendingUsers() {
             if (!currentUser || currentUser.role !== 'admin') return
@@ -6902,11 +7007,13 @@ function applyTranslations() {
                     tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined">check_circle</span><p>No pending registrations.</p></div></td></tr>`
                     badge.style.display = 'none'
                     updatePendingApprovalsVisibility()
+                    refreshFollowersPendingBadge()
                     return
                 }
 
                 badge.textContent = data.pendingUsers.length
                 badge.style.display = 'inline-block'
+                refreshFollowersPendingBadge()
 
                 let rows = ''
                 for (let user of data.pendingUsers) {
@@ -7409,14 +7516,14 @@ function applyTranslations() {
                                 </div>
                                 <div class="subdepartment-list">
                                     ${group.subDepartments.map(sub => {
-                                        const subDeptDisplayName = translations[currentLanguage]['dept_' + sub.name] || sub.name
-                                        return `
+                            const subDeptDisplayName = translations[currentLanguage]['dept_' + sub.name] || sub.name
+                            return `
                                         <div class="subdepartment-item">
                                             <span class="subdepartment-name">${escHtml(subDeptDisplayName)}</span>
                                             <button class="unlink-btn-small" onclick="unlinkDepartmentFromSubDepartment('${sub.linkId}')" title="Unlink">Unlink</button>
                                         </div>
                                     `
-                                    }).join('')}
+                        }).join('')}
                                 </div>
                             </div>
                         `
@@ -8336,7 +8443,7 @@ function applyTranslations() {
                 if (totalFailCount === 0) {
                     setStatus('statusSingleSend', 'success', 'check_circle', `Memorandum sent to ${totalSuccessCount} ${totalSuccessCount === 1 ? 'recipient' : 'recipients'} successfully!`)
                     const recipientDisplay = successfulRecipientNames.join(', ')
-                    
+
                     loadNotificationsFromFirebase()
                     clearCompose()
                     loadMemoDocNumber() // Regenerate DocNumber for next memo
@@ -8344,7 +8451,7 @@ function applyTranslations() {
                 } else if (totalSuccessCount > 0) {
                     setStatus('statusSingleSend', 'warn', 'warning', `Sent to ${totalSuccessCount} recipients, failed for ${totalFailCount}`)
                     const recipientDisplay = successfulRecipientNames.join(', ')
-                    
+
                     clearCompose()
                     loadMemoDocNumber()
                 } else {
@@ -8375,7 +8482,7 @@ function applyTranslations() {
         function updateSearchPlaceholder() {
             const searchInput = document.getElementById('topbarSearchInput')
             if (!searchInput) return
-            switch(currentViewType) {
+            switch (currentViewType) {
                 case 'sent':
                     searchInput.placeholder = 'Search sent memos by title, doc #, or recipient...'
                     searchInput.disabled = false
@@ -8458,7 +8565,7 @@ function applyTranslations() {
             searchInput.addEventListener('input', (e) => {
                 clearTimeout(searchDebounceTimer)
                 searchDebounceTimer = setTimeout(() => {
-                    switch(currentViewType) {
+                    switch (currentViewType) {
                         case 'sent':
                             filterAndRenderSentMemos()
                             break
@@ -8676,7 +8783,7 @@ function applyTranslations() {
                 const date = new Date(memo.sentAt)
                 const dateStr = date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
                 const timeStr = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-                
+
                 const recipientName = memo.recipientName || (memo.recipientUserId ? (memo.recipientNames ? memo.recipientNames[0] : '-') : '-') || '-'
 
                 rows += `<tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="viewPendingMemo('${memo.memoId}')">
@@ -8720,7 +8827,7 @@ function applyTranslations() {
                                 <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
                                 Reject
                             </button>
-                            ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${escHtml(JSON.stringify({...memo, source: 'pending'})).replace(/"/g, '&quot;')})" title="Edit memo">
+                            ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${escHtml(JSON.stringify({ ...memo, source: 'pending' })).replace(/"/g, '&quot;')})" title="Edit memo">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">edit</span>
                                 Edit
                             </button>
@@ -9093,7 +9200,7 @@ function applyTranslations() {
             const userText = translations[currentLanguage]['user'] || 'User'
             const approvedByText = translations[currentLanguage]['approvedBy'] || 'Approved by'
             const itemsText = translations[currentLanguage]['items'] || 'items'
-            
+
             if (data.senderName && data.recipientNames) {
                 important.push(`${fromText}: ${data.senderName} → ${data.recipientNames}`)
             } else if (data.senderName && data.recipientUserId) {
@@ -9112,12 +9219,12 @@ function applyTranslations() {
         // ── Filter logs for current user only ──────────────────────────────────
         function filterLogsForCurrentUser(logs) {
             if (!logs || !currentUser) return []
-            
+
             return logs.filter(log => {
                 // Skip "Send memo (pending approval)" if current user is recipient
-                if (log.message && log.message.toLowerCase().includes('send memo') && 
+                if (log.message && log.message.toLowerCase().includes('send memo') &&
                     log.message.toLowerCase().includes('pending approval')) {
-                    
+
                     // Only show pending memos if user is the SENDER
                     if (log.data && log.data.senderName) {
                         const userFullName = currentUser.name + ' ' + currentUser.surname
@@ -9129,25 +9236,25 @@ function applyTranslations() {
                     // Hide pending approval memos from recipients
                     return false
                 }
-                
+
                 // Format 1: log.user.userId or log.user.username
                 if (log.user) {
                     if (log.user.userId === currentUser.uid) return true
                     if (log.user.username === currentUser.username) return true
                 }
-                
+
                 // Format 2: log.data.username
                 if (log.data && log.data.username === currentUser.username) return true
-                
+
                 // Format 3: log as sender (for sent memos already approved)
                 if (log.data && log.data.senderName) {
                     const userFullName = currentUser.name + ' ' + currentUser.surname
                     if (log.data.senderName === userFullName) return true
                 }
-                
+
                 // Format 4: userId in log.data
                 if (log.data && log.data.userId === currentUser.uid) return true
-                
+
                 return false
             })
         }
@@ -9160,7 +9267,7 @@ function applyTranslations() {
                 if (viewAllBtn) {
                     viewAllBtn.style.display = (currentUser && currentUser.role === 'admin') ? '' : 'none'
                 }
-                
+
                 const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
                 // const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
@@ -9172,19 +9279,19 @@ function applyTranslations() {
                             logs = Object.values(logsData)
                                 .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
                         }
-                        
+
                         // Filter for current user only
                         const userLogs = filterLogsForCurrentUser(logs)
-                        
+
                         // Cache logs for language change refresh
                         cachedDashboardLogs = userLogs
-                        
+
                         // Show only 30 most recent logs on dashboard
                         renderLogs(userLogs.slice(0, 30), 'dash-logs-preview')
                     })
                     .catch(e => {
                         console.warn('Could not load dashboard logs:', e)
-                        document.getElementById('dash-logs-preview').innerHTML = 
+                        document.getElementById('dash-logs-preview').innerHTML =
                             '<div style="color:#4a5568;font-style:italic;padding:24px 28px;">Unable to load activity...</div>'
                     })
             } catch (e) {
@@ -10143,23 +10250,19 @@ function applyTranslations() {
                     adminNav.style.display = isAdmin ? 'block' : 'none'
                 }
 
-                // Check if user is a memo approver and show pending approvals tab
-                const approverRes = await fetch('/user/is-approver', {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                }).catch(() => ({ json: () => ({ isApprover: false }) }))
-                const approverData = await approverRes.json()
-
-                const navPending = document.getElementById('navPendingApprovals')
-                if (navPending) {
-                    navPending.style.display = approverData.isApprover ? 'block' : 'none'
-                }
+                // NOTE: Don't modify pending-approvals visibility here
+                // It will be handled by checkApproverStatusAndLoadPending() from updateUIForLoggedIn()
 
                 // Store allowed tabs globally for showView() to check
                 window.userAllowedTabs = data.tabs
 
-                // Update nav items visibility based on allowed tabs
+                // Update nav items visibility based on allowed tabs (SKIP pending-approvals)
                 document.querySelectorAll('[data-view]', '.nav-item').forEach(el => {
                     const view = el.dataset.view || el.textContent.toLowerCase()
+                    
+                    // Skip pending-approvals (both desktop and mobile) - let checkApproverStatusAndLoadPending() handle it
+                    if (view === 'pending-approvals' || el.id === 'navPendingApprovals') return
+                    
                     const isAllowed = data.tabs.includes(view) || data.tabs.some(t =>
                         el.textContent.toLowerCase().includes(t)
                     )
@@ -10395,11 +10498,11 @@ function applyTranslations() {
 
             // Update classes
             el.className = `status-msg ${type} show`
-            
+
             // Update icon and message
             const iconEl = el.querySelector('.material-symbols-outlined')
             const msgEl = el.querySelector('.msg-text')
-            
+
             if (iconEl) iconEl.textContent = icon
             if (msgEl) msgEl.textContent = message
         }
@@ -10420,13 +10523,13 @@ function applyTranslations() {
             // Populate the edit form
             document.getElementById('editMemoDocNumber').value = memoData.docNumber || ''
             document.getElementById('editMemoTitle').value = memoData.title || ''
-            
+
             // Set Type dropdown
             const typeSelect = document.getElementById('editMemoType')
             if (typeSelect) {
                 typeSelect.value = memoData.type || 'เพื่อโปรดทราบ'
             }
-            
+
             // Get recipient names
             let recipients = ''
             if (memoData.recipientNames && Array.isArray(memoData.recipientNames)) {
@@ -10445,9 +10548,9 @@ function applyTranslations() {
             // Show edit modal
             document.getElementById('view-edit-memo').style.display = 'flex'
         }
-/*prompt: ตอนนี้แก้ไขได้แค่ title,message content แก้ไขทำให้แก้ไขได้ทุก field
-type ให้เป็น select จาก memo-type-container , recipients ให้ดึงจาก recipientsDropdown (เลือกได้หลาย user)
-*/
+        /*prompt: ตอนนี้แก้ไขได้แค่ title,message content แก้ไขทำให้แก้ไขได้ทุก field
+        type ให้เป็น select จาก memo-type-container , recipients ให้ดึงจาก recipientsDropdown (เลือกได้หลาย user)
+        */
 
         // ── Close Edit Memo Modal ────────────────────────────
         function closeEditMemoModal() {
@@ -10481,7 +10584,7 @@ type ให้เป็น select จาก memo-type-container , recipients ใ
             // Check for duplicate docNumber if it has been changed
             if (docNumber !== window.originalDocNumber) {
                 let isDuplicate = false
-                
+
                 // Check in all cache arrays
                 if (currentEditingMemoSource === 'sent') {
                     isDuplicate = cachedSentMemos.some(memo => memo.docNumber === docNumber && memo.memoId !== currentEditingMemoId)
@@ -10524,7 +10627,7 @@ type ให้เป็น select จาก memo-type-container , recipients ใ
 
                 // Update cache in real-time
                 let memoFound = false
-                
+
                 if (currentEditingMemoSource === 'sent') {
                     // Find and update memo in cachedSentMemos
                     for (let i = 0; i < cachedSentMemos.length; i++) {
@@ -10573,7 +10676,7 @@ type ให้เป็น select จาก memo-type-container , recipients ใ
                 }
 
                 showStatus('statusEditMemo', 'success', 'Memo updated successfully')
-                
+
                 // Close modal immediately
                 setTimeout(() => {
                     closeEditMemoModal()
@@ -10607,7 +10710,7 @@ type ให้เป็น select จาก memo-type-container , recipients ใ
             try {
                 const statusEl = source === 'sent' ? document.getElementById('sentMemosStatus')
                     : source === 'received' ? document.getElementById('receivedMemosStatus')
-                    : document.getElementById('pendingApprovalsStatus')
+                        : document.getElementById('pendingApprovalsStatus')
 
                 const statusId = statusEl?.id || 'statusEditMemo'
 
@@ -10628,7 +10731,7 @@ type ให้เป็น select จาก memo-type-container , recipients ใ
 
                 // Remove from cache and re-render in real-time
                 let memoFound = false
-                
+
                 if (source === 'sent') {
                     // Find and remove memo from cachedSentMemos
                     cachedSentMemos = cachedSentMemos.filter(memo => memo.memoId !== memoId)
@@ -10651,7 +10754,7 @@ type ให้เป็น select จาก memo-type-container , recipients ใ
                 console.error('Error:', e)
                 const statusEl = source === 'sent' ? document.getElementById('sentMemosStatus')
                     : source === 'received' ? document.getElementById('receivedMemosStatus')
-                    : document.getElementById('pendingApprovalsStatus')
+                        : document.getElementById('pendingApprovalsStatus')
                 const statusId = statusEl?.id || 'statusEditMemo'
                 showStatus(statusId, 'error', e.message)
             }
