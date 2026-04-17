@@ -3269,14 +3269,6 @@
                 </div>
             </div>
 
-    <!--prompt:
-    ฝั่ง section ด้านขวาเพิ่ม qrcode เพื่อ add line ทำเป็น link user
-    
-    โดยใช้ 
-    <img src="https://qr-official.line.me/gs/M_141uudgn_BW.png?oat_content=qr">
-    
-    -->
-
             <!-- ── DASHBOARD VIEW ─────────────────── -->
             <div id="view-dashboard" class="view">
                 <div class="page-header">
@@ -3670,7 +3662,7 @@
                                         <th data-translate="from">From</th>
                                         <th data-translate="to">To</th>
                                         <th data-translate="department">Department</th>
-                                        <th data-translate="content">Content</th>
+                                        <th data-translate="preview">Preview</th>
                                         <th style="text-align: center;" data-translate="action">Action</th>
                                     </tr>
                                 </thead>
@@ -9907,7 +9899,6 @@
             printWindow.document.close()
             setTimeout(() => printWindow.print(), 250)
         }
-//เพิ่มข้อมูลให้ครบ , ปรับ css ให้สวยๆ
 
         // Close memo detail when clicking outside
         document.addEventListener('click', function (e) {
@@ -10666,9 +10657,6 @@
             // Show edit modal
             document.getElementById('view-edit-memo').style.display = 'flex'
         }
-        /*prompt: ตอนนี้แก้ไขได้แค่ title,message content แก้ไขทำให้แก้ไขได้ทุก field
-        type ให้เป็น select จาก memo-type-container , recipients ให้ดึงจาก recipientsDropdown (เลือกได้หลาย user)
-        */
 
         // ── Close Edit Memo Modal ────────────────────────────
         function closeEditMemoModal() {

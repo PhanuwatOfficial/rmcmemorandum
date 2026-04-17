@@ -2549,6 +2549,119 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
       }
     }
 
+    // Send LINE message to sender's linked followers to notify approval
+    if (senderUser && senderUser.linkedFollowers) {
+      const senderFollowerIds = Object.keys(senderUser.linkedFollowers)
+      
+      if (senderFollowerIds.length > 0) {
+        const senderLineMessage = {
+          type: "flex",
+          altText: `Memo Approved: ${memoData.title}`,
+          contents: {
+            type: "bubble",
+            header: {
+              type: "box",
+              layout: "vertical",
+              contents: [
+                {
+                  type: "text",
+                  text: "✅ Memo Approved",
+                  weight: "bold",
+                  color: "#1a5c3a",
+                  size: "xl"
+                }
+              ]
+            },
+            body: {
+              type: "box",
+              layout: "vertical",
+              spacing: "md",
+              contents: [
+                {
+                  type: "text",
+                  text: memoData.title,
+                  weight: "bold",
+                  size: "lg",
+                  wrap: true,
+                  color: "#182034"
+                },
+                {
+                  type: "text",
+                  text: `Recipient: ${memoData.recipientName || memoData.recipientNames ? memoData.recipientNames.join(', ') : '-'}`,
+                  size: "sm",
+                  color: "#1a2740",
+                  weight: "bold",
+                  margin: "md"
+                },
+                {
+                  type: "text",
+                  text: `Type: ${memoData.type || 'Announcement'}`,
+                  size: "sm",
+                  color: "#1a2740",
+                  weight: "bold",
+                  margin: "md"
+                },
+                ...(memoData.docNumber ? [{
+                  type: "text",
+                  text: `Doc No.: ${memoData.docNumber}`,
+                  size: "sm",
+                  color: "#1a2740",
+                  weight: "bold",
+                  margin: "md"
+                }] : []),
+                {
+                  type: "text",
+                  text: `Approved by: ${currentUser.name} ${currentUser.surname}`,
+                  size: "sm",
+                  color: "#1a5c3a",
+                  weight: "bold",
+                  margin: "md"
+                },
+                {
+                  type: "separator",
+                  margin: "md"
+                },
+                {
+                  type: "text",
+                  text: memoData.content.substring(0, 150) + (memoData.content.length > 150 ? '...' : ''),
+                  size: "sm",
+                  color: "#666666",
+                  wrap: true,
+                  margin: "md"
+                }
+              ]
+            },
+            footer: {
+              type: "box",
+              layout: "vertical",
+              spacing: "sm",
+              contents: [
+                {
+                  type: "button",
+                  action: {
+                    type: "uri",
+                    label: "View Details",
+                    uri: "https://rmcmemorandum.onrender.com/"
+                  },
+                  style: "primary",
+                  color: "#1a5c3a"
+                }
+              ]
+            }
+          }
+        }
+
+        // Send LINE to all linked followers of the sender
+        for (const followerId of senderFollowerIds) {
+          try {
+            await client.pushMessage(followerId, senderLineMessage)
+          } catch (lineErr) {
+            // Silent error
+          }
+        }
+      }
+    }
+
     // Create notification for sender (to notify that memo was approved)
     const notification = {
       id: Date.now().toString(),
