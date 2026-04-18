@@ -5543,6 +5543,12 @@
                 awaitingApproverAction: "รอการอนุมัติ",
                 unknown: "ไม่ทราบ",
                 noReasonProvided: "ไม่มีเหตุผลที่ระบุ",
+                memoApprovedSuccessfully: "อนุมัติเมมโมสำเร็จ",
+                errorApprovingMemo: "เกิดข้อผิดพลาดในการอนุมัติเมมโม",
+                memoRejectedSuccessfully: "ปฏิเสธเมมโมสำเร็จ",
+                errorRejectingMemo: "เกิดข้อผิดพลาดในการปฏิเสธเมมโม",
+                success: "สำเร็จ",
+                error: "ข้อผิดพลาด",
                 alert: "แจ้งเตือน",
                 signOutConfirm: "ออกจากระบบจากบัญชีของคุณหรือไม่?",
                 approveRegistration: "ต้องการอนุมัติการลงทะเบียนนี้หรือไม่?",
@@ -5885,6 +5891,12 @@
                 awaitingApproverAction: "Awaiting approver action",
                 unknown: "Unknown",
                 noReasonProvided: "No reason provided",
+                memoApprovedSuccessfully: "Memo approved successfully",
+                errorApprovingMemo: "Error approving memo",
+                memoRejectedSuccessfully: "Memo rejected successfully",
+                errorRejectingMemo: "Error rejecting memo",
+                success: "Success",
+                error: "Error",
                 "dept_บริหาร": "Administration",
                 "dept_จัดซื้อในประเทศ": "Domestic Procurement",
                 "dept_จัดซื้อต่างประเทศ": "International Procurement",
@@ -9252,7 +9264,7 @@
                 statusEl.querySelector('.msg-text').textContent = e.message
             }
         }
-        //ส่วน openMemoDetail ตอนนี้ received จะใช้ร่วมกับ sent ซึ่งส่วนแสดง sent to จะต้องเปลี่ยนเป็น from และแสดงชื่อผู้ที่ส่งมาแทน 
+    
 
         // ── Load Follower Registry Stats ─────────────
         async function loadFollowerRegistryStats() {
@@ -10744,16 +10756,16 @@
 
                 const data = await res.json()
                 if (res.ok) {
-                    await showAlertModal('Memo approved successfully!', 'Success')
+                    await showAlertModal('memoApprovedSuccessfully', 'success')
                     loadPendingApprovals()
                     loadSentMemos()
                     // Update badge immediately after approval
                     await refreshPendingApprovalsBadge()
                 } else {
-                    await showAlertModal(data.error || 'Error approving memo', 'Error')
+                    await showAlertModal('errorApprovingMemo', 'error')
                 }
             } catch (err) {
-                await showAlertModal(err.message, 'Error')
+                await showAlertModal('errorApprovingMemo', 'error')
             }
         }
 
@@ -10775,16 +10787,16 @@
 
                 const data = await res.json()
                 if (res.ok) {
-                    await showAlertModal('Memo rejected successfully!', 'Success')
+                    await showAlertModal('memoRejectedSuccessfully', 'success')
                     loadPendingApprovals()
                     loadSentMemos()
                     // Update badge immediately after rejection
                     await refreshPendingApprovalsBadge()
                 } else {
-                    await showAlertModal(data.error || 'Error rejecting memo', 'Error')
+                    await showAlertModal('errorRejectingMemo', 'error')
                 }
             } catch (err) {
-                await showAlertModal(err.message, 'Error')
+                await showAlertModal('errorRejectingMemo', 'error')
             }
         }
 

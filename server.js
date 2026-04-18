@@ -2173,35 +2173,44 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
     const pendingMemos = []
     const allUsers = await firebase_get('users')
 
+    if (!allUsers || typeof allUsers !== 'object') {
+      return res.json({ pendingMemos: [], count: 0 })
+    }
+
+    const senderIds = Object.keys(allUsers)
+
     // If admin, get all pending approval memos without checking approvers
     if (currentUser.role === 'admin') {
-      if (allUsers && typeof allUsers === 'object') {
-        for (let senderId in allUsers) {
-          const sender = allUsers[senderId]
-          const sentMemos = await firebase_get(`sent_memos/${senderId}`)
+      // ✅ Parallel: fetch all sent_memos ทีเดียว
+      const allSentMemosArray = await Promise.all(
+        senderIds.map(senderId => firebase_get(`sent_memos/${senderId}`).catch(() => null))
+      )
 
-          if (!sentMemos || typeof sentMemos !== 'object') continue
+      senderIds.forEach((senderId, idx) => {
+        const sender = allUsers[senderId]
+        const sentMemos = allSentMemosArray[idx]
 
-          for (let memoId in sentMemos) {
-            const memo = sentMemos[memoId]
+        if (!sentMemos || typeof sentMemos !== 'object') return
 
-            // Check if memo is pending approval
-            if (memo.status === 'pending_approval') {
-              pendingMemos.push({
-                ...memo,
-                senderObject: {
-                  userId: sender.userId,
-                  name: sender.name,
-                  surname: sender.surname,
-                  department: sender.department,
-                  department2: sender.department2,
-                  username: sender.username
-                }
-              })
-            }
+        for (let memoId in sentMemos) {
+          const memo = sentMemos[memoId]
+
+          // Check if memo is pending approval
+          if (memo.status === 'pending_approval') {
+            pendingMemos.push({
+              ...memo,
+              senderObject: {
+                userId: sender.userId,
+                name: sender.name,
+                surname: sender.surname,
+                department: sender.department,
+                department2: sender.department2,
+                username: sender.username
+              }
+            })
           }
         }
-      }
+      })
     } else {
       // Regular approver - check if user is in memoApprovers
       // Get all approver assignments for this user
@@ -2243,59 +2252,61 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
         }
       }
 
-      // Get all users and their sent_memos to find pending_approval ones
-      if (allUsers && typeof allUsers === 'object') {
-        for (let senderId in allUsers) {
-          const sender = allUsers[senderId]
-          const sentMemos = await firebase_get(`sent_memos/${senderId}`)
+      // Get all users' sent_memos to find pending_approval ones (PARALLEL)
+      const allSentMemosArray = await Promise.all(
+        senderIds.map(senderId => firebase_get(`sent_memos/${senderId}`).catch(() => null))
+      )
 
-          if (!sentMemos || typeof sentMemos !== 'object') continue
+      senderIds.forEach((senderId, idx) => {
+        const sender = allUsers[senderId]
+        const sentMemos = allSentMemosArray[idx]
 
-          for (let memoId in sentMemos) {
-            const memo = sentMemos[memoId]
+        if (!sentMemos || typeof sentMemos !== 'object') return
 
-            // Check if memo is pending approval
-            if (memo.status === 'pending_approval') {
+        for (let memoId in sentMemos) {
+          const memo = sentMemos[memoId]
 
-              // Convert sender's department name to UUID
-              let senderDepartmentId = sender.department
-              if (departmentNameToId[sender.department]) {
-                senderDepartmentId = departmentNameToId[sender.department]
+          // Check if memo is pending approval
+          if (memo.status === 'pending_approval') {
+
+            // Convert sender's department name to UUID
+            let senderDepartmentId = sender.department
+            if (departmentNameToId[sender.department]) {
+              senderDepartmentId = departmentNameToId[sender.department]
+            }
+
+            // Convert sender's sub-department name to UUID
+            let senderSubDepartmentId = sender.department2
+            if (subDepartmentNameToId[sender.department2]) {
+              senderSubDepartmentId = subDepartmentNameToId[sender.department2]
+            }
+
+            // Verify this user is one of the approvers for this sender
+            const canApprove = userApprovals.some(approval => {
+              const match = approval.departmentId === senderDepartmentId &&
+                (!approval.subDepartmentId || approval.subDepartmentId === senderSubDepartmentId)
+
+              if (!match) {
               }
+              return match
+            })
 
-              // Convert sender's sub-department name to UUID
-              let senderSubDepartmentId = sender.department2
-              if (subDepartmentNameToId[sender.department2]) {
-                senderSubDepartmentId = subDepartmentNameToId[sender.department2]
-              }
-
-              // Verify this user is one of the approvers for this sender
-              const canApprove = userApprovals.some(approval => {
-                const match = approval.departmentId === senderDepartmentId &&
-                  (!approval.subDepartmentId || approval.subDepartmentId === senderSubDepartmentId)
-
-                if (!match) {
+            if (canApprove) {
+              pendingMemos.push({
+                ...memo,
+                senderObject: {
+                  userId: sender.userId,
+                  name: sender.name,
+                  surname: sender.surname,
+                  department: sender.department,
+                  department2: sender.department2,
+                  username: sender.username
                 }
-                return match
               })
-
-              if (canApprove) {
-                pendingMemos.push({
-                  ...memo,
-                  senderObject: {
-                    userId: sender.userId,
-                    name: sender.name,
-                    surname: sender.surname,
-                    department: sender.department,
-                    department2: sender.department2,
-                    username: sender.username
-                  }
-                })
-              }
             }
           }
         }
-      }
+      })
     }
 
     // Sort by sentAt descending (newest first)
@@ -3116,19 +3127,24 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
     const currentUser = await firebase_get(`users/${userId}`)
+    const allUsers = await firebase_get('users')
 
     let memosArray = []
 
-    // If admin, get all sent memos from all users
+    // If admin, get all sent memos from all users (PARALLEL)
     if (currentUser && currentUser.role === 'admin') {
-      const allUsers = await firebase_get('users')
       if (allUsers && typeof allUsers === 'object') {
-        for (let uid in allUsers) {
-          const sentMemos = await firebase_get(`sent_memos/${uid}`)
+        const userIds = Object.keys(allUsers)
+        // ✅ Parallel: fetch all sent_memos ทีเดียว
+        const allSentMemosArray = await Promise.all(
+          userIds.map(uid => firebase_get(`sent_memos/${uid}`).catch(() => null))
+        )
+        
+        allSentMemosArray.forEach(sentMemos => {
           if (sentMemos && typeof sentMemos === 'object') {
             memosArray.push(...Object.values(sentMemos))
           }
-        }
+        })
       }
     } else {
       // Regular user gets only their own sent memos
@@ -3144,27 +3160,33 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
 
     memosArray.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt))
 
+    // Build follower lookup map (instead of nested loop)
+    const followerToUserMap = {}
+    if (allUsers && typeof allUsers === 'object') {
+      for (let uid in allUsers) {
+        const user = allUsers[uid]
+        if (user.linkedFollowers && typeof user.linkedFollowers === 'object') {
+          for (let followerId in user.linkedFollowers) {
+            followerToUserMap[followerId] = user
+          }
+        }
+      }
+    }
+
     // Enrich each memo with recipient name
-    const allUsers = await firebase_get('users')
     for (let memo of memosArray) {
       try {
         // Handle system user recipient (recipientUserId)
-        if (memo.recipientUserId) {
-          const recipientUser = await firebase_get(`users/${memo.recipientUserId}`)
+        if (memo.recipientUserId && allUsers) {
+          const recipientUser = allUsers[memo.recipientUserId]
           if (recipientUser) {
             memo.recipientName = `${recipientUser.name} ${recipientUser.surname}`
           }
         }
-        // Handle LINE follower recipient (recipientId) - find which user linked this follower
-        else if (memo.recipientId && allUsers) {
-          for (let uid in allUsers) {
-            const user = allUsers[uid]
-            if (user.linkedFollowers && user.linkedFollowers[memo.recipientId]) {
-              // Found the user who linked this follower
-              memo.recipientName = `${user.name} ${user.surname}`
-              break
-            }
-          }
+        // Handle LINE follower recipient (recipientId) - use lookup map
+        else if (memo.recipientId && followerToUserMap[memo.recipientId]) {
+          const user = followerToUserMap[memo.recipientId]
+          memo.recipientName = `${user.name} ${user.surname}`
         }
       } catch (e) {
         // Could not find recipient info
@@ -3188,56 +3210,66 @@ app.get("/received-memos", verifyToken, async (req, res) => {
 
     const receivedMemos = []
 
+    if (!allUsers || typeof allUsers !== 'object') {
+      return res.json({ memos: [], count: 0 })
+    }
+
+    const senderIds = Object.keys(allUsers)
+
     // If admin, get all memos sent to any follower
     if (currentUser && currentUser.role === 'admin') {
-      if (allUsers && typeof allUsers === 'object') {
-        // Get all sent memos from all users that have follower recipients
-        for (let senderId in allUsers) {
-          const senderMemos = await firebase_get(`sent_memos/${senderId}`)
-          if (!senderMemos || typeof senderMemos !== 'object') continue
+      // ✅ Parallel: fetch all sent_memos ทีเดียว
+      const allSentMemosArray = await Promise.all(
+        senderIds.map(senderId => firebase_get(`sent_memos/${senderId}`).catch(() => null))
+      )
 
-          for (let memoId in senderMemos) {
-            const memo = senderMemos[memoId]
-            // Include only memos sent to followers (not system users)
-            if (memo.recipientId && memo.recipientId.startsWith('U')) {
-              const sender = allUsers[senderId]
-              if (sender) {
-                memo.senderName = `${sender.name} ${sender.surname}`
-                memo.senderUserId = senderId
-              }
-              receivedMemos.push(memo)
+      senderIds.forEach((senderId, idx) => {
+        const senderMemos = allSentMemosArray[idx]
+        if (!senderMemos || typeof senderMemos !== 'object') return
+
+        for (let memoId in senderMemos) {
+          const memo = senderMemos[memoId]
+          if (memo.recipientId && memo.recipientId.startsWith('U')) {
+            const sender = allUsers[senderId]
+            if (sender) {
+              memo.senderName = `${sender.name} ${sender.surname}`
+              memo.senderUserId = senderId
             }
+            receivedMemos.push(memo)
           }
         }
-      }
+      })
 
-      // Also include all direct received memos to system users
-      if (allUsers && typeof allUsers === 'object') {
-        for (let uid in allUsers) {
-          const directReceivedMemos = await firebase_get(`received_memos/${uid}`)
-          if (directReceivedMemos && typeof directReceivedMemos === 'object') {
-            for (let memoId in directReceivedMemos) {
-              const memo = directReceivedMemos[memoId]
-              receivedMemos.push(memo)
-            }
+      // ✅ Parallel: fetch all received_memos ทีเดียว
+      const allReceivedArray = await Promise.all(
+        senderIds.map(uid => firebase_get(`received_memos/${uid}`).catch(() => null))
+      )
+
+      senderIds.forEach((uid, idx) => {
+        const directReceivedMemos = allReceivedArray[idx]
+        if (directReceivedMemos && typeof directReceivedMemos === 'object') {
+          for (let memoId in directReceivedMemos) {
+            receivedMemos.push(directReceivedMemos[memoId])
           }
         }
-      }
+      })
     } else {
       // Regular user gets only memos for their linked followers
       const linkedFollowerIds = currentUser?.linkedFollowers ? Object.keys(currentUser.linkedFollowers) : []
 
-      // 1. Search through all users' sent_memos for memos sent to this user's followers
-      if (allUsers && typeof allUsers === 'object' && linkedFollowerIds.length > 0) {
-        for (let senderId in allUsers) {
-          const senderMemos = await firebase_get(`sent_memos/${senderId}`)
-          if (!senderMemos || typeof senderMemos !== 'object') continue
+      if (linkedFollowerIds.length > 0) {
+        // ✅ Parallel: fetch all sent_memos ทีเดียว
+        const allSentMemosArray = await Promise.all(
+          senderIds.map(senderId => firebase_get(`sent_memos/${senderId}`).catch(() => null))
+        )
 
-          // Check each memo - if it was sent to one of this user's followers, include it
+        senderIds.forEach((senderId, idx) => {
+          const senderMemos = allSentMemosArray[idx]
+          if (!senderMemos || typeof senderMemos !== 'object') return
+
           for (let memoId in senderMemos) {
             const memo = senderMemos[memoId]
             if (linkedFollowerIds.includes(memo.recipientId)) {
-              // Enrich with sender info
               const sender = allUsers[senderId]
               if (sender) {
                 memo.senderName = `${sender.name} ${sender.surname}`
@@ -3246,15 +3278,14 @@ app.get("/received-memos", verifyToken, async (req, res) => {
               receivedMemos.push(memo)
             }
           }
-        }
+        })
       }
 
-      // 2. Get memos sent directly to this system user (from received_memos collection)
+      // Direct received memos
       const directReceivedMemos = await firebase_get(`received_memos/${userId}`)
       if (directReceivedMemos && typeof directReceivedMemos === 'object') {
         for (let memoId in directReceivedMemos) {
-          const memo = directReceivedMemos[memoId]
-          receivedMemos.push(memo)
+          receivedMemos.push(directReceivedMemos[memoId])
         }
       }
     }
