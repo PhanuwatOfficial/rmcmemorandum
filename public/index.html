@@ -2040,7 +2040,10 @@
         }
 
         .unlink-btn-small {
-            padding: 2px 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
             font-size: 11px;
             color: var(--red);
             background: transparent;
@@ -2049,6 +2052,11 @@
             cursor: pointer;
             margin-left: 6px;
             transition: all 0.2s;
+        }
+
+        .unlink-btn-small .material-symbols-outlined {
+            font-size: 16px;
+            line-height: 1;
         }
 
         .unlink-btn-small:hover {
@@ -2741,7 +2749,7 @@
             <div class="topbar-left">
                 <div class="search-wrap">
                     <span class="material-symbols-outlined">search</span>
-                    <input id="topbarSearchInput" class="search-input" type="text" placeholder="Search..." disabled>
+                    <input id="topbarSearchInput" class="search-input" type="text" placeholder="Search..." data-translate="search" disabled>
                 </div>
             </div>
             <div class="topbar-right">
@@ -2782,15 +2790,14 @@
                         style="display: none; flex-direction: column; position: absolute; top: 100%; right: 0; width: 360px; max-height: 400px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; margin-top: 4px; animation: slideDown 0.25s ease-out;">
                         <div
                             style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
-                            <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--ink);">แจ้งเตือน</h3>
+                            <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--ink);" data-translate="notifications">แจ้งเตือน</h3>
                             <button class="icon-btn" onclick="clearAllNotifications()" style="padding: 4px;"
                                 title="Clear all">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">clear_all</span>
                             </button>
                         </div>
                         <div id="notificationList" style="max-height: 320px; overflow-y: auto;">
-                            <div style="padding: 20px; text-align: center; color: var(--ink-faint); font-size: 13px;">
-                                ไม่มีแจ้งเตือน</div>
+                            <div style="padding: 20px; text-align: center; color: var(--ink-faint); font-size: 13px;" data-translate="noNotifications">ไม่มีแจ้งเตือน</div>
                         </div>
                     </div>
                 </div>
@@ -3061,7 +3068,9 @@
                     </div>
                 </div>
             </div>
-
+<!--prompt:เมื่อ user register เข้ามา ให้ addnotification ไปยัง admin user ด้วย
+(ตอนนี้แสดงแจ้งเตือนแค่ตอนอนุมัติแล้ว)
+-->
             <!-- ── MANAGE USER VIEW ───────────────── -->
             <div id="view-manage-user" class="view" style="display:none;">
                 <div class="page-header">
@@ -3432,10 +3441,11 @@
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">people</span>Recipients</label>
                             <div class="recipients-multiselect-wrapper" style="position: relative;">
                                 <button type="button" id="recipientsSelectBtn" class="recipients-select-btn"
-                                    style="width: 100%; padding: 11px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease;"
+                                    style="width: 100%; padding: 11px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: all 0.2s ease; flex-wrap: wrap;"
                                     onclick="toggleRecipientsDropdown()">
-                                    <span id="recipientsSelectLabel" style="flex: 1;"
+                                    <span id="recipientsSelectLabel" style="flex: 1; min-width: 100px;"
                                         data-translate="selectRecipients">Select recipients...</span>
+                                    <span id="recipientsSelectedBadges" style="display: flex; gap: 4px; flex-wrap: wrap; flex: 1;"></span>
                                     <span class="material-symbols-outlined"
                                         style="font-size: 18px; flex-shrink: 0; transition: transform 0.2s;">expand_more</span>
                                 </button>
@@ -4232,8 +4242,8 @@
                     <div class="page-header"
                         style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); margin-bottom: 0;">
                         <div>
-                            <h2>Memo Approvers Management</h2>
-                            <p>Assign users who can approve memorandums by department.</p>
+                            <h2 data-translate="memoApprovers">Memo Approvers Management</h2>
+                            <p data-translate="memoApprovalsDesc">Assign users who can approve memorandums by department.</p>
                         </div>
                         <button class="btn btn-ghost" onclick="closeMemoApproversModal()"
                             style="position: relative; width: auto; padding: 8px 12px;">
@@ -4246,31 +4256,31 @@
                             <div class="section-header">
                                 <div class="section-title">
                                     <span class="material-symbols-outlined">person_add</span>
-                                    Add New Approver
+                                    <span data-translate="addNewApprover">Add New Approver</span>
                                 </div>
                             </div>
                             <div class="section-body">
                                 <div style="display: grid; gap: 5px;">
                                     <div class="field">
-                                        <label>Select User (Approver)</label>
+                                        <label data-translate="selectUser">Select User (Approver)</label>
                                         <select id="approverUserId">
-                                            <option value="">-- Select user --</option>
+                                            <option value="" data-translate="selectAUser">-- Select user --</option>
                                         </select>
                                     </div>
                                     <div class="field">
-                                        <label>Department</label>
+                                        <label data-translate="department">Department</label>
                                         <select id="approverDepartmentId">
-                                            <option value="">-- Select department --</option>
+                                            <option value="" data-translate="selectDepartmentLink">-- Select department --</option>
                                         </select>
                                     </div>
                                     <div class="field">
-                                        <label>Sub-Department (Optional - leave blank for entire department)</label>
+                                        <label data-translate="subDepartment">Sub-Department (Optional - leave blank for entire department)</label>
                                         <select id="approverSubDepartmentId">
-                                            <option value="">-- All Sub-Departments --</option>
+                                            <option value="" data-translate="allDepartments">-- All Sub-Departments --</option>
                                         </select>
                                     </div>
                                     <div class="btn-row" style="margin-top: 16px;">
-                                        <button class="btn btn-primary" onclick="addMemoApprover()">
+                                        <button class="btn btn-primary" onclick="addMemoApprover()" data-translate="assignApprover">
                                             <span class="material-symbols-outlined">add</span>
                                             Assign Approver
                                         </button>
@@ -4287,9 +4297,9 @@
                             <div class="section-header">
                                 <div class="section-title">
                                     <span class="material-symbols-outlined">list</span>
-                                    Current Approvers
+                                    <span data-translate="currentApprovers">Current Approvers</span>
                                 </div>
-                                <button class="btn btn-ghost btn-sm" onclick="loadMemoApprovers()">
+                                <button class="btn btn-ghost btn-sm" onclick="loadMemoApprovers()" data-translate="refresh">
                                     <span class="material-symbols-outlined">refresh</span>
                                     Refresh
                                 </button>
@@ -4314,8 +4324,8 @@
                     <div class="page-header"
                         style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); margin-bottom: 0;">
                         <div>
-                            <h2>Tab Access Control</h2>
-                            <p>Configure which tabs each user can access.</p>
+                            <h2 data-translate="tabAccessControl">Tab Access Control</h2>
+                            <p data-translate="tabAccessDesc">Configure which tabs each user can access.</p>
                         </div>
                         <button class="btn btn-ghost" onclick="closeTabAccessModal()"
                             style="position: relative; width: auto; padding: 8px 12px;">
@@ -4328,9 +4338,9 @@
                             <div class="section-header">
                                 <div class="section-title">
                                     <span class="material-symbols-outlined">security</span>
-                                    User Access Configuration
+                                    <span data-translate="userAccessConfig">User Access Configuration</span>
                                 </div>
-                                <button class="btn btn-ghost btn-sm" onclick="loadTabAccess()">
+                                <button class="btn btn-ghost btn-sm" onclick="loadTabAccess()" data-translate="refresh">
                                     <span class="material-symbols-outlined">refresh</span>
                                     Refresh
                                 </button>
@@ -4351,14 +4361,14 @@
                                 style="background: white; border-radius: var(--radius); box-shadow: var(--shadow-lg); max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
                                 <div class="modal-header"
                                     style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                                    <h3 style="margin: 0;">Configure Tab Access</h3>
+                                    <h3 data-translate="configTabAccess" style="margin: 0;">Configure Tab Access</h3>
                                     <button class="modal-close" onclick="closeTabAccessModal()"
                                         style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
                                 </div>
                                 <div class="modal-body" style="padding: 25px;">
                                     <div class="field"
                                         style="display: flex; flex-direction: column; margin-bottom: 18px;">
-                                        <label style="font-weight: 600; margin-bottom: 6px;">User:</label>
+                                        <label data-translate="user" style="font-weight: 600; margin-bottom: 6px;">User:</label>
                                         <div
                                             style="font-size: 15px; color: var(--ink); font-weight: 500; padding-left: 2px;">
                                             <strong id="tabAccessModalUsername"></strong>
@@ -4367,13 +4377,16 @@
                                     <div class="field" style="display: flex; flex-direction: column;">
                                         <div
                                             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                                            <label style="font-weight: 600;">Select Allowed Tabs</label>
+                                            <label data-translate="selectAllowedTabs" style="font-weight: 600;">Select Allowed Tabs</label>
                                             <div style="display: flex; gap: 8px;">
                                                 <button class="btn btn-ghost btn-sm" onclick="selectAllTabs()"
+                                                    data-translate="selectAll"
                                                     style="padding: 4px 8px; font-size: 12px;">Select All</button>
                                                 <button class="btn btn-ghost btn-sm" onclick="deselectAllTabs()"
+                                                    data-translate="deselectAll"
                                                     style="padding: 4px 8px; font-size: 12px;">Deselect All</button>
                                                 <button class="btn btn-ghost btn-sm" onclick="setDefaultTabs()"
+                                                    data-translate="default"
                                                     style="padding: 4px 8px; font-size: 12px;">Default</button>
                                             </div>
                                         </div>
@@ -4425,8 +4438,8 @@
                                 </div>
                                 <div class="modal-footer"
                                     style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
-                                    <button class="btn btn-ghost" onclick="closeTabAccessModal()">Cancel</button>
-                                    <button class="btn btn-primary" onclick="saveTabAccess()">Save</button>
+                                    <button class="btn btn-ghost" onclick="closeTabAccessModal()" data-translate="cancel">Cancel</button>
+                                    <button class="btn btn-primary" onclick="saveTabAccess()" data-translate="save">Save</button>
                                 </div>
                             </div>
                         </div>
@@ -4442,8 +4455,8 @@
                     <div class="page-header"
                         style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); margin-bottom: 0;">
                         <div>
-                            <h2>Edit Memorandum</h2>
-                            <p>Update the memorandum details.</p>
+                            <h2 data-translate="editMemorandum">Edit Memorandum</h2>
+                            <p data-translate="editMemoDesc">Update the memorandum details.</p>
                         </div>
                         <button class="btn btn-ghost" onclick="closeEditMemoModal()"
                             style="position: relative; width: auto; padding: 8px 12px;">
@@ -4989,7 +5002,7 @@
             }
         }
 
-        async function addNotification(title, message, type = 'info', memoId = null) {
+        async function addNotification(title, message, type = 'info', memoId = null, titleKey = null, messageKey = null) {
             const notification = {
                 id: Date.now(),
                 title: title,
@@ -4997,7 +5010,9 @@
                 type: type,
                 read: false,
                 timestamp: new Date(),
-                memoId: memoId  // Store memoId for navigation
+                memoId: memoId,  // Store memoId for navigation
+                titleKey: titleKey,  // Translation key for title
+                messageKey: messageKey  // Translation key for message
             }
 
             // Save to Firebase
@@ -5009,7 +5024,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${authToken}`
                         },
-                        body: JSON.stringify({ title, message, type })
+                        body: JSON.stringify({ title, message, type, titleKey, messageKey })
                     })
                     if (res.ok) {
                         const data = await res.json()
@@ -5025,7 +5040,7 @@
         }
 
         // Helper function to add notification with full memo object and type
-        async function addNotificationWithMemo(title, message, type = 'info', memo = null, memoType = null) {
+        async function addNotificationWithMemo(title, message, type = 'info', memo = null, memoType = null, titleKey = null, messageKey = null) {
             const notification = {
                 id: Date.now(),
                 title: title,
@@ -5034,7 +5049,9 @@
                 read: false,
                 timestamp: new Date(),
                 memoId: memo?.id,
-                memoType: memoType  // Store memo type (sent, received)
+                memoType: memoType,  // Store memo type (sent, received)
+                titleKey: titleKey,  // Translation key for title
+                messageKey: messageKey  // Translation key for message
             }
 
             // Save to Firebase
@@ -5046,7 +5063,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${authToken}`
                         },
-                        body: JSON.stringify({ title, message, type })
+                        body: JSON.stringify({ title, message, type, memoType, titleKey, messageKey })
                     })
                     if (res.ok) {
                         const data = await res.json()
@@ -5084,7 +5101,8 @@
 
             // Update list
             if (notifications.length === 0) {
-                list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--ink-faint); font-size: 13px;">ไม่มีแจ้งเตือน</div>'
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--ink-faint); font-size: 13px;" data-translate="noNotifications">ไม่มีแจ้งเตือน</div>'
+                applyTranslations()
                 return
             }
 
@@ -5124,7 +5142,10 @@
 
                 // Determine click handler - if we have memo, use it; otherwise use memoId
                 let clickHandler = 'markNotificationAsRead()'
-                if (notif.memoObject || notif.memo) {
+                if (notif.type === 'user_registration') {
+                    // For new user registration notifications, navigate to view-followers
+                    clickHandler = `showView('followers')`
+                } else if (notif.memoObject || notif.memo) {
                     // console.log removed (not error handle)
                     const memoToUse = notif.memoObject || notif.memo
                     const memoJson = escHtml(JSON.stringify(memoToUse)).replace(/"/g, '&quot;')
@@ -5146,13 +5167,17 @@
                     // console.log removed (not error handle)
                 }
 
+                // Build data-translate attributes if translation keys exist
+                const titleAttr = notif.titleKey ? `data-translate="${notif.titleKey}"` : ''
+                const messageAttr = notif.messageKey ? `data-translate="${notif.messageKey}"` : ''
+
                 html += `
                     <div class="notification-item ${unreadClass}" onclick="${clickHandler}; markNotificationAsRead('${notif.id}')" style="cursor: pointer;">
                         <div style="display: flex; gap: 10px;">
                             <span class="material-symbols-outlined" style="font-size: 18px; color: ${iconColor}; flex-shrink: 0;">${icon}</span>
                             <div style="flex: 1; min-width: 0;">
-                                <div class="notification-item-title">${escHtml(notif.title)}</div>
-                                <div class="notification-item-message">${messageDisplay}</div>
+                                <div class="notification-item-title" ${titleAttr}>${escHtml(notif.title)}</div>
+                                <div class="notification-item-message" ${messageAttr}>${messageDisplay}</div>
                                 <div class="notification-item-time">${displayTime}</div>
                             </div>
                         </div>
@@ -5163,6 +5188,8 @@
                 `
             }
             list.innerHTML = html
+            // Apply translations to newly added notification items
+            setTimeout(() => applyTranslations(), 0)
         }
 
         function toggleNotificationPanel() {
@@ -5347,7 +5374,7 @@
                 noReceivedMemos: "ยังไม่มีเมมโมที่ได้รับ",
                 pendingMemoApprovals: "เมมโมที่รอการอนุมัติ",
                 reviewAndApprove: "ตรวจสอบและอนุมัติเมมโมจากฝ่ายของคุณ",
-                memosAwaitingApproval: "เมมโมที่รอการอนุมัติ",
+                memosAwaitingApproval: "กำลังรอการอนุมัติ",
                 to: "ถึง",
                 content: "เนื้อหา",
                 noPendingApprovals: "ไม่มีการอนุมัติที่รอดำเนินการ",
@@ -5409,7 +5436,7 @@
                 statusMessage: "ข้อความสถานะ",
                 lineProfileConnected: "เชื่อมโยง LINE Profile แล้ว",
                 syncProfile: "ซิงโครไนซ์โปรไฟล์",
-                unlink: "ยกเลิกการเชื่อมโยง",
+                unlink: "ยกเลิก",
                 loadingDots: "กำลังโหลด...",
                 loadingDeptStructure: "กำลังโหลดโครงสร้างฝ่าย...",
                 linkSubDeptsToDepts: "เชื่อมโยงแผนกกับฝ่าย",
@@ -5479,7 +5506,7 @@
                 loginSuccessful: "เข้าสู่ระบบสำเร็จ!",
                 signingIn: "กำลังเข้าสู่ระบบ...",
                 usernamePasswordRequired: "ต้องระบุชื่อผู้ใช้และรหัสผ่าน",
-                accountCreatedWaiting: "บัญชีถูกสร้างแล้ว รอการอนุมัติจากแอดมิน...",
+                accountCreatedWaiting: "บัญชีถูกสร้างแล้ว รอการอนุมัติจากผู้ดูแลระบบ...",
                 passwordsDoNotMatch: "รหัสผ่านไม่ตรงกัน",
                 passwordMinLength: "รหัสผ่านต้องมีอักขระอย่างน้อย 4 ตัว",
                 allFieldsRequired: "ต้องกรอกข้อมูลทั้งหมด",
@@ -5492,7 +5519,49 @@
                 edit: "แก้ไข",
                 delete: "ลบ",
                 approve: "อนุมัติ",
-                reject: "ปฏิเสธ"
+                reject: "ปฏิเสธ",
+                notif_userApprovedMsg: "การลงทะเบียนผู้ใช้ใหม่ได้รับการอนุมัติแล้ว",
+                notif_userRejected: "ผู้ใช้ถูกปฏิเสธ",
+                notif_userRejectedMsg: "การลงทะเบียนได้ถูกปฏิเสธแล้ว",
+                notifications: "แจ้งเตือน",
+                noNotifications: "ไม่มีแจ้งเตือน",
+                memoApprovalsDesc: "กำหนดผู้ใช้ที่สามารถอนุมัติเมมโมตามฝ่าย",
+                addNewApprover: "เพิ่มผู้อนุมัติใหม่",
+                assignApprover: "กำหนดผู้อนุมัติ",
+                currentApprovers: "ผู้อนุมัติปัจจุบัน",
+                tabAccessDesc: "กำหนดค่าแท็บที่ผู้ใช้แต่ละคนสามารถเข้าถึงได้",
+                userAccessConfig: "การกำหนดค่าการเข้าถึงผู้ใช้",
+                configTabAccess: "กำหนดค่าการเข้าถึงแท็บ",
+                selectAllowedTabs: "เลือกแท็บที่อนุญาต",
+                selectAll: "เลือกทั้งหมด",
+                deselectAll: "ยกเลิกการเลือกทั้งหมด",
+                default: "ค่าเริ่มต้น",
+                save: "บันทึก",
+                cancel: "ยกเลิก",
+                editMemorandum: "แก้ไขเมมโม",
+                editMemoDesc: "อัปเดตรายละเอียดเมมโม",
+                pendingApprovalStatus: "รอการอนุมัติ",
+                awaitingApproverAction: "รอการอนุมัติ",
+                unknown: "ไม่ทราบ",
+                noReasonProvided: "ไม่มีเหตุผลที่ระบุ",
+                alert: "แจ้งเตือน",
+                signOutConfirm: "ออกจากระบบจากบัญชีของคุณหรือไม่?",
+                approveRegistration: "ต้องการอนุมัติการลงทะเบียนนี้หรือไม่?",
+                rejectUserTitle: "ปฏิเสธการลงทะเบียน",
+                unlinkFollower: "ยกเลิกการเชื่อมโยงผู้ติดตามนี้หรือไม่?",
+                deleteDepartment: "ลบฝ่ายนี้หรือไม่?",
+                deleteSubDepartment: "ลบแผนกนี้หรือไม่?",
+                removeLinkConfirm: "ยกเลิกการเชื่อมโยงนี้หรือไม่?",
+                deleteUserConfirm: "ลบผู้ใช้นี้อย่างถาวรหรือไม่?",
+                clearLogsConfirm: "ล้างบันทึกระบบทั้งหมดหรือไม่? ข้อมูลจะได้รับการสำรองไว้ในฐานข้อมูล",
+                removeApprover: "ยกเลิกการกำหนดผู้อนุมัตินี้หรือไม่?",
+                clearLogs: "ล้างบันทึก",
+                memoSingular: "เมมโม",
+                memoPlural: "เมมโม",
+                received: "ที่ได้รับ",
+                pending: "รอการอนุมัติ",
+                followers: "ผู้ติดตาม",
+                links: "การเชื่อมโยง"
             },
             en: {
                 dept_arch_NXT: "Architect",
@@ -5651,7 +5720,7 @@
                 noReceivedMemos: "No received memos yet",
                 pendingMemoApprovals: "Pending Memo Approvals",
                 reviewAndApprove: "Review and approve memorandums from your department",
-                memosAwaitingApproval: "Memos Awaiting Your Approval",
+                memosAwaitingApproval: "Awaiting Approval",
                 to: "To",
                 content: "Content",
                 noPendingApprovals: "No pending approvals",
@@ -5793,6 +5862,30 @@
                 delete: "Delete",
                 approve: "Approve",
                 reject: "Reject",
+                notif_userApprovedMsg: "New user registration has been approved.",
+                notif_userRejected: "User Rejected",
+                notif_userRejectedMsg: "User registration has been rejected.",
+                notifications: "Notifications",
+                noNotifications: "No notifications",
+                memoApprovalsDesc: "Assign users who can approve memorandums by department.",
+                addNewApprover: "Add New Approver",
+                assignApprover: "Assign Approver",
+                currentApprovers: "Current Approvers",
+                tabAccessDesc: "Configure which tabs each user can access.",
+                userAccessConfig: "User Access Configuration",
+                configTabAccess: "Configure Tab Access",
+                selectAllowedTabs: "Select Allowed Tabs",
+                selectAll: "Select All",
+                deselectAll: "Deselect All",
+                default: "Default",
+                save: "Save",
+                cancel: "Cancel",
+                editMemorandum: "Edit Memorandum",
+                editMemoDesc: "Update the memorandum details.",
+                pendingApprovalStatus: "Pending",
+                awaitingApproverAction: "Awaiting approver action",
+                unknown: "Unknown",
+                noReasonProvided: "No reason provided",
                 "dept_บริหาร": "Administration",
                 "dept_จัดซื้อในประเทศ": "Domestic Procurement",
                 "dept_จัดซื้อต่างประเทศ": "International Procurement",
@@ -5817,10 +5910,75 @@
                 "dept_พีพีบอร์ด": "PP Board",
                 "dept_รีดเหล็ก": "Steel Forming",
                 "dept_แร็ปปิ้ง": "Wrapping",
-                "dept_โครงการ": "Projects"
+                "dept_โครงการ": "Projects",
+                signOutConfirm: "Sign out from your account?",
+                approveRegistration: "Approve this pending registration?",
+                rejectUserTitle: "Reject Registration",
+                unlinkFollower: "Unlink this follower?",
+                deleteDepartment: "Delete this department?",
+                deleteSubDepartment: "Delete this sub-department?",
+                removeLinkConfirm: "Remove this link?",
+                deleteUserConfirm: "Delete this user permanently?",
+                clearLogsConfirm: "Clear all system logs? They will be backed up to Database.",
+                removeApprover: "Remove this approver assignment?",
+                clearLogs: "Clear Logs",
+                memoSingular: "memo",
+                memoPlural: "memos",
+                received: "received",
+                pending: "pending",
+                followers: "followers",
+                links: "links"
             }
 
         };
+
+        // Helper function to build badge text with translations
+        function getBadgeText(count, singularKey, pluralKey) {
+            if (count === 1) {
+                return `${count} ${translations[currentLanguage][singularKey] || singularKey}`
+            } else {
+                return `${count} ${translations[currentLanguage][pluralKey] || pluralKey}`
+            }
+        }
+
+        // Refresh all badges when language changes
+        function refreshBadgesOnLanguageChange() {
+            // Refresh sent memos badge
+            const sentBadge = document.getElementById('sentMemosCountBadge')
+            if (sentBadge && cachedSentMemos.length >= 0) {
+                sentBadge.textContent = getBadgeText(cachedSentMemos.length, 'memoSingular', 'memoPlural')
+            }
+
+            // Refresh received memos badge
+            const receivedBadge = document.getElementById('receivedMemosCountBadge')
+            if (receivedBadge && cachedReceivedMemos.length >= 0) {
+                receivedBadge.textContent = getBadgeText(cachedReceivedMemos.length, 'received', 'received')
+            }
+
+            // Refresh pending approvals badge
+            const pendingBadge = document.getElementById('pendingApprovalsCountBadge')
+            if (pendingBadge && cachedPendingApprovals.length >= 0) {
+                pendingBadge.textContent = getBadgeText(cachedPendingApprovals.length, 'pending', 'pending')
+            }
+
+            // Refresh linked followers badge
+            const linkedFollowersBadge = document.getElementById('linkedFollowerCountBadge')
+            if (linkedFollowersBadge) {
+                const count = document.querySelectorAll('#linkedFollowersTbody tr').length
+                if (count > 0) {
+                    linkedFollowersBadge.textContent = getBadgeText(count, 'links', 'links')
+                }
+            }
+
+            // Refresh followers badge
+            const followersBadge = document.getElementById('followerCountBadge')
+            if (followersBadge) {
+                const count = document.querySelectorAll('#followersTbody tr').length
+                if (count > 0) {
+                    followersBadge.textContent = getBadgeText(count, 'followers', 'followers')
+                }
+            }
+        }
 
         // Initialize language on page load
         function initializeLanguage() {
@@ -5848,8 +6006,21 @@
 
             currentLanguage = lang
             updateCurrentLangDisplay()
-            applyTranslations()
             localStorage.setItem('preferredLanguage', lang)
+
+            // Close notification and user menus
+            document.getElementById('notificationPanel').style.display = 'none'
+            document.getElementById('userMenuPanel').style.display = 'none'
+            document.getElementById('languageMenu').style.display = 'none'
+
+            // Apply translations to all visible elements
+            applyTranslations()
+
+            // Refresh badges in real-time
+            refreshBadgesOnLanguageChange()
+
+            // Re-render notifications with new language
+            updateNotificationUI()
 
             // Re-render logs with new language for real-time timestamp translation
             refreshLogsForLanguageChange()
@@ -5875,9 +6046,6 @@
             if (document.getElementById('allUsersTbody')?.innerHTML && currentUser?.role === 'admin') {
                 loadAllUsers()
             }
-
-            // Close the menu
-            document.getElementById('languageMenu').style.display = 'none'
         }
 
         // Update department display in topbar with translated department name
@@ -6914,7 +7082,7 @@
 
 
         async function logout() {
-            const confirmed = await showConfirmModal('Sign out from your account?', 'Sign Out')
+            const confirmed = await showConfirmModal('signOutConfirm', 'signOut')
             if (!confirmed) return
 
             try {
@@ -7130,7 +7298,7 @@
                         <span style="font-size:11px;">${timeStr}</span>
                     </td>
                     <td style="text-align: center; display: flex; gap: 8px; justify-content: center;">
-                        <button class="btn btn-ghost btn-sm" onclick="approvePendingUser('${user.userId}')" title="Approve">
+                        <button class="btn btn-ghost btn-sm" onclick="approvePendingUser('${user.userId}', '${escHtml(user.username)}')" title="Approve">
                         <span class="material-symbols-outlined" style="font-size: 16px; color: var(--green);">check_circle</span> <span data-translate="approve">Approve</span>
                         </button>
                         <button class="btn btn-ghost btn-sm" onclick="rejectPendingUser('${user.userId}', '${escHtml(user.username)}')" title="Reject">
@@ -7150,8 +7318,8 @@
             }
         }
 
-        async function approvePendingUser(userId) {
-            const confirmed = await showConfirmModal('Approve this pending registration?', 'Approve')
+        async function approvePendingUser(userId, username = '') {
+            const confirmed = await showConfirmModal('approveRegistration', 'approve')
             if (!confirmed) return
 
             try {
@@ -7167,9 +7335,10 @@
                 }
 
                 addNotification(
-                    '✅ User Approved',
-                    'New user registration has been approved.',
-                    'success'
+                    `User Approved: ${username}`,
+                    `User "${username}" has been approved.`,
+                    'success',
+                    null
                 )
                 loadPendingUsers()
             } catch (e) {
@@ -7179,7 +7348,7 @@
         }
 
         async function rejectPendingUser(userId, username) {
-            const confirmed = await showConfirmModal(`Reject and delete ${username}'s registration?`, 'Reject')
+            const confirmed = await showConfirmModal('rejectUserTitle', 'reject')
             if (!confirmed) return
 
             try {
@@ -7197,7 +7366,9 @@
                 addNotification(
                     '❌ User Rejected',
                     `Registration for ${username} has been rejected.`,
-                    'error'
+                    'error',
+                    null,
+                    'notif_userRejected'
                 )
                 loadPendingUsers()
             } catch (e) {
@@ -7318,7 +7489,7 @@
         }
 
         async function unlinkCurrentProfile() {
-            const confirmed = await showConfirmModal('Unlink this LINE profile from your account?', 'Unlink')
+            const confirmed = await showConfirmModal('unlinkFollower', 'unlink')
             if (!confirmed) return
 
             try {
@@ -7377,7 +7548,7 @@
                         <div style="display: flex; gap: 8px; align-items: center; padding: 8px 25px; background: var(--surface); border-radius: var(--radius); font-size: 13px;">
                             <span style="flex: 1;">${escHtml(deptDisplayName)}</span>
                             <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteDepartment('${d.id}')">
-                                <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                                <span class="material-symbols-outlined" style="font-size: 16px;">delete</span> <span data-translate="delete">Delete</span>
                             </button>
                         </div>
                     `
@@ -7395,7 +7566,7 @@
                         <div style="display: flex; gap: 8px; align-items: center; padding: 8px 25px; background: var(--surface); border-radius: var(--radius); font-size: 13px;">
                             <span style="flex: 1;">${escHtml(dept2DisplayName)}</span>
                             <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteDepartment2('${d.id}')">
-                                <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                                <span class="material-symbols-outlined" style="font-size: 16px;">delete</span> <span data-translate="delete">Delete</span>
                             </button>
                         </div>
                     `
@@ -7492,7 +7663,7 @@
         }
 
         async function deleteDepartment(deptId) {
-            const confirmed = await showConfirmModal('Delete this department?', 'Delete')
+            const confirmed = await showConfirmModal('deleteDepartment', 'delete')
             if (!confirmed) return
 
             try {
@@ -7516,7 +7687,7 @@
         }
 
         async function deleteDepartment2(deptId) {
-            const confirmed = await showConfirmModal('Delete this sub-department?', 'Delete')
+            const confirmed = await showConfirmModal('deleteSubDepartment', 'delete')
             if (!confirmed) return
 
             try {
@@ -7620,7 +7791,9 @@
                             return `
                                         <div class="subdepartment-item">
                                             <span class="subdepartment-name">${escHtml(subDeptDisplayName)}</span>
-                                            <button class="unlink-btn-small" onclick="unlinkDepartmentFromSubDepartment('${sub.linkId}')" title="Unlink">Unlink</button>
+                                            <button class="unlink-btn-small" onclick="unlinkDepartmentFromSubDepartment('${sub.linkId}')" title="Unlink">
+                                                <span class="material-symbols-outlined">link_off</span>
+                                                <span data-translate="unlink">Unlink</span></button>
                                         </div>
                                     `
                         }).join('')}
@@ -7687,7 +7860,7 @@
 
         // Unlink a subdepartment from a department
         async function unlinkDepartmentFromSubDepartment(linkId) {
-            const confirmed = await showConfirmModal('Remove this link?', 'Unlink')
+            const confirmed = await showConfirmModal('removeLinkConfirm', 'unlink')
             if (!confirmed) return
 
             try {
@@ -7719,7 +7892,7 @@
                 const data = await res.json()
 
                 const badge = document.getElementById('linkedFollowerCountBadge')
-                badge.textContent = `${data.linkedFollowers.length} links`
+                badge.textContent = getBadgeText(data.linkedFollowers.length, 'links', 'links')
 
                 const tbody = document.getElementById('linkedFollowersTbody')
                 if (!data.linkedFollowers || data.linkedFollowers.length === 0) {
@@ -7737,7 +7910,7 @@
           <td><small>${linkedDate}</small></td>
           <td>
             <button class="btn btn-danger btn-sm" onclick="unlinkFollowerByAdmin('${escHtml(link.userId)}', '${escHtml(link.followerId)}')">
-              <span class="material-symbols-outlined">link_off</span>
+              <span class="material-symbols-outlined">link_off</span> Unlink
             </button>
           </td>
         </tr>`
@@ -7858,7 +8031,7 @@
         }
 
         async function unlinkFollower(followerId) {
-            const confirmed = await showConfirmModal('Unlink this follower?', 'Unlink')
+            const confirmed = await showConfirmModal('unlinkFollower', 'unlink')
             if (!confirmed) return
             try {
                 const res = await fetch('/user/unlink-follower', {
@@ -7883,7 +8056,7 @@
         }
 
         async function unlinkFollowerByAdmin(userId, followerId) {
-            const confirmed = await showConfirmModal('Unlink this follower?', 'Unlink')
+            const confirmed = await showConfirmModal('unlinkFollower', 'unlink')
             if (!confirmed) return
             try {
                 const res = await fetch('/admin/unlink-follower-from-user', {
@@ -8004,7 +8177,7 @@
         }
 
         async function deleteSystemUser(userId, username) {
-            const confirmed = await showConfirmModal(`Delete user "${username}" permanently?`, 'Delete User')
+            const confirmed = await showConfirmModal('deleteUserConfirm', 'delete')
             if (!confirmed) return
 
             try {
@@ -8028,7 +8201,7 @@
         }
 
         async function deleteSystemUser(userId, username) {
-            const confirmed = await showConfirmModal(`Delete user "${username}" permanently?`, 'Delete User')
+            const confirmed = await showConfirmModal('deleteUserConfirm', 'delete')
             if (!confirmed) return
 
             try {
@@ -8366,16 +8539,33 @@
         function updateRecipientsCount() {
             const selectedItems = document.querySelectorAll('.recipient-item.selected')
             const label = document.getElementById('recipientsSelectLabel')
+            const badgesContainer = document.getElementById('recipientsSelectedBadges')
             const btn = document.getElementById('recipientsSelectBtn')
 
             if (selectedItems.length === 0) {
-                label.textContent = translations[currentLanguage]['selectRecipients'] || 'Select recipients...'
+                label.innerHTML = '<span data-translate="selectRecipients" style="white-space: nowrap;">Select recipients...</span>'
+                label.setAttribute('data-translate', 'selectRecipients')
+                label.style.display = 'block'
+                badgesContainer.innerHTML = ''
                 btn.style.borderColor = 'var(--border)'
             } else {
-                const recipientType = selectedItems.length === 1 ? 'recipientSingular' : 'recipientPlural'
-                const recipientText = translations[currentLanguage][recipientType] || (selectedItems.length === 1 ? 'recipient' : 'recipients')
-                const selectedText = translations[currentLanguage]['selected'] || 'selected'
-                label.textContent = `${selectedItems.length} ${recipientText} ${selectedText}`
+                // Extract names from selected recipient items
+                const recipientNames = Array.from(selectedItems).map(item => {
+                    const text = item.textContent.trim()
+                    return text
+                })
+
+                label.style.display = 'none'
+
+                // If 5 or fewer, show names as tags; otherwise show count
+                if (selectedItems.length <= 50) {
+                    badgesContainer.innerHTML = recipientNames.map(name => 
+                        '<span style="display: inline-block; background: var(--accent); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; white-space: nowrap;">' + escHtml(name) + '</span>'
+                    ).join('')
+                } else {
+                    const selectedText = translations[currentLanguage]['selected'] || 'selected'
+                    badgesContainer.innerHTML = '<span style="white-space: nowrap; background: var(--accent-2); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">' + selectedItems.length + ' ' + selectedText + '</span>'
+                }
                 btn.style.borderColor = 'var(--accent)'
             }
         }
@@ -8736,7 +8926,7 @@
             const badge = document.getElementById('sentMemosCountBadge')
             const statusEl = document.getElementById('sentMemosStatus')
 
-            badge.textContent = `${memos.length} memo${memos.length !== 1 ? 's' : ''}`
+            badge.textContent = getBadgeText(memos.length, 'memoSingular', 'memoPlural')
             statusEl.className = 'status-msg'
 
             if (memos.length === 0) {
@@ -8821,7 +9011,7 @@
             const badge = document.getElementById('receivedMemosCountBadge')
             const statusEl = document.getElementById('receivedMemosStatus')
 
-            badge.textContent = cachedReceivedMemos.length + ' received'
+            badge.textContent = getBadgeText(cachedReceivedMemos.length, 'received', 'received')
             statusEl.className = 'status-msg'
 
             if (memos.length === 0) {
@@ -8875,7 +9065,7 @@
             const badge = document.getElementById('pendingApprovalsCountBadge')
             const statusEl = document.getElementById('pendingApprovalsStatus')
 
-            badge.textContent = cachedPendingApprovals.length + ' pending'
+            badge.textContent = getBadgeText(cachedPendingApprovals.length, 'pending', 'pending')
             statusEl.className = 'status-msg'
 
             if (memos.length === 0) {
@@ -9117,7 +9307,7 @@
                     return
                 }
 
-                badge.textContent = `${data.count} followers`
+                badge.textContent = getBadgeText(data.count, 'followers', 'followers')
                 statusEl.className = 'status-msg'
 
                 if (data.count === 0) {
@@ -9447,7 +9637,7 @@
 
 
         async function clearLogs() {
-            const confirmed = await showConfirmModal('Clear all system logs? They will be backed up to Firebase.', 'Clear Logs')
+            const confirmed = await showConfirmModal('clearLogsConfirm', 'clearLogs')
             if (!confirmed) return
             try {
                 const res = await fetch('/clear-logs', { method: 'POST' })
@@ -9594,9 +9784,9 @@
                 document.getElementById('memoApprovalStatusSection').style.display = 'block'
                 document.getElementById('memoStatusIcon').textContent = 'schedule'
                 document.getElementById('memoStatusIcon').style.color = 'var(--blue)'
-                document.getElementById('memoStatusText').textContent = 'Awaiting Approval'
-                document.getElementById('memoApprovalBy').textContent = 'Pending'
-                document.getElementById('memoApprovalDateTime').textContent = 'Awaiting approver action'
+                document.getElementById('memoStatusText').textContent = translations[currentLanguage]['memosAwaitingApproval'] || 'Awaiting Approval'
+                document.getElementById('memoApprovalBy').textContent = translations[currentLanguage]['pendingApprovalStatus'] || 'Pending'
+                document.getElementById('memoApprovalDateTime').textContent = translations[currentLanguage]['awaitingApproverAction'] || 'Awaiting approver action'
                 document.getElementById('memoRejectionReasonSection').style.display = 'none'
 
                 // Show approval actions if user is an authorized approver
@@ -9614,19 +9804,19 @@
                 if (memo.status === 'approved') {
                     document.getElementById('memoStatusIcon').textContent = 'check_circle'
                     document.getElementById('memoStatusIcon').style.color = 'var(--green)'
-                    document.getElementById('memoStatusText').textContent = 'Approved'
-                    document.getElementById('memoApprovalBy').textContent = memo.approvedByName || 'Unknown'
+                    document.getElementById('memoStatusText').textContent = translations[currentLanguage]['approve'] || 'Approved'
+                    document.getElementById('memoApprovalBy').textContent = memo.approvedByName || (translations[currentLanguage]['unknown'] || 'Unknown')
                     const approvalDate = new Date(memo.approvedAt)
                     document.getElementById('memoApprovalDateTime').textContent = approvalDate.toLocaleString('th-TH')
                     document.getElementById('memoRejectionReasonSection').style.display = 'none'
                 } else if (memo.status === 'rejected') {
                     document.getElementById('memoStatusIcon').textContent = 'cancel'
                     document.getElementById('memoStatusIcon').style.color = 'var(--red)'
-                    document.getElementById('memoStatusText').textContent = 'Rejected'
-                    document.getElementById('memoApprovalBy').textContent = memo.rejectedByName || 'Unknown'
+                    document.getElementById('memoStatusText').textContent = translations[currentLanguage]['reject'] || 'Rejected'
+                    document.getElementById('memoApprovalBy').textContent = memo.rejectedByName || (translations[currentLanguage]['unknown'] || 'Unknown')
                     const rejectionDate = new Date(memo.rejectedAt)
                     document.getElementById('memoApprovalDateTime').textContent = rejectionDate.toLocaleString('th-TH')
-                    document.getElementById('memoRejectionReason').textContent = memo.rejectionReason || 'No reason provided'
+                    document.getElementById('memoRejectionReason').textContent = memo.rejectionReason || (translations[currentLanguage]['noReasonProvided'] || 'No reason provided')
                     document.getElementById('memoRejectionReasonSection').style.display = 'block'
                 }
             }
@@ -9635,8 +9825,8 @@
                 document.getElementById('memoApprovalStatusSection').style.display = 'block'
                 document.getElementById('memoStatusIcon').textContent = 'check_circle'
                 document.getElementById('memoStatusIcon').style.color = 'var(--green)'
-                document.getElementById('memoStatusText').textContent = 'Approved'
-                document.getElementById('memoApprovalBy').textContent = memo.approvedByName || 'Unknown'
+                document.getElementById('memoStatusText').textContent = translations[currentLanguage]['approve'] || 'Approved'
+                document.getElementById('memoApprovalBy').textContent = memo.approvedByName || (translations[currentLanguage]['unknown'] || 'Unknown')
                 const approvalDate = new Date(memo.approvedAt)
                 document.getElementById('memoApprovalDateTime').textContent = approvalDate.toLocaleString('th-TH')
                 document.getElementById('memoRejectionReasonSection').style.display = 'none'
@@ -9739,12 +9929,25 @@
                     currentMemoDetail.approvedByName = `${currentUser.name} ${currentUser.surname}`
                     currentMemoDetail.approvedAt = new Date().toISOString()
 
+                    // Update cache immediately
+                    const memoIndex = cachedSentMemos.findIndex(m => (m.memoId || m.id) === memoId)
+                    if (memoIndex !== -1) {
+                        cachedSentMemos[memoIndex].status = 'approved'
+                        cachedSentMemos[memoIndex].approvedByName = `${currentUser.name} ${currentUser.surname}`
+                        cachedSentMemos[memoIndex].approvedAt = new Date().toISOString()
+                        
+                        // Re-render table immediately
+                        if (document.getElementById('view-sent-memos').style.display !== 'none') {
+                            renderSentMemos(cachedSentMemos)
+                        }
+                    }
+
                     // Refresh the display
                     document.getElementById('memoApprovalActionsSection').style.display = 'none'
                     document.getElementById('memoApprovalStatusSection').style.display = 'block'
                     document.getElementById('memoStatusIcon').textContent = 'check_circle'
                     document.getElementById('memoStatusIcon').style.color = 'var(--green)'
-                    document.getElementById('memoStatusText').textContent = 'Approved'
+                    document.getElementById('memoStatusText').textContent = translations[currentLanguage]['approve'] || 'Approved'
                     document.getElementById('memoApprovalBy').textContent = currentMemoDetail.approvedByName
                     document.getElementById('memoApprovalDateTime').textContent = new Date(currentMemoDetail.approvedAt).toLocaleString('th-TH')
                     document.getElementById('memoRejectionReasonSection').style.display = 'none'
@@ -9755,9 +9958,12 @@
                         .filter(n => n.type === 'pending_approval' && String(n.memoId) === String(approvedMemoId))
                         .forEach(n => removeNotification(n.id));
 
+                    // Close modal after showing success message
+                    setTimeout(() => closeMemoDetail(), 1500)
+
                     // Reload pending approvals list if it's visible
                     if (document.getElementById('view-pending-approvals').style.display !== 'none') {
-                        setTimeout(() => loadPendingApprovals(), 2000)
+                        setTimeout(() => loadPendingApprovals(), 1500)
                     }
                 } else {
                     const error = await res.json()
@@ -9801,20 +10007,37 @@
                     currentMemoDetail.rejectionReason = reason
                     currentMemoDetail.rejectedAt = new Date().toISOString()
 
+                    // Update cache immediately
+                    const memoIndex = cachedSentMemos.findIndex(m => (m.memoId || m.id) === memoId)
+                    if (memoIndex !== -1) {
+                        cachedSentMemos[memoIndex].status = 'rejected'
+                        cachedSentMemos[memoIndex].rejectedByName = `${currentUser.name} ${currentUser.surname}`
+                        cachedSentMemos[memoIndex].rejectionReason = reason
+                        cachedSentMemos[memoIndex].rejectedAt = new Date().toISOString()
+                        
+                        // Re-render table immediately
+                        if (document.getElementById('view-sent-memos').style.display !== 'none') {
+                            renderSentMemos(cachedSentMemos)
+                        }
+                    }
+
                     // Refresh the display
                     document.getElementById('memoRejectionInputSection').style.display = 'none'
                     document.getElementById('memoApprovalStatusSection').style.display = 'block'
                     document.getElementById('memoStatusIcon').textContent = 'cancel'
                     document.getElementById('memoStatusIcon').style.color = 'var(--red)'
-                    document.getElementById('memoStatusText').textContent = 'Rejected'
+                    document.getElementById('memoStatusText').textContent = translations[currentLanguage]['reject'] || 'Rejected'
                     document.getElementById('memoApprovalBy').textContent = currentMemoDetail.rejectedByName
                     document.getElementById('memoApprovalDateTime').textContent = new Date(currentMemoDetail.rejectedAt).toLocaleString('th-TH')
                     document.getElementById('memoRejectionReason').textContent = reason
                     document.getElementById('memoRejectionReasonSection').style.display = 'block'
 
+                    // Close modal after showing success message
+                    setTimeout(() => closeMemoDetail(), 1500)
+
                     // Reload pending approvals list if it's visible
                     if (document.getElementById('view-pending-approvals').style.display !== 'none') {
-                        setTimeout(() => loadPendingApprovals(), 2000)
+                        setTimeout(() => loadPendingApprovals(), 1500)
                     }
                 } else {
                     const error = await res.json()
@@ -9966,7 +10189,7 @@
         // ── Custom Modal System ────────────────────
         let modalResolver = null
 
-        function showConfirmModal(message, title = 'Confirmation') {
+        function showConfirmModal(messageKey, titleKey = 'confirmation') {
             return new Promise((resolve) => {
                 modalResolver = resolve
                 const modal = document.getElementById('customModal')
@@ -9975,10 +10198,15 @@
                 const confirmBtn = document.getElementById('modalConfirmBtn')
                 const cancelBtn = document.getElementById('modalCancelBtn')
 
-                modalTitle.textContent = title
-                modalMessage.textContent = message
-                confirmBtn.textContent = 'Confirm'
-                cancelBtn.textContent = 'Cancel'
+                // Set data-translate attributes for proper translation
+                modalTitle.setAttribute('data-translate', titleKey)
+                modalMessage.setAttribute('data-translate', messageKey)
+                confirmBtn.setAttribute('data-translate', 'confirm')
+                cancelBtn.setAttribute('data-translate', 'cancel')
+
+                // Apply translations immediately
+                applyTranslations()
+
                 confirmBtn.style.display = 'inline-block'
                 cancelBtn.style.display = 'inline-block'
 
@@ -9986,7 +10214,7 @@
             })
         }
 
-        function showAlertModal(message, title = 'Alert') {
+        function showAlertModal(messageKey, titleKey = 'alert') {
             return new Promise((resolve) => {
                 modalResolver = resolve
                 const modal = document.getElementById('customModal')
@@ -9995,10 +10223,15 @@
                 const confirmBtn = document.getElementById('modalConfirmBtn')
                 const cancelBtn = document.getElementById('modalCancelBtn')
 
-                modalTitle.textContent = title
-                modalMessage.textContent = message
-                confirmBtn.textContent = 'ตกลง'
+                // Set data-translate attributes for proper translation
+                modalTitle.setAttribute('data-translate', titleKey)
+                modalMessage.setAttribute('data-translate', messageKey)
+                confirmBtn.setAttribute('data-translate', 'ok')
                 cancelBtn.style.display = 'none'
+
+                // Apply translations immediately
+                applyTranslations()
+
                 confirmBtn.style.display = 'inline-block'
 
                 modal.style.display = 'flex'
@@ -10182,7 +10415,7 @@
         }
 
         async function deleteMemoApprover(approverId) {
-            const confirmed = await showConfirmModal('Remove this approver assignment?', 'Confirm')
+            const confirmed = await showConfirmModal('removeApprover', 'confirm')
             if (!confirmed) return
 
             try {

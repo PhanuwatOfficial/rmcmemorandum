@@ -172,6 +172,36 @@ app.post("/register", async (req, res) => {
     await firebase_set(`users/${userId}`, userData)
     await firebase_set(`users_by_username/${username}`, { userId })
 
+    // Send notification to all admin users about the new registration
+    if (!isFirstUser) {
+      try {
+        const allUsersList = await firebase_get('users')
+        if (allUsersList && typeof allUsersList === 'object') {
+          for (const [, user] of Object.entries(allUsersList)) {
+            if (user.role === 'admin') {
+              const notification = {
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                title: 'New User Registration',
+                message: `New user "${username}" (${name} ${surname}) has registered and is awaiting approval`,
+                type: 'user_registration',
+                read: false,
+                timestamp: new Date().toISOString(),
+                userId: userId,
+                username: username,
+                userFullName: `${name} ${surname}`,
+                userDepartment: department || '',
+                userSubDepartment: department2 || ''
+              }
+              await firebase_set(`notifications/${user.userId}/${notification.id}`, notification)
+            }
+          }
+        }
+      } catch (err) {
+        // Log error but don't fail the registration
+        console.error('Error sending admin notification:', err)
+      }
+    }
+
     addLog('info', 'New user register', { userId, username })
     res.json({ status: "User registered successfully", userId })
   } catch (err) {
@@ -1525,20 +1555,20 @@ app.delete("/admin/memo-approvers/:approverId", verifyToken, async (req, res) =>
 // If the provided docNumber already exists in sent_memos, generate the next available one
 async function resolveDocNumberConflict(docNumber, senderUserId) {
   if (!docNumber) return docNumber
-  
+
   try {
     // Get all sent memos for this user to check for conflicts
     const sentMemosData = await firebase_get(`sent_memos/${senderUserId}`)
-    
+
     if (!sentMemosData || typeof sentMemosData !== 'object') {
       // No conflict - this docNumber is available
       return docNumber
     }
-    
+
     // Check if this exact docNumber exists
     let currentDocNumber = docNumber
     let docNumberExists = false
-    
+
     for (const memoId in sentMemosData) {
       const memo = sentMemosData[memoId]
       if (memo.docNumber === currentDocNumber) {
@@ -1546,21 +1576,21 @@ async function resolveDocNumberConflict(docNumber, senderUserId) {
         break
       }
     }
-    
+
     if (!docNumberExists) {
       return currentDocNumber
     }
-    
+
     // Conflict exists - find the next available number
     const parts = docNumber.split('-')
     const year = parts[0]
     let nextNumber = parseInt(parts[1]) || 0
-    
+
     // Keep incrementing until we find an available number
     while (true) {
       nextNumber++
       currentDocNumber = `${year}-${String(nextNumber).padStart(4, '0')}`
-      
+
       let stillExists = false
       for (const memoId in sentMemosData) {
         const memo = sentMemosData[memoId]
@@ -1569,11 +1599,11 @@ async function resolveDocNumberConflict(docNumber, senderUserId) {
           break
         }
       }
-      
+
       if (!stillExists) {
         return currentDocNumber
       }
-      
+
       // Safety check to prevent infinite loops
       if (nextNumber > 9999) {
         console.error('❌ DocNumber overflow - could not find available number')
@@ -1590,7 +1620,7 @@ async function resolveDocNumberConflict(docNumber, senderUserId) {
 app.post("/send", async (req, res) => {
   // Support both old single-recipient and new multi-recipient formats
   let recipientsList = []
-  
+
   if (req.body.recipients && Array.isArray(req.body.recipients)) {
     // New format: multiple recipients
     recipientsList = req.body.recipients
@@ -1640,7 +1670,7 @@ app.post("/send", async (req, res) => {
       const followerId = r.userId
       let recipientId = r.recipientUserId || r.userId
       let recipientName = recipientId
-      
+
       try {
         const recipient = await firebase_get(`users/${recipientId}`)
         if (recipient) {
@@ -1649,7 +1679,7 @@ app.post("/send", async (req, res) => {
       } catch (err) {
         // Silent error
       }
-      
+
       recipientNames.push(recipientName)
       recipientIds.push(recipientId)
       followerIds.push(followerId)
@@ -1831,9 +1861,9 @@ app.post("/send", async (req, res) => {
                   contents: [
                     {
                       type: "text",
-                      text: "⏳ Memo Requires Approval",
+                      text: "Memo รอการอนุมัติ",
                       weight: "bold",
-                      color: "#e2ac36",
+                      color: "#1e2c4e",
                       size: "xl"
                     }
                   ]
@@ -1849,13 +1879,13 @@ app.post("/send", async (req, res) => {
                       weight: "bold",
                       size: "lg",
                       wrap: true,
-                      color: "#182034"
+                      color: "#1e2c4e"
                     },
                     {
                       type: "text",
                       text: `From: ${senderName}`,
                       size: "sm",
-                      color: "#e2ac36",
+                      color: "#1e2c4e",
                       weight: "bold",
                       margin: "md"
                     },
@@ -1863,7 +1893,7 @@ app.post("/send", async (req, res) => {
                       type: "text",
                       text: `Type: ${type || 'Announcement'}`,
                       size: "sm",
-                      color: "#1a2740",
+                      color: "#1e2c4e",
                       weight: "bold",
                       margin: "md"
                     },
@@ -1871,7 +1901,7 @@ app.post("/send", async (req, res) => {
                       type: "text",
                       text: `Doc No.: ${resolvedDocNumber}`,
                       size: "sm",
-                      color: "#1a2740",
+                      color: "#1e2c4e",
                       weight: "bold",
                       margin: "md"
                     }] : []),
@@ -1879,7 +1909,7 @@ app.post("/send", async (req, res) => {
                       type: "text",
                       text: `Status: ⏳ Pending Approval`,
                       size: "sm",
-                      color: "#e2ac36",
+                      color: "#1e2c4e",
                       weight: "bold",
                       margin: "md"
                     },
@@ -1887,7 +1917,7 @@ app.post("/send", async (req, res) => {
                       type: "text",
                       text: `Recipient: ${recipientName}`,
                       size: "sm",
-                      color: "#1a5c3a",
+                      color: "#1e2c4e",
                       weight: "bold",
                       margin: "md"
                     },
@@ -1899,7 +1929,7 @@ app.post("/send", async (req, res) => {
                       type: "text",
                       text: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
                       size: "sm",
-                      color: "#666666",
+                      color: "#1e2c4e",
                       wrap: true,
                       margin: "md"
                     }
@@ -1918,7 +1948,7 @@ app.post("/send", async (req, res) => {
                         uri: "https://rmcmemorandum.onrender.com/"
                       },
                       style: "primary",
-                      color: "#ecb744"
+                      color: "#1e2c4e"
                     }
                   ]
                 }
@@ -1953,13 +1983,13 @@ app.post("/send", async (req, res) => {
     for (let i = 0; i < recipientIds.length; i++) {
       const recipientId = recipientIds[i]
       const recipientObj = recipientObjects[i]
-      
+
       // Get recipient's linked followers from database
       const recipientUser = await firebase_get(`users/${recipientId}`)
-      const linkedFollowers = recipientUser && recipientUser.linkedFollowers 
-        ? Object.keys(recipientUser.linkedFollowers) 
+      const linkedFollowers = recipientUser && recipientUser.linkedFollowers
+        ? Object.keys(recipientUser.linkedFollowers)
         : []
-      
+
       // Send LINE to all linked followers of this recipient
       for (const followerId of linkedFollowers) {
         const lineMessage = {
@@ -2001,14 +2031,6 @@ app.post("/send", async (req, res) => {
                   weight: "bold",
                   margin: "md"
                 },
-                {
-                  type: "text",
-                  text: `Type: ${type || 'Announcement'}`,
-                  size: "sm",
-                  color: "#1a2740",
-                  weight: "bold",
-                  margin: "md"
-                },
                 ...(resolvedDocNumber ? [{
                   type: "text",
                   text: `Doc No.: ${resolvedDocNumber}`,
@@ -2017,6 +2039,22 @@ app.post("/send", async (req, res) => {
                   weight: "bold",
                   margin: "md"
                 }] : []),
+                {
+                  type: "text",
+                  text: `Status: ⏳ Pending Approval`,
+                  size: "sm",
+                  color: "#1e2c4e",
+                  weight: "bold",
+                  margin: "md"
+                },
+                {
+                  type: "text",
+                  text: `Recipient: ${recipientName}`,
+                  size: "sm",
+                  color: "#1e2c4e",
+                  weight: "bold",
+                  margin: "md"
+                },
                 {
                   type: "separator",
                   margin: "md"
@@ -2050,7 +2088,7 @@ app.post("/send", async (req, res) => {
             }
           }
         }
-        
+
         try {
           await client.pushMessage(followerId, lineMessage)
         } catch (lineErr) {
@@ -2304,7 +2342,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
 
     // Check if user is admin - admins can approve any memo without memoApprovers check
     let isAuthorizedApprover = false
-    
+
     if (currentUser.role === 'admin') {
       // Admins can approve any memo
       isAuthorizedApprover = true
@@ -2377,8 +2415,8 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
     const senderUser = await firebase_get(`users/${memoSenderId}`)
 
     // Send to all recipients (support both old single-recipient and new multi-recipient formats)
-    const recipientIdsList = memoData.recipientIds && Array.isArray(memoData.recipientIds) 
-      ? memoData.recipientIds 
+    const recipientIdsList = memoData.recipientIds && Array.isArray(memoData.recipientIds)
+      ? memoData.recipientIds
       : (memoData.recipientId ? [memoData.recipientId] : [])
 
     // Send LINE to all recipients' linked followers
@@ -2478,24 +2516,24 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
                 }
               ]
             },
-          footer: {
-            type: "box",
-            layout: "vertical",
-            spacing: "sm",
-            contents: [
-              {
-                type: "button",
-                action: {
-                  type: "uri",
-                  label: "View Details",
-                  uri: "https://rmcmemorandum.onrender.com/"
-                },
-                style: "primary",
-                color: "#1a2740"
-              }
-            ]
+            footer: {
+              type: "box",
+              layout: "vertical",
+              spacing: "sm",
+              contents: [
+                {
+                  type: "button",
+                  action: {
+                    type: "uri",
+                    label: "View Details",
+                    uri: "https://rmcmemorandum.onrender.com/"
+                  },
+                  style: "primary",
+                  color: "#1a2740"
+                }
+              ]
+            }
           }
-        }
         }
 
         // Send LINE to all linked followers of this recipient
@@ -2511,8 +2549,8 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
 
     // Also handle system user recipients (if exists)
     // Support both old single-recipient and new multi-recipient formats
-    const allRecipientIds = memoData.recipientIds && Array.isArray(memoData.recipientIds) 
-      ? memoData.recipientIds 
+    const allRecipientIds = memoData.recipientIds && Array.isArray(memoData.recipientIds)
+      ? memoData.recipientIds
       : (memoData.recipientId ? [memoData.recipientId] : [])
 
     for (let recipientId of allRecipientIds) {
@@ -2552,7 +2590,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
     // Send LINE message to sender's linked followers to notify approval
     if (senderUser && senderUser.linkedFollowers) {
       const senderFollowerIds = Object.keys(senderUser.linkedFollowers)
-      
+
       if (senderFollowerIds.length > 0) {
         const senderLineMessage = {
           type: "flex",
@@ -2583,21 +2621,13 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
                   weight: "bold",
                   size: "lg",
                   wrap: true,
-                  color: "#182034"
+                  color: "#1e2c4e"
                 },
                 {
                   type: "text",
                   text: `Recipient: ${memoData.recipientName || memoData.recipientNames ? memoData.recipientNames.join(', ') : '-'}`,
                   size: "sm",
-                  color: "#1a2740",
-                  weight: "bold",
-                  margin: "md"
-                },
-                {
-                  type: "text",
-                  text: `Type: ${memoData.type || 'Announcement'}`,
-                  size: "sm",
-                  color: "#1a2740",
+                  color: "#1e2c4e",
                   weight: "bold",
                   margin: "md"
                 },
@@ -2605,7 +2635,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
                   type: "text",
                   text: `Doc No.: ${memoData.docNumber}`,
                   size: "sm",
-                  color: "#1a2740",
+                  color: "#1e2c4e",
                   weight: "bold",
                   margin: "md"
                 }] : []),
@@ -2613,7 +2643,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
                   type: "text",
                   text: `Approved by: ${currentUser.name} ${currentUser.surname}`,
                   size: "sm",
-                  color: "#1a5c3a",
+                  color: "#1e2c4e",
                   weight: "bold",
                   margin: "md"
                 },
@@ -2775,8 +2805,8 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
     await firebase_set(`sent_memos/${memoSenderId}/${memoId}`, memoData)
 
     // Update received_memos for all recipients
-    const recipientIdsList = memoData.recipientIds && Array.isArray(memoData.recipientIds) 
-      ? memoData.recipientIds 
+    const recipientIdsList = memoData.recipientIds && Array.isArray(memoData.recipientIds)
+      ? memoData.recipientIds
       : (memoData.recipientId ? [memoData.recipientId] : [])
 
     for (let recipientId of recipientIdsList) {
@@ -2874,7 +2904,7 @@ app.get("/user/allowed-tabs", verifyToken, async (req, res) => {
       const user = await firebase_get(`users/${userId}`)
       const defaultTabs = user.role === 'admin'
         ? ['dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs', 'manage-user']
-        : ['dashboard', 'compose', 'sent-memos', 'received-memos','manage-user']
+        : ['dashboard', 'compose', 'sent-memos', 'received-memos', 'manage-user']
 
       return res.json({ tabs: defaultTabs, isCustom: false })
     }
@@ -2902,7 +2932,7 @@ app.get("/admin/user-tabs", verifyToken, async (req, res) => {
     if (allUsers && typeof allUsers === 'object') {
       for (const [userId, user] of Object.entries(allUsers)) {
         const userTabAccess = allTabAccess && allTabAccess[userId]
-        
+
         // If no custom access, return default tabs based on role
         let tabs
         if (!userTabAccess) {
@@ -3293,7 +3323,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
     // Get the existing memo
     const existingMemo = await firebase_get(memoPath)
     const oldDocNumber = existingMemo.docNumber
-    
+
     // Check for duplicate docNumber if it's being changed
     if (docNumber !== oldDocNumber) {
       const allUsers = await firebase_get('users')
@@ -3514,7 +3544,7 @@ app.get("/notifications", verifyToken, async (req, res) => {
 app.post("/notifications", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
-    const { title, message, type } = req.body
+    const { title, message, type, titleKey, messageKey, memoType } = req.body
 
     if (!title || !message) {
       return res.status(400).json({ error: 'Title and message required' })
@@ -3527,7 +3557,10 @@ app.post("/notifications", verifyToken, async (req, res) => {
       message: message,
       type: type || 'info',
       read: false,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      titleKey: titleKey || null,  // Translation key for title
+      messageKey: messageKey || null,  // Translation key for message
+      memoType: memoType || null  // Memo type (sent, received, etc)
     }
 
     await firebase_set(`notifications/${userId}/${notificationId}`, notification)
@@ -3574,7 +3607,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
   try {
     // Support both old single-recipient and new multi-recipient formats
     let recipientsList = []
-    
+
     if (req.body.recipients && Array.isArray(req.body.recipients)) {
       // New format: multiple recipients
       recipientsList = req.body.recipients
@@ -3617,16 +3650,16 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
     for (let r of recipientsList) {
       let recipientId = r.recipientUserId || r.userId
       let recipientName = recipientId
-      
+
       const recipient = await firebase_get(`users/${recipientId}`)
       if (!recipient) {
         return res.status(404).json({ error: `Recipient ${recipientId} not found` })
       }
-      
+
       if (recipient) {
         recipientName = `${recipient.name} ${recipient.surname}`.trim() || recipientName
       }
-      
+
       recipientNames.push(recipientName)
       recipientIds.push(recipientId)
       recipientObjects.push({
@@ -3797,9 +3830,9 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
                   contents: [
                     {
                       type: "text",
-                      text: "⏳ Memo Requires Approval",
+                      text: "Requires Approval",
                       weight: "bold",
-                      color: "#d17700",
+                      color: "#1e2c4e",
                       size: "xl"
                     }
                   ]
@@ -3815,29 +3848,13 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
                       weight: "bold",
                       size: "lg",
                       wrap: true,
-                      color: "#182034"
+                      color: "#1e2c4e"
                     },
                     {
                       type: "text",
                       text: `From: ${senderName}`,
                       size: "sm",
-                      color: "#c8a96e",
-                      weight: "bold",
-                      margin: "md"
-                    },
-                    {
-                      type: "text",
-                      text: `Type: ${type || 'Announcement'}`,
-                      size: "sm",
-                      color: "#1a2740",
-                      weight: "bold",
-                      margin: "md"
-                    },
-                    {
-                      type: "text",
-                      text: `Status: ⏳ Pending Approval`,
-                      size: "sm",
-                      color: "#d17700",
+                      color: "#1e2c4e",
                       weight: "bold",
                       margin: "md"
                     },
@@ -3845,15 +3862,24 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
                       type: "text",
                       text: `Doc No.: ${resolvedDocNumber}`,
                       size: "sm",
-                      color: "#1a2740",
+                      color: "#1e2c4e",
                       weight: "bold",
                       margin: "md"
                     }] : []),
                     {
                       type: "text",
+                      text: `Status: ⏳ Pending Approval`,
+                      size: "sm",
+                      color: "#1e2c4e",
+                      weight: "bold",
+                      margin: "md"
+                    },
+
+                    {
+                      type: "text",
                       text: `Recipient: ${recipientName}`,
                       size: "sm",
-                      color: "#1a5c3a",
+                      color: "#1e2c4e",
                       weight: "bold",
                       margin: "md"
                     },
@@ -3863,9 +3889,9 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
                     },
                     {
                       type: "text",
-                      text: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
+                      text: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
                       size: "sm",
-                      color: "#666666",
+                      color: "#1e2c4e",
                       wrap: true,
                       margin: "md"
                     }
@@ -3880,11 +3906,11 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
                       type: "button",
                       action: {
                         type: "uri",
-                        label: "Review & Approve/Reject",
+                        label: "View Details",
                         uri: "https://rmcmemorandum.onrender.com/"
                       },
                       style: "primary",
-                      color: "#d17700"
+                      color: "#1e2c4e"
                     }
                   ]
                 }
