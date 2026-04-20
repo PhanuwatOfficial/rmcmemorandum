@@ -3877,7 +3877,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       // Create notification for sender to show memo is pending approval
       const senderNotification = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        title: 'Memo Awaiting Approval',
+        title: 'Memo กำลังรอการอนุมัติ',
         message: `"${title}" กำลังรอการอนุมัติ`,
         type: 'pending_approval',
         read: false,

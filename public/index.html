@@ -4605,7 +4605,7 @@
 
                 <div class="memo-detail-field">
                     <div class="memo-detail-label" data-translate="purpose">Purpose</div>
-                    <div class="memo-detail-value" id="memoDetailTypeValue">—</div>
+                    <div class="memo-detail-value" id="memoDetailTypeValue" data-translate-key="">—</div>
                 </div>
 
                 <div class="memo-detail-field">
@@ -9871,7 +9871,19 @@
             // document.getElementById('memoDetailTitle').textContent = memo.title
             document.getElementById('memoDetailDocNumber').textContent = memo.docNumber || '—'
             document.getElementById('memoDetailTitleValue').textContent = memo.title
-            document.getElementById('memoDetailTypeValue').textContent = memo.type || 'Memorandum'
+            
+            // Set memo type with translation key
+            const typeElement = document.getElementById('memoDetailTypeValue')
+            const memoType = memo.type || 'Memorandum'
+            
+            // Map memo type to translation key
+            let translationKey = 'memoTypeKnowledge'  // default
+            if (memoType.includes('Action')) translationKey = 'memoTypeAction'
+            else if (memoType.includes('Approve')) translationKey = 'memoTypeApprove'
+            else if (memoType.includes('Consider')) translationKey = 'memoTypeConsider'
+            
+            typeElement.setAttribute('data-translate-key', translationKey)
+            typeElement.textContent = translations[currentLanguage][translationKey] || memoType
 
             // Determine if memo is sent or received
             const isReceived = memo.senderName || memo.senderUserId
