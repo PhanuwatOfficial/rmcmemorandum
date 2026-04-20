@@ -1927,6 +1927,7 @@
             justify-content: space-around;
             height: 100%;
             width: 100%;
+            padding-bottom: 10px;
         }
 
         .mobile-bottom-nav-item {
@@ -2226,7 +2227,7 @@
             }
 
             .topbar {
-                height: var(--header-h);
+                height: 70px;
                 padding: 0 12px;
                 gap: 8px;
             }
@@ -2264,8 +2265,8 @@
             }
 
             .avatar {
-                width: 32px;
-                height: 32px;
+                width: 38px;
+                height: 38px;
                 font-size: 12px;
             }
 
@@ -2274,7 +2275,7 @@
             }
 
             .icon-btn .material-symbols-outlined {
-                font-size: 18px;
+                font-size: 24px;
             }
 
             .content {
@@ -2305,7 +2306,7 @@
             }
 
             .stat-label {
-                font-size: 8px;
+                font-size: 11px;
                 margin-bottom: 6px;
             }
 
@@ -2817,8 +2818,8 @@
                         style="cursor: pointer; padding: 6px 8px; border-radius: var(--radius); transition: background 0.15s;"
                         onclick="toggleUserMenu()" onmouseover="this.style.background='var(--surface)'"
                         onmouseout="this.style.background='transparent'">
-                        <div class="name" id="topbarUserName">ชื่อผู้ใช้</div>
-                        <div class="role" id="topbarUserRole">ฝ่าย</div>
+                        <div class="name" id="topbarUserName" data-translate="username">ชื่อผู้ใช้</div>
+                        <div class="role" id="topbarUserRole" data-translate="department">ฝ่าย</div>
                     </div>
                     <div class="avatar" id="topbarAvatar" style="cursor: pointer; transition: all 0.15s;"
                         onclick="toggleUserMenu()" onmouseover="this.style.transform='scale(1.08)'"
@@ -3394,7 +3395,7 @@
                     </p>
                 </div>
 
-                <div class="section-card" style="max-width: 840px;">
+                <div class="section-card" style="max-width: 950px;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">edit_note</span>
@@ -3421,32 +3422,32 @@
                         </div>
 
                         <div class="field">
-                            <label data-translate="memoType"><span class="material-symbols-outlined"
-                                    style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">category</span>Type</label>
+                            <label data-translate="memoPurpose"><span class="material-symbols-outlined"
+                                    style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">category</span>Purpose</label>
                             <div class="memo-type-container">
                                 <label class="memo-type-label">
                                     <input type="radio" name="memo-type-radio" class="memo-type-checkbox"
                                         value="เพื่อโปรดทราบ" style="cursor: pointer; accent-color: var(--accent);"
                                         onchange="updateTypeCheckboxStyle()" checked>
-                                    <span>เพื่อโปรดทราบ</span>
+                                    <span data-translate="memoTypeKnowledge">เพื่อโปรดทราบ</span>
                                 </label>
                                 <label class="memo-type-label">
                                     <input type="radio" name="memo-type-radio" class="memo-type-checkbox"
                                         value="เพื่อโปรดดำเนินการ" style="cursor: pointer; accent-color: var(--accent);"
                                         onchange="updateTypeCheckboxStyle()">
-                                    <span>เพื่อโปรดดำเนินการ</span>
+                                    <span data-translate="memoTypeAction">เพื่อโปรดดำเนินการ</span>
                                 </label>
                                 <label class="memo-type-label">
                                     <input type="radio" name="memo-type-radio" class="memo-type-checkbox"
                                         value="เพื่อโปรดอนุมัติ" style="cursor: pointer; accent-color: var(--accent);"
                                         onchange="updateTypeCheckboxStyle()">
-                                    <span>เพื่อโปรดอนุมัติ</span>
+                                    <span data-translate="memoTypeApprove">เพื่อโปรดอนุมัติ</span>
                                 </label>
                                 <label class="memo-type-label">
                                     <input type="radio" name="memo-type-radio" class="memo-type-checkbox"
                                         value="เพื่อโปรดพิจารณา" style="cursor: pointer; accent-color: var(--accent);"
                                         onchange="updateTypeCheckboxStyle()">
-                                    <span>เพื่อโปรดพิจารณา</span>
+                                    <span data-translate="memoTypeConsider">เพื่อโปรดพิจารณา</span>
                                 </label>
                             </div>
                         </div>
@@ -3585,7 +3586,7 @@
                                     <th data-translate="date">Date</th>
                                     <th data-translate="docNumber">DocNumber</th>
                                     <th data-translate="title">Title</th>
-                                    <th data-translate="type">Type</th>
+                                    <th data-translate="sender" class="th-sender-col" style="display:none;">Sender</th>
                                     <th data-translate="recipient">Recipient</th>
                                     <th data-translate="status">Status</th>
                                     <th data-translate="preview">Preview</th>
@@ -3642,8 +3643,8 @@
                                     <th data-translate="date">Date</th>
                                     <th data-translate="docNumber">DocNumber</th>
                                     <th data-translate="title">Title</th>
-                                    <th data-translate="type">Type</th>
-                                    <th data-translate="from">From</th>
+                                    <th data-translate="sender">Sender</th>
+                                    <th data-translate="recipient" class="th-recipient-col" style="display:none;">Recipient</th>
                                     <th data-translate="preview">Preview</th>
                                     <th style="text-align: center;" data-translate="action">Action</th>
                                 </tr>
@@ -3696,16 +3697,15 @@
                                         <th data-translate="date">Date</th>
                                         <th data-translate="docNumber">DocNumber</th>
                                         <th data-translate="title">Title</th>
-                                        <th data-translate="from">From</th>
-                                        <th data-translate="to">To</th>
-                                        <th data-translate="department">Department</th>
+                                        <th data-translate="sender">Sender</th>
+                                        <th data-translate="recipient">Recipient</th>
                                         <th data-translate="preview">Preview</th>
                                         <th style="text-align: center;" data-translate="action">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="pendingApprovalsTbody">
                                     <tr>
-                                        <td colspan="8" style="padding: 32px; text-align: center;">
+                                        <td colspan="7" style="padding: 32px; text-align: center;">
                                             <div style="color: var(--ink-faint);">
                                                 <span class="material-symbols-outlined"
                                                     style="font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.3;">inbox</span>
@@ -4475,13 +4475,13 @@
                                     <input id="editMemoTitle" type="text" placeholder="Enter memo title...">
                                 </div>
                                 <div class="field">
-                                    <label>Type</label>
+                                    <label>Purpose</label>
                                     <select id="editMemoType"
                                         style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--ink); font-family: inherit; cursor: pointer;">
-                                        <option value="เพื่อโปรดทราบ">เพื่อโปรดทราบ</option>
-                                        <option value="เพื่อโปรดดำเนินการ">เพื่อโปรดดำเนินการ</option>
-                                        <option value="เพื่อโปรดอนุมัติ">เพื่อโปรดอนุมัติ</option>
-                                        <option value="เพื่อโปรดพิจารณา">เพื่อโปรดพิจารณา</option>
+                                        <option value="เพื่อโปรดทราบ" data-translate="memoTypeKnowledge">เพื่อโปรดทราบ</option>
+                                        <option value="เพื่อโปรดดำเนินการ" data-translate="memoTypeAction">เพื่อโปรดดำเนินการ</option>
+                                        <option value="เพื่อโปรดอนุมัติ" data-translate="memoTypeApprove">เพื่อโปรดอนุมัติ</option>
+                                        <option value="เพื่อโปรดพิจารณา" data-translate="memoTypeConsider">เพื่อโปรดพิจารณา</option>
                                     </select>
                                 </div>
                                 <div class="field">
@@ -4604,14 +4604,14 @@
                 </div>
 
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label" data-translate="type">Type</div>
+                    <div class="memo-detail-label" data-translate="purpose">Purpose</div>
                     <div class="memo-detail-value" id="memoDetailTypeValue">—</div>
                 </div>
 
                 <div class="memo-detail-field">
-                    <div class="memo-detail-label" id="memoDetailRecipientLabel" data-translate="recipient">Sent To
+                    <div class="memo-detail-label" data-translate="sender">Sender
                     </div>
-                    <div class="memo-detail-value" id="memoDetailRecipient">—</div>
+                    <div class="memo-detail-value" id="memoDetailSender">—</div>
                 </div>
 
                 <div class="memo-detail-field" id="memoDetailRecipientsField">
@@ -5342,6 +5342,11 @@
                 memoTitle: "หัวข้อ",
                 enterMemoTitle: "กรอกชื่อเมมโม...",
                 memoType: "ประเภท",
+                memoPurpose: "วัตถุประสงค์",
+                memoTypeKnowledge: "เพื่อโปรดทราบ",
+                memoTypeAction: "เพื่อโปรดดำเนินการ",
+                memoTypeApprove: "เพื่อโปรดอนุมัติ",
+                memoTypeConsider: "เพื่อโปรดพิจารณา",
                 filterByDepartment: "กรองตามฝ่าย",
                 recipients: "ผู้รับ",
                 selectRecipients: "เลือกผู้รับ...",
@@ -5361,15 +5366,17 @@
                 docNumber: "หมายเลขเอกสาร",
                 title: "ชื่อ",
                 type: "ประเภท",
+                purpose: "วัตถุประสงค์",
                 recipient: "ผู้รับ",
                 status: "สถานะ",
                 preview: "เนื้อหา",
-                action: "การกระทำ",
+                action: "จัดการ",
                 noSentMemos: "ยังไม่มีเมมโมที่ส่ง",
                 receivedMemos: "เมมโมที่ได้รับ",
                 viewMemosFollowers: "ดูเมมโมทั้งหมดที่ส่งไปยังผู้ติดตาม",
                 incomingMemos: "เมมโมที่ได้รับ",
-                from: "จาก",
+                from: "ผู้ส่ง",
+                sender: "ผู้ส่ง",
                 noReceivedMemos: "ยังไม่มีเมมโมที่ได้รับ",
                 pendingMemoApprovals: "เมมโมที่รอการอนุมัติ",
                 reviewAndApprove: "ตรวจสอบและอนุมัติเมมโมจากฝ่ายของคุณ",
@@ -5470,8 +5477,6 @@
                 logDepartmentDeleted: "ลบฝ่าย",
                 logError: "ข้อผิดพลาด",
                 logActivity: "กิจกรรม",
-                from: "จาก",
-                recipient: "ผู้รับ",
                 user: "ผู้ใช้",
                 approvedBy: "อนุมัติโดย",
                 by: "โดย",
@@ -5694,6 +5699,11 @@
                 memoTitle: "Memorandum Title",
                 enterMemoTitle: "Enter memorandum title...",
                 memoType: "Type",
+                memoPurpose: "Purpose",
+                memoTypeKnowledge: "For Your Information",
+                memoTypeAction: "For Your Action",
+                memoTypeApprove: "For Your Approval",
+                memoTypeConsider: "For Your Consideration",
                 filterByDepartment: "Filter by Department",
                 recipients: "Recipients",
                 selectRecipients: "Select recipients...",
@@ -5713,7 +5723,8 @@
                 docNumber: "DocNumber",
                 title: "Title",
                 type: "Type",
-                recipient: "Recipient",
+                purpose: "Purpose",
+                recipient: "Recipients",
                 status: "Status",
                 preview: "Preview",
                 action: "Action",
@@ -5721,7 +5732,8 @@
                 receivedMemos: "Received Memos",
                 viewMemosFollowers: "View all memorandums sent to your followers",
                 incomingMemos: "Incoming Memos",
-                from: "From",
+                from: "Sender",
+                sender: "Sender",
                 noReceivedMemos: "No received memos yet",
                 pendingMemoApprovals: "Pending Memo Approvals",
                 reviewAndApprove: "Review and approve memorandums from your department",
@@ -5818,8 +5830,6 @@
                 logDepartmentDeleted: "Department Deleted",
                 logError: "Error",
                 logActivity: "Activity",
-                from: "From",
-                recipient: "Recipient",
                 user: "User",
                 approvedBy: "Approved by",
                 by: "by",
@@ -6145,6 +6155,11 @@
         function applyTranslations() {
             // Update all elements with data-translate attribute
             document.querySelectorAll('[data-translate]').forEach((element) => {
+                // Skip elements that contain dynamic user data
+                if (element.id === 'topbarUserName' || element.id === 'topbarUserRole' || element.id === 'userMenuName') {
+                    return
+                }
+
                 const key = element.getAttribute('data-translate')
                 if (translations[currentLanguage] && translations[currentLanguage][key]) {
                     const text = translations[currentLanguage][key]
@@ -6462,8 +6477,14 @@
                 loadMemoDocNumber()
                 updateTypeCheckboxStyle()
             }
-            if (name === 'sent-memos' && currentUser) loadSentMemos()
-            if (name === 'received-memos' && currentUser) loadReceivedMemos()
+            if (name === 'sent-memos' && currentUser) {
+                loadSentMemos()
+                updateMemoTableColumnVisibility()
+            }
+            if (name === 'received-memos' && currentUser) {
+                loadReceivedMemos()
+                updateMemoTableColumnVisibility()
+            }
             if (name === 'followers' && currentUser) {
                 loadFollowerRegistryStats()
                 loadFollowers()
@@ -8836,6 +8857,36 @@
             return searchInput.value.toLowerCase().normalize('NFC')
         }
 
+        // ── Update Memo Table Column Visibility ────────────────────────
+        // Show sender/recipient columns for admin and approver users
+        function updateMemoTableColumnVisibility() {
+            const isAdminOrApprover = currentUser && (currentUser.role === 'admin' || currentUser.role === 'approver')
+
+            // Show/hide sender column in sent memos table
+            const senderCols = document.querySelectorAll('.td-sender-col')
+            senderCols.forEach(col => {
+                col.style.display = isAdminOrApprover ? 'table-cell' : 'none'
+            })
+
+            // Show/hide sender header in sent memos table
+            const senderHeaderCols = document.querySelectorAll('.th-sender-col')
+            senderHeaderCols.forEach(col => {
+                col.style.display = isAdminOrApprover ? 'table-cell' : 'none'
+            })
+
+            // Show/hide recipient column in received memos table
+            const recipientCols = document.querySelectorAll('.td-recipient-col')
+            recipientCols.forEach(col => {
+                col.style.display = isAdminOrApprover ? 'table-cell' : 'none'
+            })
+
+            // Show/hide recipient header in received memos table
+            const recipientHeaderCols = document.querySelectorAll('.th-recipient-col')
+            recipientHeaderCols.forEach(col => {
+                col.style.display = isAdminOrApprover ? 'table-cell' : 'none'
+            })
+        }
+
         // Filter and render sent memos
         function filterAndRenderSentMemos() {
             const query = getSearchQuery()
@@ -9002,8 +9053,8 @@
           <td data-label="Title">
             <div style="font-weight:500;">${escHtml(memo.title)}</div>
           </td>
-          <td data-label="Type">
-            <span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span>
+          <td data-label="Sender" class="td-sender-col" style="font-size:12px;color:var(--ink-muted);display:none;">
+            ${escHtml(memo.senderName || currentUser?.name || 'Unknown')}
           </td>
           <td data-label="Recipient" style="font-size:12px;color:var(--ink-muted);">
             ${escHtml(recipientName)}
@@ -9033,6 +9084,7 @@
         </tr>`
             }
             tbody.innerHTML = rows
+            updateMemoTableColumnVisibility()
             applyTranslations()
         }
 
@@ -9061,12 +9113,17 @@
                 const memoWithSource = { ...memo, source: 'received' }
                 const memoJson = escHtml(JSON.stringify(memoWithSource)).replace(/"/g, '&quot;')
 
+                // Get recipient name for admin/approver view
+                const recipientName = memo.recipientNames ? memo.recipientNames.join(', ') : (memo.recipientName || 'Unknown')
+
                 rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
           <td data-label="Date" style="font-size:12px;"><span style="color:var(--ink-muted);">${dateStr}<br><span style="font-size:11px;">${timeStr}</span></span></td>
           <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">${memo.docNumber || '—'}</td>
           <td data-label="Title"><div style="font-weight:500;">${escHtml(memo.title)}</div></td>
-          <td data-label="Type"><span class="badge badge-pending">${escHtml(memo.type || 'memo')}</span></td>
           <td data-label="From" style="font-size:12px;color:var(--ink-muted);">${escHtml(memo.senderName || 'Unknown')}</td>
+          <td data-label="Recipient" class="td-recipient-col" style="font-size:12px;color:var(--ink-muted);display:none;">
+            ${escHtml(recipientName)}
+          </td>
           <td data-label="Preview" style="font-size:12px;color:var(--ink-faint);max-width:200px;"><span title="${escHtml(memo.content)}">${escHtml(preview)}</span></td>
           <td data-label="Action" style="text-align: center;">
             <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
@@ -9087,6 +9144,7 @@
         </tr>`
             }
             tbody.innerHTML = rows
+            updateMemoTableColumnVisibility()
             applyTranslations()
         }
 
@@ -9102,7 +9160,7 @@
             if (memos.length === 0) {
                 const emptyKey = getSearchQuery().trim() ? 'noMatchingApprovals' : 'noPendingApprovals'
                 const emptyMsg = translations[currentLanguage][emptyKey] || (getSearchQuery().trim() ? 'No matching approvals found.' : 'No pending approvals.')
-                tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">pending_actions</span><p>${emptyMsg}</p></div></td></tr>`
+                tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined">pending_actions</span><p>${emptyMsg}</p></div></td></tr>`
                 return
             }
 
@@ -9135,9 +9193,6 @@
                     </td>
                     <td data-label="To" style="padding: 12px; font-size: 12px;">
                         ${escHtml(recipientName)}
-                    </td>
-                    <td data-label="Department" style="padding: 12px; font-size: 12px;">
-                        ${memo.senderObject?.department || '-'}
                     </td>
                     <td data-label="Content" style="padding: 12px; font-size: 11px; color: var(--ink-faint); max-width: 200px;">
                         <span title="${escHtml(memo.content)}">${escHtml(contentPreview)}</span>
@@ -9178,7 +9233,7 @@
             const statusEl = document.getElementById('sentMemosStatus')
             const searchInput = document.getElementById('topbarSearchInput')
 
-            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingSentMemos">Loading sent memos...</p></div></td></tr>`
+            tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingSentMemos">Loading sent memos...</p></div></td></tr>`
             applyTranslations()
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
@@ -9224,7 +9279,7 @@
             const statusEl = document.getElementById('receivedMemosStatus')
             const searchInput = document.getElementById('topbarSearchInput')
 
-            document.getElementById('receivedMemosTbody').innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingReceivedMemos">Loading received memos...</p></div></td></tr>`
+            document.getElementById('receivedMemosTbody').innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingReceivedMemos">Loading received memos...</p></div></td></tr>`
             applyTranslations()
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
@@ -9726,6 +9781,55 @@
         // Store the sender's info for approval/rejection (for pending approvals view)
         let currentMemoDetailSenderId = null
 
+        // Helper function to format sender name with department
+        function formatSenderWithDepartment(senderName, senderDept) {
+            if (!senderName) senderName = 'Unknown'
+            if (senderDept) {
+                return `${senderName} (${senderDept})`
+            }
+            return senderName
+        }
+
+        // Helper function to set sender element with HTML and data-translate
+        function setSenderElementWithDept(elementId, senderName, senderDept) {
+            const element = document.getElementById(elementId)
+            if (!element) return
+            
+            if (!senderName) senderName = 'Unknown'
+            
+            if (senderDept) {
+                // Create HTML with data-translate for department
+                const deptKey = `dept_${senderDept}`
+                element.innerHTML = `${escHtml(senderName)} (<span data-translate="${deptKey}">${escHtml(senderDept)}</span>)`
+            } else {
+                element.textContent = senderName
+            }
+        }
+
+        // Helper function to get department from sender or recipient object
+        function getSenderDepartment(memo) {
+            // First check if senderObject has department
+            if (memo.senderObject && memo.senderObject.department) {
+                return memo.senderObject.department
+            }
+            // Fallback to direct fields
+            if (memo.senderDepartment) return memo.senderDepartment
+            if (memo.senderDept) return memo.senderDept
+            return null
+        }
+
+        // Helper function to get department from recipient
+        function getRecipientDepartment(memo) {
+            // Check recipientObjects array
+            if (memo.recipientObjects && Array.isArray(memo.recipientObjects) && memo.recipientObjects.length > 0) {
+                return memo.recipientObjects[0].department
+            }
+            // Fallback to direct fields
+            if (memo.recipientDepartment) return memo.recipientDepartment
+            if (memo.recipientDept) return memo.recipientDept
+            return null
+        }
+
         async function openMemoDetail(memo) {
             // Make showMemoDetail globally available for HTML onclick
             window.showMemoDetail = function (memoId, memoObj) {
@@ -9745,7 +9849,7 @@
                 hasContent: !!memo?.content
             })
             currentMemoDetail = memo
-            document.getElementById('memoDetailTitle').textContent = memo.title
+            // document.getElementById('memoDetailTitle').textContent = memo.title
             document.getElementById('memoDetailDocNumber').textContent = memo.docNumber || '—'
             document.getElementById('memoDetailTitleValue').textContent = memo.title
             document.getElementById('memoDetailTypeValue').textContent = memo.type || 'Memorandum'
@@ -9759,24 +9863,37 @@
                 // Update label based on memo type
                 if (isReceived) {
                     recipientLabel.textContent = 'From'
-                    document.getElementById('memoDetailRecipient').textContent = memo.senderName || 'Unknown'
+                    setSenderElementWithDept('memoDetailSender', memo.senderName, getSenderDepartment(memo))
                 } else {
                     recipientLabel.textContent = 'Sent By'
-                    document.getElementById('memoDetailRecipient').textContent = memo.senderName || currentUser?.name || 'Unknown'
+                    setSenderElementWithDept('memoDetailSender', memo.senderName || currentUser?.name, getSenderDepartment(memo) || currentUser?.department)
                 }
             } else {
                 // Fallback if label element doesn't exist
-                document.getElementById('memoDetailRecipient').textContent = isReceived ?
-                    (memo.senderName || 'Unknown') :
-                    (memo.recipientName || memo.recipientId)
+                const senderNameDisplay = isReceived ? (memo.senderName || 'Unknown') : (memo.recipientName || memo.recipientId)
+                const senderDeptDisplay = isReceived ? getSenderDepartment(memo) : getRecipientDepartment(memo)
+                setSenderElementWithDept('memoDetailSender', senderNameDisplay, senderDeptDisplay)
             }
 
             // Show recipients list (always show if available)
-            if (memo.recipientNames && Array.isArray(memo.recipientNames) && memo.recipientNames.length > 0) {
-                document.getElementById('memoDetailRecipients').textContent = memo.recipientNames.join('\n')
+            const recipientsElement = document.getElementById('memoDetailRecipients')
+            if (memo.recipientObjects && Array.isArray(memo.recipientObjects) && memo.recipientObjects.length > 0) {
+                // Build HTML with each recipient's name and department
+                const recipientHTML = memo.recipientObjects.map(recipient => {
+                    const name = escHtml(recipient.name || 'Unknown')
+                    const dept = recipient.department
+                    if (dept) {
+                        const deptKey = `dept_${dept}`
+                        return `${name} (<span data-translate="${deptKey}">${escHtml(dept)}</span>)`
+                    }
+                    return name
+                }).join('\n')
+                recipientsElement.innerHTML = recipientHTML
+            } else if (memo.recipientNames && Array.isArray(memo.recipientNames) && memo.recipientNames.length > 0) {
+                recipientsElement.textContent = memo.recipientNames.join('\n')
             } else if (memo.recipientName) {
                 // Fallback to single recipientName
-                document.getElementById('memoDetailRecipients').textContent = memo.recipientName
+                recipientsElement.textContent = memo.recipientName
             }
 
             const sentDate = new Date(memo.sentAt)
@@ -9864,6 +9981,9 @@
             }
 
             document.getElementById('memoDetailOverlay').classList.add('show')
+            
+            // Apply translations to department span (data-translate) inside sender element
+            applyTranslations()
         }
 
         async function checkIfUserIsApproverForMemo(memo) {
@@ -10284,6 +10404,7 @@
         if (currentUser && authToken) {
             refreshDashboard()
             initializeTabAccess()
+            updateMemoTableColumnVisibility()
         }
 
         // ── Memo Approvers Management ────────────
@@ -10659,7 +10780,7 @@
             const statusEl = document.getElementById('pendingApprovalsStatus')
             const searchInput = document.getElementById('topbarSearchInput')
 
-            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingPendingApprovals">Loading pending approvals...</p></div></td></tr>`
+            tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingPendingApprovals">Loading pending approvals...</p></div></td></tr>`
             applyTranslations()
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
