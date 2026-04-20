@@ -2283,7 +2283,7 @@
             }
 
             .page-header {
-                margin-bottom: 24px;
+                margin-bottom: 15px;
             }
 
             .page-header h2 {
@@ -2338,7 +2338,7 @@
             }
 
             .section-header {
-                flex-direction: column;
+                /* flex-direction: column; */
                 align-items: flex-start;
                 gap: 8px;
             }
@@ -4466,16 +4466,16 @@
                         <div class="section-card" style="max-width: 100%;">
                             <div class="section-body">
                                 <div class="field">
-                                    <label>Document Number</label>
+                                    <label data-translate="documentNumber">Document Number</label>
                                     <input id="editMemoDocNumber" type="text" placeholder="Enter document number..."
                                         style="font-family: 'Courier New', monospace;">
                                 </div>
                                 <div class="field">
-                                    <label>Title</label>
-                                    <input id="editMemoTitle" type="text" placeholder="Enter memo title...">
+                                    <label data-translate="memoTitle">Title</label>
+                                    <input id="editMemoTitle" type="text" placeholder="Enter memo title..." data-translate="enterMemoTitle">
                                 </div>
                                 <div class="field">
-                                    <label>Purpose</label>
+                                    <label data-translate="memoPurpose">Purpose</label>
                                     <select id="editMemoType"
                                         style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--ink); font-family: inherit; cursor: pointer;">
                                         <option value="เพื่อโปรดทราบ" data-translate="memoTypeKnowledge">เพื่อโปรดทราบ</option>
@@ -4485,12 +4485,12 @@
                                     </select>
                                 </div>
                                 <div class="field">
-                                    <label>Recipients</label>
+                                    <label data-translate="recipients">Recipients</label>
                                     <input id="editMemoRecipients" type="text" placeholder="Recipients..." disabled>
                                 </div>
                                 <div class="field">
-                                    <label>Message Content</label>
-                                    <textarea id="editMemoContent" placeholder="Memo content..." rows="6"></textarea>
+                                    <label data-translate="messageBody">Message Content</label>
+                                    <textarea id="editMemoContent" placeholder="Memo content..." rows="6" data-translate="typeContent"></textarea>
                                 </div>
                                 <div class="status-msg" id="statusEditMemo" style="margin-top: 12px;">
                                     <span class="material-symbols-outlined"></span>
@@ -4501,8 +4501,8 @@
                     </div>
                     <div
                         style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
-                        <button class="btn btn-ghost" onclick="closeEditMemoModal()">Cancel</button>
-                        <button class="btn btn-primary" onclick="saveEditedMemo()">Save Changes</button>
+                        <button class="btn btn-ghost" onclick="closeEditMemoModal()" data-translate="cancel">Cancel</button>
+                        <button class="btn btn-primary" onclick="saveEditedMemo()" data-translate="save">Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -5340,7 +5340,7 @@
                 memoDetails: "รายละเอียดเมมโม",
                 documentNumber: "หมายเลขเอกสาร",
                 memoTitle: "หัวข้อ",
-                enterMemoTitle: "กรอกชื่อเมมโม...",
+                enterMemoTitle: "กรอกหัวข้อเมมโม...",
                 memoType: "ประเภท",
                 memoPurpose: "วัตถุประสงค์",
                 memoTypeKnowledge: "เพื่อโปรดทราบ",
@@ -5364,7 +5364,7 @@
                 memoHistory: "เมมโมที่ส่งแล้ว",
                 date: "วันที่",
                 docNumber: "หมายเลขเอกสาร",
-                title: "ชื่อ",
+                title: "หัวข้อ",
                 type: "ประเภท",
                 purpose: "วัตถุประสงค์",
                 recipient: "ผู้รับ",
@@ -9056,7 +9056,7 @@
           <td data-label="Sender" class="td-sender-col" style="font-size:12px;color:var(--ink-muted);display:none;">
             ${escHtml(memo.senderName || currentUser?.name || 'Unknown')}
           </td>
-          <td data-label="Recipient" style="font-size:12px;color:var(--ink-muted);">
+          <td data-label="Recipients" style="font-size:12px;color:var(--ink-muted);">
             ${escHtml(recipientName)}
           </td>
           <td data-label="Status" style="font-size:12px;color:var(--ink-muted);">
@@ -9120,8 +9120,8 @@
           <td data-label="Date" style="font-size:12px;"><span style="color:var(--ink-muted);">${dateStr}<br><span style="font-size:11px;">${timeStr}</span></span></td>
           <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">${memo.docNumber || '—'}</td>
           <td data-label="Title"><div style="font-weight:500;">${escHtml(memo.title)}</div></td>
-          <td data-label="From" style="font-size:12px;color:var(--ink-muted);">${escHtml(memo.senderName || 'Unknown')}</td>
-          <td data-label="Recipient" class="td-recipient-col" style="font-size:12px;color:var(--ink-muted);display:none;">
+          <td data-label="Sender" style="font-size:12px;color:var(--ink-muted);">${escHtml(memo.senderName || 'Unknown')}</td>
+          <td data-label="Recipients" class="td-recipient-col" style="font-size:12px;color:var(--ink-muted);display:none;">
             ${escHtml(recipientName)}
           </td>
           <td data-label="Preview" style="font-size:12px;color:var(--ink-faint);max-width:200px;"><span title="${escHtml(memo.content)}">${escHtml(preview)}</span></td>
@@ -9188,10 +9188,10 @@
                             ${escHtml(memo.title)}
                         </div>
                     </td>
-                    <td data-label="From" style="padding: 12px; font-size: 12px;">
+                    <td data-label="Sender" style="padding: 12px; font-size: 12px;">
                         ${memo.senderObject ? `${memo.senderObject.name} ${memo.senderObject.surname}` : escHtml(memo.senderName || 'Unknown')}
                     </td>
-                    <td data-label="To" style="padding: 12px; font-size: 12px;">
+                    <td data-label="Recipients" style="padding: 12px; font-size: 12px;">
                         ${escHtml(recipientName)}
                     </td>
                     <td data-label="Content" style="padding: 12px; font-size: 11px; color: var(--ink-faint); max-width: 200px;">
@@ -9203,13 +9203,11 @@
                                 <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
                                 <span data-translate="view">View</span>
                             </button>
-                            <button class="btn btn-ghost btn-sm " onclick="event.stopPropagation(); approveMemo('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
-                                <span class="material-symbols-outlined" style="font-size: 14px;">check</span>
-                                <span data-translate="approve">Approve</span>
+                            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); approveMemo('${memo.memoId}')" title="Approve">
+                                <span class="material-symbols-outlined" style="font-size: 16px; color: var(--green);">check_circle</span> <span data-translate="approve">Approve</span>
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); rejectMemoDialog('${memo.memoId}')" style="padding: 6px 12px; font-size: 11px;">
-                                <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
-                                <span data-translate="reject">Reject</span>
+                            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); rejectMemoDialog('${memo.memoId}')" title="Reject">
+                                <span class="material-symbols-outlined" style="font-size: 16px; color: var(--red);">cancel</span> <span data-translate="reject">Reject</span>
                             </button>
                             ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" style="padding: 6px 12px; font-size: 11px;" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${escHtml(JSON.stringify({ ...memo, source: 'pending' })).replace(/"/g, '&quot;')})" title="Edit memo">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">edit</span>
