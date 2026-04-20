@@ -1724,10 +1724,14 @@ app.post("/send", async (req, res) => {
       let recipientId = r.recipientUserId || r.userId
       let recipientName = recipientId
 
+      let recipientDepartment = ''
+      let recipientDepartment2 = ''
       try {
         const recipient = await firebase_get(`users/${recipientId}`)
         if (recipient) {
           recipientName = `${recipient.name || ''} ${recipient.surname || ''}`.trim() || recipientName
+          recipientDepartment = recipient.department || ''
+          recipientDepartment2 = recipient.department2 || ''
         }
       } catch (err) {
         // Silent error
@@ -1739,7 +1743,9 @@ app.post("/send", async (req, res) => {
       recipientObjects.push({
         followerId: followerId,
         systemUserId: recipientId,
-        name: recipientName
+        name: recipientName,
+        department: recipientDepartment,
+        department2: recipientDepartment2
       })
     }
 
@@ -3734,6 +3740,8 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
     for (let r of recipientsList) {
       let recipientId = r.recipientUserId || r.userId
       let recipientName = recipientId
+      let recipientDepartment = ''
+      let recipientDepartment2 = ''
 
       const recipient = await firebase_get(`users/${recipientId}`)
       if (!recipient) {
@@ -3742,13 +3750,17 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
 
       if (recipient) {
         recipientName = `${recipient.name} ${recipient.surname}`.trim() || recipientName
+        recipientDepartment = recipient.department || ''
+        recipientDepartment2 = recipient.department2 || ''
       }
 
       recipientNames.push(recipientName)
       recipientIds.push(recipientId)
       recipientObjects.push({
         systemUserId: recipientId,
-        name: recipientName
+        name: recipientName,
+        department: recipientDepartment,
+        department2: recipientDepartment2
       })
     }
 
@@ -3769,6 +3781,14 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       senderUserId,
       senderName: `${sender.name} ${sender.surname}`,
       senderUsername: sender.username,
+      senderObject: {
+        userId: sender.userId,
+        name: sender.name,
+        surname: sender.surname,
+        username: sender.username,
+        department: sender.department || '',
+        department2: sender.department2 || ''
+      },
       // Multi-recipient support
       recipientIds: recipientIds,  // All system user IDs
       recipientNames: recipientNames,  // All recipient names
