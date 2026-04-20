@@ -2656,7 +2656,7 @@
     <aside class="sidebar">
         <div class="sidebar-brand">
             <h1>RMC E-Memo</h1>
-            <p>LINE Memorandum Platform</p>
+            <p>Memorandum Online System</p>
         </div>
 
         <nav class="sidebar-nav">
@@ -3374,7 +3374,7 @@
                             <span data-translate="recentActivity">Recent Activity</span>
                         </div>
                         <button id="dashViewAllLogsBtn" class="btn btn-ghost btn-sm"
-                            onclick="showView('logs'); loadLogs(false)" style="display: none;">
+                            onclick="showView('logs'); loadLogs(false)" style="display: none;" data-translate="viewAll">
                             View All
                         </button>
                     </div>
@@ -5392,7 +5392,7 @@
                 broadcastAllFollowers: "ประกาศไปยังผู้ติดตาม LINE ทั้งหมด",
                 followerRegistry: "จัดการสมาชิก",
                 manageReview: "จัดการและตรวจสอบผู้ติดตาม LINE ที่ใช้งานอยู่",
-                systemUsers: "ผู้ใช้ระบบ",
+                systemUsers: "ผู้ใช้ในระบบ",
                 totalUsersInSystem: "ผู้ใช้ทั้งหมดในระบบ",
                 lineFollowers: "ผู้ติดตาม LINE",
                 activeLINEFollowers: "ผู้ติดตาม LINE ที่ใช้งานอยู่",
@@ -5499,8 +5499,11 @@
                 print: "พิมพ์",
                 close: "ปิด",
                 confirmation: "ยืนยัน",
+                changeRole: "เปลี่ยนบทบาท",
                 areYouSure: "คุณแน่ใจหรือไม่?",
                 confirm: "ยืนยัน",
+                roleChangedSuccess: "เปลี่ยนบทบาทสำเร็จ",
+                errorChangeRole: "เกิดข้อผิดพลาดในการเปลี่ยนบทบาท",
                 input: "ป้อนข้อมูล",
                 enterYourInput: "กรอกข้อมูลของคุณ:",
                 enterTextHere: "กรอกข้อความที่นี่...",
@@ -5563,9 +5566,11 @@
                 deleteSubDepartment: "ลบแผนกนี้หรือไม่?",
                 removeLinkConfirm: "ยกเลิกการเชื่อมโยงนี้หรือไม่?",
                 deleteUserConfirm: "ลบผู้ใช้นี้อย่างถาวรหรือไม่?",
+                changeUserRoleConfirm: "เปลี่ยนบทบาทของผู้ใช้นี้หรือไม่?",
                 clearLogsConfirm: "ล้างบันทึกระบบทั้งหมดหรือไม่? ข้อมูลจะได้รับการสำรองไว้ในฐานข้อมูล",
                 removeApprover: "ยกเลิกการกำหนดผู้อนุมัตินี้หรือไม่?",
                 clearLogs: "ล้างบันทึก",
+                viewAll: "ดูทั้งหมด",
                 memoSingular: "เมมโม",
                 memoPlural: "เมมโม",
                 received: "ที่ได้รับ",
@@ -5852,8 +5857,11 @@
                 print: "Print",
                 close: "Close",
                 confirmation: "Confirmation",
+                changeRole: "Change Role",
                 areYouSure: "Are you sure?",
                 confirm: "Confirm",
+                roleChangedSuccess: "Role changed successfully",
+                errorChangeRole: "Error changing user role",
                 input: "Input",
                 enterYourInput: "Enter your input:",
                 enterTextHere: "Enter text here...",
@@ -5940,9 +5948,11 @@
                 deleteSubDepartment: "Delete this sub-department?",
                 removeLinkConfirm: "Remove this link?",
                 deleteUserConfirm: "Delete this user permanently?",
+                changeUserRoleConfirm: "Change this user's role?",
                 clearLogsConfirm: "Clear all system logs? They will be backed up to Database.",
                 removeApprover: "Remove this approver assignment?",
                 clearLogs: "Clear Logs",
+                viewAll: "View All",
                 memoSingular: "memo",
                 memoPlural: "memos",
                 received: "received",
@@ -8196,9 +8206,14 @@
           </td>
           <td><small>${joinDate}</small></td>
           <td style="text-align: center;">
-            <button class="btn btn-danger btn-sm" onclick="deleteSystemUser('${escHtml(userId)}', '${escHtml(user.username)}')" style="margin: 0;">
-              <span class="material-symbols-outlined" style="font-size: 14px;">delete</span><span data-translate="delete">ลบ</span>
-            </button>
+            <div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-ghost btn-sm" onclick="changeUserRole('${escHtml(userId)}', '${escHtml(user.username)}', '${role}')" title="Change role">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: var(--accent);">admin_panel_settings</span>เปลี่ยนบทบาท
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="deleteSystemUser('${escHtml(userId)}', '${escHtml(user.username)}')" style="margin: 0;">
+                <span class="material-symbols-outlined" style="font-size: 14px;">delete</span><span data-translate="delete">ลบ</span>
+              </button>
+            </div>
           </td>
         </tr>`
                 }
@@ -8209,6 +8224,7 @@
                 tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">error</span><p>Error loading users: ${err.message}</p></div></td></tr>`
             }
         }
+//prompt: ให้ user admin สามารถ เป็นจาก role user -> admin หรือ admin -> user ได้
 
         function toggleUserPassword(userId) {
             userPasswordStates[userId].visible = !userPasswordStates[userId].visible
@@ -8228,27 +8244,32 @@
             }
         }
 
-        async function deleteSystemUser(userId, username) {
-            const confirmed = await showConfirmModal('deleteUserConfirm', 'delete')
+        async function changeUserRole(userId, username, currentRole) {
+            const newRole = currentRole === 'admin' ? 'user' : 'admin'
+            const confirmed = await showConfirmModal('changeUserRoleConfirm', 'changeRole')
             if (!confirmed) return
 
             try {
-                const res = await fetch(`/admin/users/${userId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${authToken}` }
+                const res = await fetch(`/admin/users/${userId}/role`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ role: newRole })
                 })
                 const data = await res.json()
 
                 if (!res.ok) {
-                    await showAlertModal('Error: ' + (data.message || res.statusText), 'Error')
+                    await showAlertModal('errorChangeRole', 'error')
                     return
                 }
 
-                await showAlertModal(`User "${username}" has been deleted successfully`, 'Success')
+                await showAlertModal('roleChangedSuccess', 'success')
                 await loadAllUsers()
             } catch (err) {
-                console.error('❌ Error deleting user:', err)
-                await showAlertModal('Error: ' + err.message, 'Error')
+                console.error('❌ Error changing user role:', err)
+                await showAlertModal('errorChangeRole', 'error')
             }
         }
 

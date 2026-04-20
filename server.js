@@ -1103,6 +1103,57 @@ app.delete("/admin/users/:userId", verifyToken, async (req, res) => {
   }
 })
 
+// Change user role (admin only)
+app.put("/admin/users/:userId/role", verifyToken, async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { role } = req.body
+
+    // Verify current user is admin
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+
+    // Validate role
+    if (!['user', 'admin'].includes(role)) {
+      return res.status(400).json({ error: "Invalid role" })
+    }
+
+    // Verify user exists
+    const userToUpdate = await firebase_get(`users/${userId}`)
+    if (!userToUpdate) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    // Can't demote the only admin
+    if (userToUpdate.role === 'admin' && role === 'user') {
+      const allUsers = await firebase_get('users')
+      const adminCount = Object.values(allUsers || {}).filter(u => u.role === 'admin').length
+      if (adminCount <= 1) {
+        return res.status(400).json({ error: "Cannot demote the last admin user" })
+      }
+    }
+
+    const oldRole = userToUpdate.role
+    userToUpdate.role = role
+    await firebase_set(`users/${userId}`, userToUpdate)
+
+    // Log the role change
+    addLog('info', 'User role changed', {
+      userId: userId,
+      username: userToUpdate.username,
+      oldRole: oldRole,
+      newRole: role,
+      changedBy: currentUser.username
+    })
+
+    res.json({ status: "User role updated successfully", oldRole, newRole: role })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Admin: Link follower to any user
 app.post("/admin/link-follower-to-user", verifyToken, async (req, res) => {
   try {
