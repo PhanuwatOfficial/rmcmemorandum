@@ -3119,8 +3119,24 @@ async function handleEvent(event) {
     if (event.type === 'unfollow') {
       const userId = event.source.userId
       try {
+        // ดึงข้อมูล follower ก่อนลบ
+        const followerData = await firebase_get(`followers/${userId}`)
+        
+        // ลบออกจาก Firebase
         await firebase_delete(`followers/${userId}`)
+        console.log('✅ Follower deleted from Firebase')
+        
+        // บันทึก log
+        console.log('📝 Calling addLog for unfollow...')
+        addLog('info', 'Unfollow/Block', {
+          userId: userId,
+          displayName: followerData?.displayName || 'Unknown',
+          pictureUrl: followerData?.pictureUrl || null,
+          unfollowedAt: new Date().toISOString()
+        })
+        console.log('✅ Unfollow log added successfully')
       } catch (fbErr) {
+        console.error('❌ [UNFOLLOW ERROR] Failed to handle unfollow event:', fbErr.message)
         // Silent error handling
       }
     }
