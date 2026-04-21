@@ -6502,6 +6502,7 @@
             if (name === 'followers' && currentUser) {
                 loadFollowerRegistryStats()
                 loadFollowers()
+                startFollowersAutoRefresh()
                 // Show admin section if user is admin
                 const adminSection = document.getElementById('adminOnlyFollowerMgmt')
                 const pendingSection = document.getElementById('adminPendingApprovals')
@@ -6520,6 +6521,8 @@
                         loadDepartmentStructure()
                     }
                 }
+            } else {
+                stopFollowersAutoRefresh()
             }
             if (name === 'dashboard' && currentUser) {
                 refreshDashboard()
@@ -6534,6 +6537,34 @@
                 item.classList.remove('active')
             })
             element.classList.add('active')
+        }
+
+        // ──────────────────────────────────────────────
+        // Auto-Refresh Followers (Real-time Updates)
+        // ──────────────────────────────────────────────
+        let autoRefreshFollowersInterval = null
+
+        function startFollowersAutoRefresh() {
+            // Stop any existing interval
+            if (autoRefreshFollowersInterval) {
+                clearInterval(autoRefreshFollowersInterval)
+            }
+            
+            // Start new interval - refresh every 5 seconds
+            autoRefreshFollowersInterval = setInterval(() => {
+                const viewFollowers = document.getElementById('view-followers')
+                // Only refresh if followers tab is visible
+                if (viewFollowers && viewFollowers.style.display !== 'none') {
+                    loadFollowers()
+                }
+            }, 5000) // 5 seconds
+        }
+
+        function stopFollowersAutoRefresh() {
+            if (autoRefreshFollowersInterval) {
+                clearInterval(autoRefreshFollowersInterval)
+                autoRefreshFollowersInterval = null
+            }
         }
 
         // ──────────────────────────────────────────────
