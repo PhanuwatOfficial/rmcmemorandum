@@ -3081,15 +3081,25 @@ async function handleEvent(event) {
           profile = { displayName: 'Unknown', pictureUrl: null, statusMessage: null }
         }
 
-        await firebase_set(`followers/${userId}`, {
+        const followerData = {
           userId: userId,
           displayName: profile.displayName || 'Unknown',
           pictureUrl: profile.pictureUrl || null,
           statusMessage: profile.statusMessage || null,
           followedAt: new Date().toISOString(),
           status: 'active'
+        }
+
+        await firebase_set(`followers/${userId}`, followerData)
+        
+        // บันทึก log ที่ครบถ้วนเข้า Firebase logs
+        addLog('info', 'New followers', {
+          userId: userId,
+          displayName: profile.displayName || 'Unknown',
+          pictureUrl: profile.pictureUrl || null,
+          statusMessage: profile.statusMessage || null,
+          followedAt: new Date().toISOString()
         })
-        addLog('info', 'New followers', { userId, displayName: profile.displayName })
       } catch (fbErr) {
         // Silent error handling
       }
