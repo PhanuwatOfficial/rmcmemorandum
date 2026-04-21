@@ -9758,11 +9758,21 @@
                 cachedFullLogs = logs
 
                 const logCount = logs.length
-                document.getElementById('logsCount').textContent = `${logCount} entries`
+                const logsCountEl = document.getElementById('logsCount')
+                if (logsCountEl) {
+                    logsCountEl.textContent = `${logCount} entries`
+                }
                 renderLogs(logs, 'logsViewer')
-                document.getElementById('stat-logs').textContent = logCount
+                
+                const statLogsEl = document.getElementById('stat-logs')
+                if (statLogsEl) {
+                    statLogsEl.textContent = logCount
+                }
             } catch (e) {
-                document.getElementById('logsCount').textContent = 'Loading from Firebase...'
+                const logsCountEl = document.getElementById('logsCount')
+                if (logsCountEl) {
+                    logsCountEl.textContent = 'Loading from Firebase...'
+                }
                 console.warn('Could not load from Firebase:', e)
             }
         }
