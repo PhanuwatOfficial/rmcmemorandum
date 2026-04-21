@@ -3904,7 +3904,7 @@
                                         style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
                                 </div>
                                 <div style="display:flex;gap:10px;">
-                                    <button class="btn btn-ghost btn-sm" onclick="loadFollowers()">
+                                    <button class="btn btn-ghost btn-sm" onclick="loadFollowers(); loadAvailableFollowersForLinking()">
                                         <span class="material-symbols-outlined">refresh</span>
                                         <span data-translate="refresh">Refresh</span>
                                     </button>
@@ -6502,7 +6502,6 @@
             if (name === 'followers' && currentUser) {
                 loadFollowerRegistryStats()
                 loadFollowers()
-                startFollowersAutoRefresh()
                 // Show admin section if user is admin
                 const adminSection = document.getElementById('adminOnlyFollowerMgmt')
                 const pendingSection = document.getElementById('adminPendingApprovals')
@@ -6521,8 +6520,6 @@
                         loadDepartmentStructure()
                     }
                 }
-            } else {
-                stopFollowersAutoRefresh()
             }
             if (name === 'dashboard' && currentUser) {
                 refreshDashboard()
@@ -6537,34 +6534,6 @@
                 item.classList.remove('active')
             })
             element.classList.add('active')
-        }
-
-        // ──────────────────────────────────────────────
-        // Auto-Refresh Followers (Real-time Updates)
-        // ──────────────────────────────────────────────
-        let autoRefreshFollowersInterval = null
-
-        function startFollowersAutoRefresh() {
-            // Stop any existing interval
-            if (autoRefreshFollowersInterval) {
-                clearInterval(autoRefreshFollowersInterval)
-            }
-            
-            // Start new interval - refresh every 5 seconds
-            autoRefreshFollowersInterval = setInterval(() => {
-                const viewFollowers = document.getElementById('view-followers')
-                // Only refresh if followers tab is visible
-                if (viewFollowers && viewFollowers.style.display !== 'none') {
-                    loadFollowers()
-                }
-            }, 5000) // 5 seconds
-        }
-
-        function stopFollowersAutoRefresh() {
-            if (autoRefreshFollowersInterval) {
-                clearInterval(autoRefreshFollowersInterval)
-                autoRefreshFollowersInterval = null
-            }
         }
 
         // ──────────────────────────────────────────────
