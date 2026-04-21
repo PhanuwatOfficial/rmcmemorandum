@@ -3069,15 +3069,20 @@ app.post("/webhook", async (req, res) => {
 // Handle events จาก LINE และเก็บ userId
 async function handleEvent(event) {
   try {
+    console.log('📌 Received event:', event.type, event.source?.userId)
+    
     // เมื่อมีคนกด follow
     if (event.type === 'follow') {
       const userId = event.source.userId
+      console.log('✅ Follow event - userId:', userId)
       try {
         // ดึง profile จาก LINE
         let profile = null
         try {
           profile = await client.getProfile(userId)
+          console.log('✅ Got profile:', profile.displayName)
         } catch (profileErr) {
+          console.warn('⚠️ Profile fetch failed:', profileErr.message)
           profile = { displayName: 'Unknown', pictureUrl: null, statusMessage: null }
         }
 
@@ -3091,8 +3096,10 @@ async function handleEvent(event) {
         }
 
         await firebase_set(`followers/${userId}`, followerData)
+        console.log('✅ Follower saved to Firebase')
         
         // บันทึก log ที่ครบถ้วนเข้า Firebase logs
+        console.log('📝 Calling addLog for new follower...')
         addLog('info', 'New followers', {
           userId: userId,
           displayName: profile.displayName || 'Unknown',
@@ -3100,8 +3107,11 @@ async function handleEvent(event) {
           statusMessage: profile.statusMessage || null,
           followedAt: new Date().toISOString()
         })
+        console.log('✅ Log added successfully')
       } catch (fbErr) {
-        // Silent error handling
+        console.error('❌ [FOLLOW ERROR] Failed to handle follow event:', fbErr.message)
+        console.error('   Stack:', fbErr.stack)
+        console.error('   Event:', event)
       }
     }
 
@@ -4490,5 +4500,13 @@ app.get('/ping', (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`)
+  console.log(`\n${'='.repeat(60)}`)
+  console.log(`✅ Server started on port ${PORT}`)
+  console.log(`${'='.repeat(60)}`)
+  console.log(`🌐 Webhook URL: https://rmcmemorandum.onrender.com/webhook`)
+  console.log(`📡 Webhook Status: READY TO RECEIVE EVENTS`)
+  console.log(`📝 Expected Events: follow, unfollow, message`)
+  console.log(`🔐 Signature Verification: ENABLED`)
+  console.log(`🗄️  Firebase Database: ${FIREBASE_DB_URL}`)
+  console.log(`${'='.repeat(60)}\n`)
 })
