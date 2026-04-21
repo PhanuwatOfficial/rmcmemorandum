@@ -3032,28 +3032,18 @@ app.get("/admin/user-tabs", verifyToken, async (req, res) => {
 
 // Webhook Route - รับ events จาก LINE
 app.post("/webhook", async (req, res) => {
-  console.log('\n🔔 [WEBHOOK ENDPOINT] Request received')
-  console.log('   Headers:', req.headers)
-  console.log('   Body type:', typeof req.body)
-  console.log('   Body:', req.body)
-  
   try {
     const signature = req.get('x-line-signature')
     const body = req.body
-
-    console.log('   Signature from header:', signature)
 
     // body ควรเป็น Buffer เมื่อใช้ express.raw()
     let bodyString
     if (Buffer.isBuffer(body)) {
       bodyString = body.toString('utf-8')
-      console.log('   ✓ Body is Buffer')
     } else if (typeof body === 'string') {
       bodyString = body
-      console.log('   ✓ Body is String')
     } else {
       bodyString = JSON.stringify(body)
-      console.log('   ✓ Body is Object (converted to JSON)')
     }
 
     // ตรวจสอบ signature
@@ -3061,23 +3051,17 @@ app.post("/webhook", async (req, res) => {
     hmac.update(bodyString)
     const hash = hmac.digest('base64')
 
-    console.log('   Calculated hash:', hash)
-    console.log('   Signature match:', signature === hash)
-
     if (signature !== hash) {
-      console.error('   ❌ Signature mismatch!')
       return res.status(403).json({ error: 'Invalid signature' })
     }
 
     // parse JSON body
     const events = JSON.parse(bodyString).events
-    console.log(`   ✅ Signature valid! Processing ${events.length} events`)
 
     await Promise.all(events.map(handleEvent))
 
     res.status(200).json({ ok: true })
   } catch (err) {
-    console.error('   ❌ Webhook error:', err.message, err.stack)
     res.status(200).json({ ok: true, error: err.message })
   }
 })
@@ -3085,68 +3069,49 @@ app.post("/webhook", async (req, res) => {
 // Handle events จาก LINE และเก็บ userId
 async function handleEvent(event) {
   try {
-    console.log('📨 [WEBHOOK] Received event:', event.type, 'from', event.source?.userId)
-
     // เมื่อมีคนกด follow
     if (event.type === 'follow') {
       const userId = event.source.userId
-      console.log(`👤 [WEBHOOK] Processing FOLLOW from ${userId}`)
-      
       try {
         // ดึง profile จาก LINE
         let profile = null
         try {
           profile = await client.getProfile(userId)
-          console.log(`✓ [WEBHOOK] Got profile for ${userId}:`, profile.displayName)
         } catch (profileErr) {
-          console.warn(`⚠️ [WEBHOOK] Could not get profile for ${userId}:`, profileErr.message)
           profile = { displayName: 'Unknown', pictureUrl: null, statusMessage: null }
         }
 
-        const followerData = {
+        await firebase_set(`followers/${userId}`, {
           userId: userId,
           displayName: profile.displayName || 'Unknown',
           pictureUrl: profile.pictureUrl || null,
           statusMessage: profile.statusMessage || null,
           followedAt: new Date().toISOString(),
           status: 'active'
-        }
-
-        await firebase_set(`followers/${userId}`, followerData)
-        console.log(`✅ [WEBHOOK] Follower saved:`, JSON.stringify(followerData))
+        })
         addLog('info', 'New followers', { userId, displayName: profile.displayName })
       } catch (fbErr) {
-        console.error(`❌ [WEBHOOK] Firebase error for ${userId}:`, fbErr.message, fbErr.stack)
-        addLog('error', 'Failed to save follower', { userId, error: fbErr.message })
+        // Silent error handling
       }
     }
 
     // เมื่อมีคนกด unfollow
     if (event.type === 'unfollow') {
       const userId = event.source.userId
-      console.log(`👤 [WEBHOOK] Processing UNFOLLOW from ${userId}`)
-      
       try {
         await firebase_delete(`followers/${userId}`)
-        console.log(`✅ [WEBHOOK] Follower removed: ${userId}`)
-        addLog('info', 'Follower unfollowed', { userId })
       } catch (fbErr) {
-        console.error(`❌ [WEBHOOK] Error removing follower ${userId}:`, fbErr.message)
-        addLog('error', 'Failed to remove follower', { userId, error: fbErr.message })
+        // Silent error handling
       }
     }
 
     // เมื่อมีคนส่งข้อความ (บันทึก userId เพิ่มเติม)
     if (event.type === 'message' && event.message.type === 'text') {
       const userId = event.source.userId
-      console.log(`💬 [WEBHOOK] Message from ${userId}`)
-      
       try {
         // เก็บ userId ถ้ายังไม่มี
         const exists = await firebase_get(`followers/${userId}`)
         if (!exists) {
-          console.log(`🆕 [WEBHOOK] New user from message: ${userId}`)
-          
           // ดึง profile จาก LINE
           let profile = null
           try {
@@ -3155,26 +3120,21 @@ async function handleEvent(event) {
             profile = { displayName: 'Unknown', pictureUrl: null, statusMessage: null }
           }
 
-          const newFollowerData = {
+          await firebase_set(`followers/${userId}`, {
             userId: userId,
             displayName: profile.displayName || 'Unknown',
             pictureUrl: profile.pictureUrl || null,
             statusMessage: profile.statusMessage || null,
             firstMessageAt: new Date().toISOString(),
             status: 'active'
-          }
-
-          await firebase_set(`followers/${userId}`, newFollowerData)
-          console.log(`✅ [WEBHOOK] New user saved: ${userId}`)
-        } else {
-          console.log(`ℹ️ [WEBHOOK] User already exists: ${userId}`)
+          })
         }
       } catch (fbErr) {
         // Silent error for message handling
       }
     }
   } catch (err) {
-    console.error(`❌ [WEBHOOK] Unexpected error:`, err.message, err.stack)
+    // Silent error handling
   }
 }
 
@@ -4493,41 +4453,6 @@ app.get("/webhook-test", (req, res) => {
     status: "Webhook setup complete",
     expectingEvents: ["follow", "unfollow", "message"]
   })
-})
-
-// Test webhook with manual follow event
-app.post("/webhook-test-follow", async (req, res) => {
-  console.log('\n🧪 [TEST] Manual webhook test - FOLLOW event')
-  
-  const testEvent = {
-    type: 'follow',
-    source: { userId: 'TEST_USER_' + Date.now() }
-  }
-  
-  try {
-    await handleEvent(testEvent)
-    res.json({ status: 'Test follow event processed', event: testEvent })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
-
-// Test webhook with manual message event
-app.post("/webhook-test-message", async (req, res) => {
-  console.log('\n🧪 [TEST] Manual webhook test - MESSAGE event')
-  
-  const testEvent = {
-    type: 'message',
-    message: { type: 'text', text: 'Test message' },
-    source: { userId: 'TEST_USER_' + Date.now() }
-  }
-  
-  try {
-    await handleEvent(testEvent)
-    res.json({ status: 'Test message event processed', event: testEvent })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
 })
 
 // View server logs
