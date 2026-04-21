@@ -4378,6 +4378,22 @@ app.get("/debug/sent-memos/:senderUserId", async (req, res) => {
   }
 })
 
+// Log event (for client-side logging, e.g. persistent login)
+app.post("/log-event", verifyToken, async (req, res) => {
+  try {
+    const { level = 'info', messageKey, data } = req.body
+
+    if (!messageKey) {
+      return res.status(400).json({ error: "messageKey is required" })
+    }
+
+    addLog(level, messageKey, data)
+    res.json({ status: "Event logged successfully" })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Get logs - แสดง logs ล่าสุด 100 รายการ
 app.get("/logs", (req, res) => {
   res.json({

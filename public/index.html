@@ -5464,6 +5464,7 @@
                 logApprovedUserRegister: "อนุมัติผู้ใช้",
                 logRejectedUser: "ปฏิเสธผู้ใช้",
                 logLogin: "เข้าสู่ระบบ",
+                logPersistentLogin: "เข้าสู่ระบบอัตโนมัติ",
                 logLogout: "ออกจากระบบ",
                 logSendMemo: "ส่งเมมโม",
                 logApprovedMemo: "อนุมัติเมมโม",
@@ -5822,6 +5823,7 @@
                 logApprovedUserRegister: "User Approved",
                 logRejectedUser: "User Rejected",
                 logLogin: "Login",
+                logPersistentLogin: "Automatic Login",
                 logLogout: "Logout",
                 logSendMemo: "Sent Memo",
                 logApprovedMemo: "Approved Memo",
@@ -6098,6 +6100,7 @@
             'approved user register': 'logApprovedUserRegister',
             'rejected user': 'logRejectedUser',
             'login': 'logLogin',
+            'persistentlogin': 'logPersistentLogin',
             'logout': 'logLogout',
             'send memo': 'logSendMemo',
             'approved memo': 'logApprovedMemo',
@@ -6558,6 +6561,25 @@
                 }
                 const user = await res.json()
                 currentUser = user
+
+                // Log persistent login (เข้าใช้ค้างไว้)
+                try {
+                    await fetch('/log-event', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({
+                            level: 'info',
+                            messageKey: 'PersistentLogin',
+                            data: { userId: user.userId, username: user.username }
+                        })
+                    })
+                } catch (logErr) {
+                    console.warn('Failed to log persistent login:', logErr)
+                }
+
                 await updateUIForLoggedIn()
                 // Load user data and linked profile after successful auth
                 await loadUserData()
