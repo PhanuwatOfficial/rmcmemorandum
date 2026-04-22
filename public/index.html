@@ -4797,6 +4797,11 @@
                 <span class="material-symbols-outlined">pending_actions</span>
                 <span data-translate="pendingApprovals">Pending</span>
             </button>
+            <button class="mobile-bottom-nav-item" data-view="manage-user"
+                onclick="showView('manage-user'); activateMobileNavItem(this)">
+                <span class="material-symbols-outlined">account_circle</span>
+                <span data-translate="myAccount">My Account</span>
+            </button>
             <button class="mobile-bottom-nav-item" id="mobileAdminMenuBtn" data-view="admin-menu" style="display:none;"
                 onclick="toggleMobileAdminMenu()">
                 <span class="material-symbols-outlined">more_vert</span>
@@ -4804,6 +4809,8 @@
             </button>
         </div>
     </nav>
+
+    <!--prompt: เพิ่ม nav mobile ไปหน้า ('manage-user') (บัญชีของฉัน)-->
 
 
 
