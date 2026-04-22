@@ -2680,10 +2680,14 @@
                     <span class="material-symbols-outlined">edit_note</span>
                     <span data-translate="composeMemo">Compose Memo</span>
                 </a>
-                <a class="nav-item" data-view="sent-memos" onclick="showView('sent-memos')">
+                <a class="nav-item" data-view="rdproject" onclick="showView('rdproject')">
+                    <span class="material-symbols-outlined">science</span>
+                    <span data-translate="rdProject">R&D Project</span>
+                </a>
+                <!-- <a class="nav-item" data-view="sent-memos" onclick="showView('sent-memos')">
                     <span class="material-symbols-outlined">send</span>
                     <span data-translate="sentMemos">Sent Memos</span>
-                </a>
+                </a> -->
                 <a class="nav-item" data-view="received-memos" onclick="showView('received-memos')">
                     <span class="material-symbols-outlined">inbox</span>
                     <span data-translate="receivedMemos">Received Memos</span>
@@ -3368,7 +3372,7 @@
                 </div>
 
                 <!-- Recent Log Preview -->
-                <div class="section-card">
+                <div class="section-card" style="display:none;">
                     <div class="section-header">
                         <div class="section-title">
                             <span class="material-symbols-outlined">history</span>
@@ -3384,6 +3388,55 @@
                             <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading activity...
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                   <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">send</span>
+                            <span data-translate="memoHistory">Memorandum History</span>
+                            <span id="sentMemosCountBadge"
+                                style="font-family:'Noto Sans Thai',sans-serif; font-size:11px; font-weight:600; background:var(--surface); border:1px solid var(--border); border-radius:2px; padding:2px 8px; color:var(--ink-muted); margin-left:4px;"></span>
+                        </div>
+                        <div style="display:none; gap:10px;">
+                            <button class="btn btn-ghost btn-sm" onclick="loadSentMemos()">
+                                <span class="material-symbols-outlined">refresh</span>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="sentMemosStatus" class="status-msg" style="margin:16px 28px 0; display:none;">
+                        <span class="material-symbols-outlined"></span>
+                        <span class="msg-text"></span>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-translate="date">Date</th>
+                                    <th style="width:5%" data-translate="docNumber">DocNumber</th>
+                                    <th style="width:20%" data-translate="title">Title</th>
+                                    <th data-translate="sender" class="th-sender-col" style="display:none;">Sender</th>
+                                    <th style="width:15%" data-translate="recipient">Recipient</th>
+                                    <th data-translate="status">Status</th>
+                                    <th data-translate="preview">Preview</th>
+                                    <th style="text-align: center;" data-translate="action">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sentMemosTbody">
+                                <tr>
+                                    <td colspan="8">
+                                        <div class="empty-state"><span class="material-symbols-outlined">send</span>
+                                            <p>No sent memos yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <!-- Note: Table rows populated by loadSentMemos() - add data-label to dynamically generated cells -->
+                        </table>
                     </div>
                 </div>
             </div>
@@ -3552,11 +3605,210 @@
                 </div>
             </div>
 
+            <!-- ── R&D PROJECT VIEW ───────────────────── -->
+            <div id="view-rdproject" class="view" style="display:none;">
+                <div class="page-header">
+                    <h2 data-translate="rdProject">R&D Project</h2>
+                    <!-- <p data-translate="rdProjectDesc">RMC GROUP R&D project form</p> -->
+                </div>
+
+                <div class="section-card" style="max-width: 950px;">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">science</span>
+                            <span data-translate="projectInformation">Project Information</span>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <!-- Project Details Grid -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div class="field">
+                                <label data-translate="projectNo">Project No</label>
+                                <input id="rdProjectNo" type="text" placeholder="Enter project number..."
+                                    data-translate="enterProjectNo">
+                            </div>
+                            <div class="field">
+                                <label data-translate="date">Date</label>
+                                <input id="rdProjectDate" type="date">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label data-translate="projectName">Project Name</label>
+                            <input id="rdProjectName" type="text" placeholder="Enter project name..."
+                                data-translate="enterProjectName">
+                        </div>
+
+                        <div class="field">
+                            <label data-translate="department">Department</label>
+                            <select id="rdDepartment" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit; cursor: pointer;">
+                                <option value="">— Select Department —</option>
+                                <option value="Sales and Marketing">Sales and Marketing</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Production">Production</option>
+                                <option value="Quality">Quality</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label data-translate="division">Division</label>
+                            <select id="rdDivision" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit; cursor: pointer;">
+                                <option value="">— Select Division —</option>
+                                <option value="PP Board">PP Board</option>
+                                <option value="TLP">TLP</option>
+                                <option value="Wood LM">Wood LM</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label data-translate="purpose">Purpose / Objective</label>
+                            <textarea id="rdPurpose" placeholder="Enter project purpose/objective..." rows="4"
+                                data-translate="enterPurpose"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketing Section -->
+                <div class="section-card" style="max-width: 950px;">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">trending_up</span>
+                            <span data-translate="marketingSection">Marketing</span>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px;"
+                                data-translate="specification">Specification</h4>
+                        <div class="field">
+                            <label data-translate="productDetails">Product Details</label>
+                            <textarea id="rdSpecification" placeholder="Enter specification..." rows="3"
+                                data-translate="enterSpecification"></textarea>
+                        </div>
+
+
+
+                            <div class="field">
+                                <label data-translate="conditions">Conditions</label>
+
+                                <div style="display: flex; gap: 20%; margin-top: 8px; white-space: nowrap; ">
+                                    <label class="memo-type-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input  class="memo-type-checkbox" type="radio" name="conditions" value="RMC Stock" style="cursor: pointer; accent-color: var(--accent);"
+                                        onchange="updateTypeCheckboxStyle()" checked>
+                                        <span>RMC Stock</span>
+                                    </label>
+                                    <label class="memo-type-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input  class="memo-type-checkbox" type="radio" name="conditions" value="Other" style="cursor: pointer; accent-color: var(--accent);"
+                                        onchange="updateTypeCheckboxStyle()">
+                                        <span data-translate="customer">for Customer</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                        <div class="field">
+                            <label data-translate="productionLocation">Production Location / ชื่อสถานที่ผลิตภัณฑ์</label>
+                            <input id="rdProductionLocation" type="text" placeholder="Enter location..."
+                                data-translate="enterLocation">
+                        </div>
+
+                        <div class="field">
+                            <label data-translate="saleObjective">Sale Objective / Purpose</label>
+                            <textarea id="rdSaleObjective" placeholder="Enter sale objective..." rows="3"
+                                data-translate="enterSaleObjective"></textarea>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="field">
+                                <label data-translate="customerInfo">Customer Information / ลูกค้าตามป้าย</label>
+                                <input id="rdCustomer" type="text" placeholder="Enter customer info..."
+                                    data-translate="enterCustomer">
+                            </div>
+                            <div class="field">
+                                <label data-translate="estimatedMarket">Estimated Market / ตลาดสติก</label>
+                                <input id="rdMarket" type="text" placeholder="Enter market estimate..."
+                                    data-translate="enterMarket">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Engineering Section -->
+                <div class="section-card" style="max-width: 950px;">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span class="material-symbols-outlined">engineering</span>
+                            <span data-translate="engineeringSection">Engineering</span>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px;"
+                                data-translate="costAnalysis">Cost Analysis</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div class="field">
+                                    <label data-translate="rawMaterialCost">Raw Material Cost / Unit</label>
+                                    <input id="rdRawMaterialCost" type="number" placeholder="0.00" step="0.01"
+                                        data-translate="enterCost">
+                                </div>
+                                <div class="field">
+                                    <label data-translate="otherCost">Other Cost / Unit</label>
+                                    <input id="rdOtherCost" type="number" placeholder="0.00" step="0.01"
+                                        data-translate="enterCost">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px;">
+                                <div class="field">
+                                    <label data-translate="productionCost">Production Cost / Unit</label>
+                                    <input id="rdProductionCost" type="number" placeholder="0.00" step="0.01"
+                                        data-translate="enterCost">
+                                </div>
+                                <div class="field">
+                                    <label data-translate="totalCost">Total Cost / Unit</label>
+                                    <input id="rdTotalCost" type="number" placeholder="0.00" step="0.01"
+                                        data-translate="enterCost">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+                            <div class="field">
+                                <label data-translate="moq">MOQ (Minimum Order Quantity)</label>
+                                <input id="rdMOQ" type="number" placeholder="Enter MOQ..." min="0"
+                                    data-translate="enterMOQ">
+                            </div>
+
+                            <div class="field">
+                                <label data-translate="breakEvenPoint">Break-even Point</label>
+                                <input id="rdBreakEvenPoint" type="number" placeholder="Enter break-even point..." min="0"
+                                    data-translate="enterBreakEven">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card" style="max-width: 950px;">
+                    <div class="section-body">
+                        <div class="btn-row" style="margin-top: 20px;">
+                            <button class="btn btn-primary" onclick="submitRDProject()" data-translate="submitProject">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                Submit Project
+                            </button>
+                            <button class="btn btn-ghost" onclick="clearRDProject()" data-translate="clear">
+                                <span class="material-symbols-outlined">clear</span>
+                                Clear
+                            </button>
+                        </div>
+                        <div class="status-msg" id="statusRDProject">
+                            <span class="material-symbols-outlined"></span>
+                            <span class="msg-text"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ── SENT MEMOS VIEW ────────────────── -->
-            <div id="view-sent-memos" class="view" style="display:none;">
+            <!-- <div id="view-sent-memos" class="view" style="display:none;">
                 <div class="page-header">
                     <h2 data-translate="sentMemos">Sent Memos</h2>
-                    <!-- <p data-translate="reviewDispatched">Review all memorandums you have dispatched.</p> -->
                 </div>
 
                 <div class="section-card">
@@ -3603,11 +3855,10 @@
                                     </td>
                                 </tr>
                             </tbody>
-                            <!-- Note: Table rows populated by loadSentMemos() - add data-label to dynamically generated cells -->
                         </table>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- ── RECEIVED MEMOS VIEW ────────────────────── -->
             <div id="view-received-memos" class="view" style="display:none;">
@@ -4401,12 +4652,12 @@
                                                     style="width: 16px; height: 16px; cursor: pointer;">
                                                 <span>Compose Memo</span>
                                             </label>
-                                            <label
+                                            <!-- <label
                                                 style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                                                 <input type="checkbox" class="tab-checkbox" value="sent-memos"
                                                     style="width: 16px; height: 16px; cursor: pointer;">
                                                 <span>Sent Memos</span>
-                                            </label>
+                                            </label> -->
                                             <label
                                                 style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                                                 <input type="checkbox" class="tab-checkbox" value="received-memos"
@@ -4430,6 +4681,12 @@
                                                 <input type="checkbox" class="tab-checkbox" value="logs"
                                                     style="width: 16px; height: 16px; cursor: pointer;">
                                                 <span>Activity Log</span>
+                                            </label>
+                                                              <label
+                                                style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                                <input type="checkbox" class="tab-checkbox" value="rdproject"
+                                                    style="width: 16px; height: 16px; cursor: pointer;">
+                                                <span>R & D Project</span>
                                             </label>
                                         </div>
                                     </div>
@@ -4525,11 +4782,11 @@
                 <span class="material-symbols-outlined">edit_note</span>
                 <span data-translate="composeMemo">Compose</span>
             </button>
-            <button class="mobile-bottom-nav-item" data-view="sent-memos"
+            <!-- <button class="mobile-bottom-nav-item" data-view="sent-memos"
                 onclick="showView('sent-memos'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">send</span>
                 <span data-translate="sentMemos">Sent</span>
-            </button>
+            </button> -->
             <button class="mobile-bottom-nav-item" data-view="received-memos"
                 onclick="showView('received-memos'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">inbox</span>
@@ -5577,6 +5834,46 @@
                 memoPlural: "เมมโม",
                 received: "ที่ได้รับ",
                 pending: "รอการอนุมัติ",
+                rdProject: "R&D Project",
+                projectInformation: "ข้อมูลโครงการ",
+                projectNo: "เลขที่โครงการ",
+                enterProjectNo: "กรอกเลขที่โครงการ...",
+                projectName: "ชื่อโครงการ",
+                enterProjectName: "กรอกชื่อโครงการ...",
+                department: "ฝ่าย",
+                division: "แผนก",
+                purpose: "วัตถุประสงค์",
+                enterPurpose: "กรอกวัตถุประสงค์ของโครงการ...",
+                marketingSection: "มาร์เกตติ้ง",
+                specification: "ข้อมูลจำเพาะ / วิธีการ",
+                enterSpecification: "กรอกข้อมูลจำเพาะ...",
+                packaging: "ขนาดบรรจุภัณฑ์",
+                enterPackaging: "เช่น 1000x500x300 mm",
+                conditions: "เงื่อนไข",
+                new: "ใหม่",
+                customer: "สำหรับลูกค้า ร้าน/บริษัท",
+                productionLocation: "สถานที่ผลิต",
+                enterLocation: "กรอกสถานที่...",
+                saleObjective: "วัตถุประสงค์การขาย",
+                enterSaleObjective: "กรอกวัตถุประสงค์การขาย...",
+                customerInfo: "ข้อมูลลูกค้า",
+                enterCustomer: "กรอกข้อมูลลูกค้า...",
+                estimatedMarket: "ตลาดที่คาดว่า",
+                enterMarket: "กรอกตลาดที่คาดว่า...",
+                engineeringSection: "วิศวกรรม",
+                costAnalysis: "วิเคราะห์ต้นทุน",
+                specification: "ข้อมูลจำเพาะ",
+                productDetails: "รายละเอียดสินค้า",
+                rawMaterialCost: "ต้นทุนวัตถุดิบ / หน่วย",
+                enterCost: "กรอกจำนวน",
+                otherCost: "ต้นทุนอื่น / หน่วย",
+                productionCost: "ต้นทุนการผลิต / หน่วย",
+                totalCost: "ต้นทุนทั้งหมด / หน่วย",
+                moq: "MOQ (ปริมาณสั่งซื้อขั้นต่ำ)",
+                enterMOQ: "กรอก MOQ...",
+                breakEvenPoint: "จุดคุ้มทุน",
+                enterBreakEven: "กรอกจุดคุ้มทุน...",
+                submitProject: "ส่งโครงการ",
                 followers: "ผู้ติดตาม",
                 links: "การเชื่อมโยง"
             },
@@ -5960,6 +6257,46 @@
                 memoPlural: "memos",
                 received: "received",
                 pending: "pending",
+                rdProject: "R&D Project",
+                projectInformation: "Project Information",
+                projectNo: "Project No",
+                enterProjectNo: "Enter project number...",
+                projectName: "Project Name",
+                enterProjectName: "Enter project name...",
+                department: "Department",
+                division: "Division",
+                purpose: "Purpose / Objective",
+                enterPurpose: "Enter project purpose/objective...",
+                marketingSection: "Marketing",
+                specification: "Specification",
+                enterSpecification: "Enter specification...",
+                packaging: "Packaging Size",
+                enterPackaging: "e.g., 1000x500x300 mm",
+                conditions: "Conditions",
+                new: "New",
+                customer: "for Customer",
+                productionLocation: "Production Location",
+                enterLocation: "Enter location...",
+                saleObjective: "Sale Objective",
+                enterSaleObjective: "Enter sale objective...",
+                customerInfo: "Customer Information",
+                enterCustomer: "Enter customer info...",
+                estimatedMarket: "Estimated Market",
+                enterMarket: "Enter market estimate...",
+                engineeringSection: "Engineering",
+                costAnalysis: "Cost Analysis",
+                specification: "Specification",
+                productDetails: "Product Details",
+                rawMaterialCost: "Raw Material Cost / Unit",
+                enterCost: "Enter amount",
+                otherCost: "Other Cost / Unit",
+                productionCost: "Production Cost / Unit",
+                totalCost: "Total Cost / Unit",
+                moq: "MOQ (Minimum Order Quantity)",
+                enterMOQ: "Enter MOQ...",
+                breakEvenPoint: "Break-even Point",
+                enterBreakEven: "Enter break-even point...",
+                submitProject: "Submit Project",
                 followers: "followers",
                 links: "links"
             }
@@ -6438,7 +6775,7 @@
         // ──────────────────────────────────────────────
         // View Management (Must be declared before auth)
         // ──────────────────────────────────────────────
-        const views = ['login', 'register', 'manage-user', 'dashboard', 'compose', 'sent-memos', 'received-memos', 'pending-approvals', 'broadcast', 'followers', 'logs', 'memo-approvers', 'tab-access']
+        const views = ['login', 'register', 'manage-user', 'dashboard', 'compose', 'rdproject', 'sent-memos', 'received-memos', 'pending-approvals', 'broadcast', 'followers', 'logs', 'memo-approvers', 'tab-access']
         function showView(name) {
             views.forEach(v => {
                 const el = document.getElementById('view-' + v)
@@ -6457,7 +6794,8 @@
                                 name === 'pending-approvals' ? 'pending' :
                                     name === 'followers' ? 'users' :
                                         name === 'logs' ? 'activity' :
-                                            name
+                                            name === 'rdproject' ? 'r&d' :
+                                                name
                 )
             )
             if (activeLink) activeLink.classList.add('active')
@@ -6484,16 +6822,24 @@
                 loadUserDepartmentsList()
                 reloadUserDepartments()
             }
-            if (name === 'dashboard' && currentUser) refreshDashboard()
+            if (name === 'dashboard' && currentUser) {
+                refreshDashboard()
+                loadSentMemos()
+                updateMemoTableColumnVisibility()
+            }
+            
             if (name === 'compose' && currentUser) {
                 loadLinkedFollowersForCompose()
                 loadComposeRecipients()
                 loadMemoDocNumber()
                 updateTypeCheckboxStyle()
             }
-            if (name === 'sent-memos' && currentUser) {
-                loadSentMemos()
-                updateMemoTableColumnVisibility()
+            // if (name === 'sent-memos' && currentUser) {
+            //     loadSentMemos()
+            //     updateMemoTableColumnVisibility()
+            // }
+            if (name === 'rdproject' && currentUser) {
+                updateTypeCheckboxStyle()
             }
             if (name === 'received-memos' && currentUser) {
                 loadReceivedMemos()
@@ -6526,6 +6872,9 @@
                 loadDashboardLogs()
             }
             if (name === 'logs' && currentUser) loadLogs(false)
+            if (name === 'rdproject' && currentUser) {
+                clearRDProject()
+            }
         }
 
         // ── Activate Mobile Bottom Nav Item ─────────
@@ -8859,6 +9208,120 @@
             }
         }
 
+        // ── R&D Project Functions ───────────────────
+        async function submitRDProject() {
+            try {
+                const projectNo = document.getElementById('rdProjectNo').value.trim()
+                const projectDate = document.getElementById('rdProjectDate').value
+                const projectName = document.getElementById('rdProjectName').value.trim()
+                const department = document.getElementById('rdDepartment').value
+                const division = document.getElementById('rdDivision').value
+                const purpose = document.getElementById('rdPurpose').value.trim()
+                
+                // Marketing Section
+                const specification = document.getElementById('rdSpecification').value.trim()
+                const packagingType = document.querySelector('input[name="packagingType"]:checked')?.value
+                const productionLocation = document.getElementById('rdProductionLocation').value.trim()
+                const saleObjective = document.getElementById('rdSaleObjective').value.trim()
+                const customerInfo = document.getElementById('rdCustomer').value.trim()
+                const marketInfo = document.getElementById('rdMarket').value.trim()
+                
+                // Engineering Section
+                const rawMaterialCost = parseFloat(document.getElementById('rdRawMaterialCost').value) || 0
+                const otherCost = parseFloat(document.getElementById('rdOtherCost').value) || 0
+                const productionCost = parseFloat(document.getElementById('rdProductionCost').value) || 0
+                const totalCost = parseFloat(document.getElementById('rdTotalCost').value) || 0
+                const moq = parseInt(document.getElementById('rdMOQ').value) || 0
+                const breakEvenPoint = parseInt(document.getElementById('rdBreakEvenPoint').value) || 0
+
+                // Validation
+                if (!projectNo || !projectName || !department || !division || !purpose) {
+                    setStatus('statusRDProject', 'error', 'error', 'Please fill in all required fields')
+                    return
+                }
+
+                setStatus('statusRDProject', 'info', 'hourglass_empty', 'Submitting project...')
+
+                const projectData = {
+                    projectNo,
+                    projectDate,
+                    projectName,
+                    department,
+                    division,
+                    purpose,
+                    specification,
+                    packaging,
+                    packagingType,
+                    productionLocation,
+                    saleObjective,
+                    customerInfo,
+                    marketInfo,
+                    rawMaterialCost,
+                    otherCost,
+                    productionCost,
+                    totalCost,
+                    moq,
+                    breakEvenPoint,
+                    submittedBy: currentUser.username,
+                    submittedAt: new Date().toISOString()
+                }
+
+                const response = await fetch('/api/rdproject', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(projectData)
+                })
+
+                if (response.ok) {
+                    setStatus('statusRDProject', 'success', 'check_circle', 'R&D Project submitted successfully!')
+                    clearRDProject()
+                    // Optional: Load projects list or refresh data
+                    setTimeout(() => {
+                        setStatus('statusRDProject', '', '', '')
+                    }, 3000)
+                } else {
+                    const error = await response.json()
+                    setStatus('statusRDProject', 'error', 'error', error.message || 'Failed to submit project')
+                }
+            } catch (e) {
+                setStatus('statusRDProject', 'error', 'error', e.message)
+            }
+        }
+
+        function clearRDProject() {
+            // Project Information
+            document.getElementById('rdProjectNo').value = ''
+            document.getElementById('rdProjectDate').value = ''
+            document.getElementById('rdProjectName').value = ''
+            document.getElementById('rdDepartment').value = ''
+            document.getElementById('rdDivision').value = ''
+            document.getElementById('rdPurpose').value = ''
+            
+            // Marketing Section
+            document.getElementById('rdSpecification').value = ''
+            document.querySelectorAll('input[name="packagingType"]').forEach(radio => {
+                radio.checked = false
+            })
+            document.getElementById('rdProductionLocation').value = ''
+            document.getElementById('rdSaleObjective').value = ''
+            document.getElementById('rdCustomer').value = ''
+            document.getElementById('rdMarket').value = ''
+            
+            // Engineering Section
+            document.getElementById('rdRawMaterialCost').value = ''
+            document.getElementById('rdOtherCost').value = ''
+            document.getElementById('rdProductionCost').value = ''
+            document.getElementById('rdTotalCost').value = ''
+            document.getElementById('rdMOQ').value = ''
+            document.getElementById('rdBreakEvenPoint').value = ''
+            
+            // Clear status message
+            document.getElementById('statusRDProject').classList.remove('show')
+        }
+
         // ────────────────────────────────────────────────────────────────────────────────────────
         // Search/Filter System - Global Variables & Functions (Context-Aware)
         // ────────────────────────────────────────────────────────────────────────────────────────
@@ -10156,7 +10619,7 @@
                         cachedSentMemos[memoIndex].approvedAt = new Date().toISOString()
 
                         // Re-render table immediately
-                        if (document.getElementById('view-sent-memos').style.display !== 'none') {
+                        if (document.getElementById('view-dashboard').style.display !== 'none') {
                             renderSentMemos(cachedSentMemos)
                         }
                     }
@@ -10235,7 +10698,7 @@
                         cachedSentMemos[memoIndex].rejectedAt = new Date().toISOString()
 
                         // Re-render table immediately
-                        if (document.getElementById('view-sent-memos').style.display !== 'none') {
+                        if (document.getElementById('view-dashboard').style.display !== 'none') {
                             renderSentMemos(cachedSentMemos)
                         }
                     }
@@ -11407,8 +11870,8 @@ function printMemoDetail() {
         function setDefaultTabs() {
             const userRole = document.getElementById('tabAccessModal').dataset.userRole || 'user'
             const defaultTabs = userRole === 'admin'
-                ? ['dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs', 'manage-user']
-                : ['dashboard', 'compose', 'sent-memos', 'received-memos', 'manage-user']
+                ? ['rdproject','dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs', 'manage-user']
+                : ['rdproject','dashboard', 'compose', 'sent-memos', 'received-memos', 'manage-user']
 
             // Uncheck all first
             document.querySelectorAll('.tab-checkbox').forEach(cb => cb.checked = false)
