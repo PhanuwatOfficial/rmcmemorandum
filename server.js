@@ -106,15 +106,16 @@ async function firebase_delete(path) {
 }
 
 // ──────────────────────────────────────────────
-// Authentication System (Simple Token-based)
+// Authentication System (Simple Token-based with Firebase persistence)
 // ──────────────────────────────────────────────
-let sessions = {} // Store active sessions in memory
+// Sessions are now stored in Firebase to persist across redeployments
+// No session expiry - tokens persist indefinitely
 
 function createToken() {
   return crypto.randomBytes(32).toString('hex')
 }
 
-function verifyToken(req, res, next) {
+async function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -122,14 +123,21 @@ function verifyToken(req, res, next) {
   }
 
   const token = authHeader.substring(7)
-  const userId = sessions[token]
+  
+  try {
+    // Get token from Firebase
+    const sessionData = await firebase_get(`sessions/${token}`)
+    
+    if (!sessionData || !sessionData.userId) {
+      return res.status(401).json({ error: 'Invalid or expired token' })
+    }
 
-  if (!userId) {
+    req.userId = sessionData.userId
+    next()
+  } catch (err) {
+    console.error('Token verification error:', err)
     return res.status(401).json({ error: 'Invalid or expired token' })
   }
-
-  req.userId = userId
-  next()
 }
 
 // ──────────────────────────────────────────────
@@ -241,9 +249,12 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ error: "invalidCredentials" })
     }
 
-    // สร้าง token
+    // สร้าง token และบันทึกลงใน Firebase
     const token = createToken()
-    sessions[token] = userId
+    await firebase_set(`sessions/${token}`, {
+      userId,
+      createdAt: new Date().toISOString()
+    })
 
     addLog('info', 'Login', { userId, username })
     res.json({
@@ -266,11 +277,12 @@ app.post("/login", async (req, res) => {
 app.post("/logout", verifyToken, async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1]
-    const userId = sessions[token]
+    const userId = req.userId
 
-    if (userId) {
+    if (userId && token) {
       const user = await firebase_get(`users/${userId}`)
-      delete sessions[token]
+      // Delete token from Firebase
+      await firebase_delete(`sessions/${token}`)
       addLog('info', 'Logout', { userId, username: user?.username })
     }
 
@@ -283,7 +295,7 @@ app.post("/logout", verifyToken, async (req, res) => {
 // Get pending user registrations (admin only)
 app.get("/pending-users", verifyToken, async (req, res) => {
   try {
-    const userId = sessions[req.headers.authorization?.split(' ')[1]]
+    const userId = req.userId
     const user = await firebase_get(`users/${userId}`)
 
     // Only admins can view pending users
@@ -319,8 +331,7 @@ app.get("/pending-users", verifyToken, async (req, res) => {
 // Approve pending user (admin only)
 app.put("/approve-user/:userId", verifyToken, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1]
-    const adminId = sessions[token]
+    const adminId = req.userId
     const admin = await firebase_get(`users/${adminId}`)
 
     // Only admins can approve users
@@ -357,8 +368,7 @@ app.put("/approve-user/:userId", verifyToken, async (req, res) => {
 // Reject and delete pending user (admin only)
 app.delete("/reject-user/:userId", verifyToken, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1]
-    const adminId = sessions[token]
+    const adminId = req.userId
     const admin = await firebase_get(`users/${adminId}`)
 
     // Only admins can reject users
