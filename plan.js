@@ -369,9 +369,11 @@ Bug
 */
 
 /*
+<===== RDPROJECT =====>
 S -> MD S
 MD S -> EN
+
 EN -> MD S
-MD S -< S,EN
+MD S -> S,EN
 
 */
