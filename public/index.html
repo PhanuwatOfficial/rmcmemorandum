@@ -6938,9 +6938,29 @@
         // ──────────────────────────────────────────────
         let currentUser = null
         let authToken = localStorage.getItem('authToken')
+        
+        // Helper function to save currentUser to localStorage
+        function saveCurrentUser() {
+            if (currentUser) {
+                localStorage.setItem('currentUser', JSON.stringify(currentUser))
+            }
+        }
+        
+        // Load currentUser from localStorage if available
+        const savedUser = localStorage.getItem('currentUser')
+        if (savedUser) {
+            try {
+                currentUser = JSON.parse(savedUser)
+            } catch (e) {
+                console.warn('Failed to parse saved user data:', e)
+            }
+        }
 
         // Check if user is already logged in
-        if (authToken) {
+        if (authToken && currentUser) {
+            checkAuthStatus()
+        } else if (authToken) {
+            // Token exists but user data is missing, refresh from server
             checkAuthStatus()
         } else {
             showView('login')
@@ -6953,12 +6973,14 @@
                 })
                 if (!res.ok) {
                     localStorage.removeItem('authToken')
+                    localStorage.removeItem('currentUser')
                     authToken = null
                     showView('login')
                     return
                 }
                 const user = await res.json()
                 currentUser = user
+                localStorage.setItem('currentUser', JSON.stringify(currentUser))
 
                 // Log persistent login (เข้าใช้ค้างไว้)
                 try {
@@ -6984,6 +7006,7 @@
                 showView('dashboard')
             } catch (err) {
                 localStorage.removeItem('authToken')
+                localStorage.removeItem('currentUser')
                 authToken = null
                 showView('login')
             }
@@ -7513,6 +7536,7 @@
                 authToken = data.token
                 currentUser = data.user
                 localStorage.setItem('authToken', authToken)
+                localStorage.setItem('currentUser', JSON.stringify(currentUser))
 
                 setStatus('statusLogin', 'success', 'check_circle', 'loginSuccessful')
 
@@ -7559,6 +7583,7 @@
             }
 
             localStorage.removeItem('authToken')
+            localStorage.removeItem('currentUser')
             authToken = null
             currentUser = null
             notifications = []
