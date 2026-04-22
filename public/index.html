@@ -10224,7 +10224,7 @@
                 return
             }
 
-            const recent = logs.slice(0, 100) // Most recent first
+            const recent = logs.slice(0, 300) // Most recent first
 
             el.innerHTML = recent.map(log => {
                 const eventInfo = getEventTypeAndIcon(log.message, log.data)
