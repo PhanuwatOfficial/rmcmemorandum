@@ -2903,12 +2903,17 @@
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">lock</span>Password</label>
-                                <input id="loginPassword" type="password" placeholder="Enter your password"
-                                    data-translate="enterPassword"
-                                    style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
-                                    onkeypress="if(event.key==='Enter') doLogin()"
-                                    onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
-                                    onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
+                                <div style="position: relative; display: flex; align-items: center;">
+                                    <input id="loginPassword" type="password" placeholder="Enter your password"
+                                        data-translate="enterPassword"
+                                        style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
+                                        onkeypress="if(event.key==='Enter') doLogin()"
+                                        onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
+                                        onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
+                                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('loginPassword', this)" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; color: var(--accent-2); display: flex; align-items: center; justify-content: center; padding: 4px; font-size: 18px; transition: all 0.2s ease;" title="Toggle password visibility">
+                                        <span class="material-symbols-outlined" style="font-size: 18px;">visibility</span>
+                                    </button>
+                                </div>
                             </div>
                             <div class="btn-row" style="margin-top: 24px;">
                                 <button class="btn btn-primary" onclick="doLogin()" data-translate="signIn"
@@ -2998,11 +3003,16 @@
                                     style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 500; color: var(--ink);"><span
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">lock</span>Password</label>
-                                <input id="regPassword" type="password" placeholder="Create a password"
-                                    data-translate="createPassword"
-                                    style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
-                                    onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
-                                    onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
+                                <div style="position: relative; display: flex; align-items: center;">
+                                    <input id="regPassword" type="password" placeholder="Create a password"
+                                        data-translate="createPassword"
+                                        style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
+                                        onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
+                                        onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
+                                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('regPassword', this)" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; color: var(--accent-2); display: flex; align-items: center; justify-content: center; padding: 4px; font-size: 18px; transition: all 0.2s ease;" title="Toggle password visibility">
+                                        <span class="material-symbols-outlined" style="font-size: 18px;">visibility</span>
+                                    </button>
+                                </div>
                             </div>
                             <div class="field" style="animation: slideInUp 0.5s ease-out 0.2s backwards;">
                                 <label data-translate="confirmPassword"
@@ -3010,11 +3020,16 @@
                                         class="material-symbols-outlined"
                                         style="font-size: 18px; color: var(--accent-2);">verified_user</span>Confirm
                                     Password</label>
-                                <input id="regConfirmPassword" type="password" placeholder="Confirm your password"
-                                    data-translate="confirmYourPassword"
-                                    style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
-                                    onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
-                                    onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
+                                <div style="position: relative; display: flex; align-items: center;">
+                                    <input id="regConfirmPassword" type="password" placeholder="Confirm your password"
+                                        data-translate="confirmYourPassword"
+                                        style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);"
+                                        onfocus="this.style.borderColor='var(--accent-2)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.1)';"
+                                        onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.05)';">
+                                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('regConfirmPassword', this)" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; color: var(--accent-2); display: flex; align-items: center; justify-content: center; padding: 4px; font-size: 18px; transition: all 0.2s ease;" title="Toggle password visibility">
+                                        <span class="material-symbols-outlined" style="font-size: 18px;">visibility</span>
+                                    </button>
+                                </div>
                             </div>
                             <div class="field" style="animation: slideInUp 0.5s ease-out 0.25s backwards;">
                                 <label data-translate="departmentTh"
@@ -5169,6 +5184,22 @@
                 closeImageModal();
             }
         });
+
+        // ── Password Visibility Toggle ───────────────
+        function togglePasswordVisibility(fieldId, button) {
+            const input = document.getElementById(fieldId);
+            const icon = button.querySelector('.material-symbols-outlined');
+            
+            if (!input || !icon) return;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
 
         // ──────────────────────────────────────────────
         // Notification System
