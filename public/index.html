@@ -3510,13 +3510,23 @@
                             <label data-translate="filterByDepartment"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">filter_list</span>Filter
                                 by Department</label>
-                            <select id="depFilterSelect"
-                                style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit; cursor: pointer;"
-                                onchange="filterRecipientsByDepartment()">
-                                <option value="" data-translate="allDepartments">— All Departments —</option>
-                            </select>
+                            <div style="position: relative; margin-top: 8px;">
+                                <button type="button" id="depFilterBtn" class="dept-filter-btn"
+                                    style="width: 100%; padding: 11px 14px; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ink); cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: all 0.2s ease; flex-wrap: wrap;"
+                                    onmouseover="this.style.background='var(--surface)'; this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 0 3px rgba(200, 169, 110, 0.08)'"
+                                    onmouseout="this.style.background='var(--surface)'; this.style.borderColor='var(--border)'; this.style.boxShadow='none'"
+                                    onclick="toggleDepFilterDropdown()">
+                                    <span id="depFilterLabel" data-translate="allDepartments" style="flex: 1; color: var(--ink); min-width: 150px;">— All Departments —</span>
+                                    <div id="depFilterSelectedBadges" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;"></div>
+                                    <span class="material-symbols-outlined" style="font-size: 18px; transition: transform 0.2s ease; color: var(--ink-muted); flex-shrink: 0;">expand_more</span>
+                                </button>
+                                <div id="depFilterDropdown" 
+                                    style="position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); z-index: 100; display: none; max-height: 320px; overflow-y: auto;">
+                                    <div id="depFilterCheckboxes" style="padding: 8px;"></div>
+                                </div>
+                            </div>
                         </div>
-<!--prompt: เปลี่ยนให้เป็น multi select (multi filter)-->
+
 
                         <div class="field">
                             <label data-translate="recipients"><span class="material-symbols-outlined"
@@ -3536,7 +3546,7 @@
                                     style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); max-height: 300px; overflow-y: auto; z-index: 10001; display: none;">
                                     <div id="recipientsList" style="padding: 8px;">
                                         <div style="text-align: center; color: var(--ink-faint); padding: 20px;">Loading
-                                            recipients...</div>
+                                            recipients...</div> 
                                     </div>
                                 </div>
                             </div>
@@ -7138,6 +7148,7 @@
             return firstLetter + lastLetter || 'U'
         }
 
+
         async function updateAvatarDisplay() {
             try {
                 // Get linked followers for current user
@@ -8603,7 +8614,6 @@
                 tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined">error</span><p>Error loading users: ${err.message}</p></div></td></tr>`
             }
         }
-//prompt: ให้ user admin สามารถ เป็นจาก role user -> admin หรือ admin -> user ได้
 
         function toggleUserPassword(userId) {
             userPasswordStates[userId].visible = !userPasswordStates[userId].visible
@@ -8839,6 +8849,36 @@
             }
         }
 
+        // ── Toggle Department Filter Dropdown ──────────
+        function toggleDepFilterDropdown() {
+            const dropdown = document.getElementById('depFilterDropdown')
+            const btn = document.getElementById('depFilterBtn')
+            const isOpen = dropdown.style.display === 'block'
+
+            if (isOpen) {
+                dropdown.style.display = 'none'
+                btn.querySelector('.material-symbols-outlined').style.transform = 'rotate(0deg)'
+            } else {
+                dropdown.style.display = 'block'
+                btn.querySelector('.material-symbols-outlined').style.transform = 'rotate(180deg)'
+            }
+        }
+
+        // ── Close Department Filter Dropdown on Outside Click ──────────
+        document.addEventListener('click', function (event) {
+            const wrapper = document.querySelector('.dept-filter-wrapper')
+            const btn = document.getElementById('depFilterBtn')
+            const dropdown = document.getElementById('depFilterDropdown')
+            
+            // Check if click is outside the filter area
+            if (btn && dropdown && !btn.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.style.display = 'none'
+                if (btn.querySelector('.material-symbols-outlined')) {
+                    btn.querySelector('.material-symbols-outlined').style.transform = 'rotate(0deg)'
+                }
+            }
+        })
+
         // ── Load Departments for Filter Dropdown ──────────
         async function loadDepartmentsForFilter(linkedFollowers, usersWithoutFollowers) {
             const departments = new Set()
@@ -8858,28 +8898,52 @@
             // Sort departments
             const deptArray = Array.from(departments).sort()
 
-            // Update select dropdown
-            const select = document.getElementById('depFilterSelect')
-            let html = '<option value="" data-translate="allDepartments">— All Departments —</option>'
+            // Update checkboxes container
+            const container = document.getElementById('depFilterCheckboxes')
+            let html = ''
+            
             for (let dept of deptArray) {
-                html += `<option value="${escHtml(dept)}">${escHtml(dept)}</option>`
+                const checkboxId = `dept-filter-${escHtml(dept).replace(/\s+/g, '-')}`
+                html += `
+                    <label style="display: flex; align-items: center; gap: 10px; padding: 12px 10px; cursor: pointer; transition: all 0.15s; border-radius: 6px; margin-bottom: 4px; user-select: none;" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">
+                        <input type="checkbox" id="${checkboxId}" value="${escHtml(dept)}" style="cursor: pointer; accent-color: var(--accent); width: 18px; height: 18px; flex-shrink: 0;" onchange="filterRecipientsByDepartment()">
+                        <span style="font-size: 13px; font-weight: 500; color: var(--ink);">${escHtml(dept)}</span>
+                    </label>
+                `
             }
-            select.innerHTML = html
-            applyTranslations()
-            select.value = '' // Reset to all departments
+            
+            container.innerHTML = html
         }
 
         // ── Filter Recipients by Department ──────────
         async function filterRecipientsByDepartment() {
-            const selectedDept = document.getElementById('depFilterSelect').value
+            const container = document.getElementById('depFilterCheckboxes')
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked')
+            const selectedOptions = Array.from(checkboxes).map(cb => cb.value)
+            const label = document.getElementById('depFilterLabel')
+            const badgesContainer = document.getElementById('depFilterSelectedBadges')
+
+            // Update button label and badges
+            if (selectedOptions.length === 0) {
+                label.setAttribute('data-translate', 'allDepartments')
+                label.textContent = '— All Departments —'
+                label.style.display = 'block'
+                badgesContainer.innerHTML = ''
+            } else {
+                label.style.display = 'none'
+                // Show badges for selected departments
+                badgesContainer.innerHTML = selectedOptions.map(dept =>
+                    '<span style="display: inline-block; background: var(--accent); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; white-space: nowrap;">' + escHtml(dept) + '</span>'
+                ).join('')
+            }
 
             // Filter the data
             let filteredLinkedFollowers = allLinkedFollowers
             let filteredUsersWithout = allUsersWithoutFollowers
 
-            if (selectedDept) {
-                filteredLinkedFollowers = allLinkedFollowers.filter(link => link.department === selectedDept)
-                filteredUsersWithout = allUsersWithoutFollowers.filter(user => user.department === selectedDept)
+            if (selectedOptions.length > 0) {
+                filteredLinkedFollowers = allLinkedFollowers.filter(link => selectedOptions.includes(link.department))
+                filteredUsersWithout = allUsersWithoutFollowers.filter(user => selectedOptions.includes(user.department))
             }
 
             // Render filtered recipients
@@ -9001,10 +9065,22 @@
                 badgesContainer.innerHTML = ''
                 btn.style.borderColor = 'var(--border)'
             } else {
-                // Extract names from selected recipient items
+                // Extract names from selected recipient items (only from name and department divs, not avatar)
                 const recipientNames = Array.from(selectedItems).map(item => {
-                    const text = item.textContent.trim()
-                    return text
+                    // Get the content container (second div child)
+                    const contentDiv = item.children[1]
+                    if (!contentDiv) return 'Unknown'
+                    
+                    // Get name from first child of content div
+                    const nameDiv = contentDiv.children[0]
+                    const name = nameDiv ? nameDiv.textContent.trim() : ''
+                    
+                    // Get department from second child of content div
+                    const deptDiv = contentDiv.children[1]
+                    const dept = deptDiv ? deptDiv.textContent.trim() : '—'
+                    
+                    // Return "Name Department" format (exclude '—' department)
+                    return dept && dept !== '—' ? `${name} ${dept}` : name
                 })
 
                 label.style.display = 'none'
@@ -9041,7 +9117,23 @@
             document.querySelectorAll('.memo-type-checkbox').forEach(cb => {
                 cb.checked = false
             })
-            document.getElementById('depFilterSelect').value = ''
+            // Clear all department filter checkboxes and reset label/badges
+            const container = document.getElementById('depFilterCheckboxes')
+            if (container) {
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false
+                })
+            }
+            const label = document.getElementById('depFilterLabel')
+            const badgesContainer = document.getElementById('depFilterSelectedBadges')
+            if (label) {
+                label.setAttribute('data-translate', 'allDepartments')
+                label.textContent = '— All Departments —'
+                label.style.display = 'block'
+            }
+            if (badgesContainer) {
+                badgesContainer.innerHTML = ''
+            }
             document.getElementById('msg').value = ''
             document.querySelectorAll('.recipient-item.selected').forEach(item => {
                 item.classList.remove('selected')
