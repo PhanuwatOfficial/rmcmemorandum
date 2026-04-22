@@ -3516,6 +3516,7 @@
                                 <option value="" data-translate="allDepartments">— All Departments —</option>
                             </select>
                         </div>
+<!--prompt: เปลี่ยนให้เป็น multi select (multi filter)-->
 
                         <div class="field">
                             <label data-translate="recipients"><span class="material-symbols-outlined"
@@ -3893,10 +3894,10 @@
                             <thead>
                                 <tr>
                                     <th data-translate="date">Date</th>
-                                    <th data-translate="docNumber">DocNumber</th>
-                                    <th data-translate="title">Title</th>
+                                    <th style="width:5%" data-translate="docNumber">DocNumber</th>
+                                    <th style="width:20%" data-translate="title">Title</th>
                                     <th data-translate="sender">Sender</th>
-                                    <th data-translate="recipient" class="th-recipient-col" style="display:none;">Recipient</th>
+                                    <th style="width:15%" data-translate="recipient" class="th-recipient-col" style="display:none;">Recipient</th>
                                     <th data-translate="preview">Preview</th>
                                     <th style="text-align: center;" data-translate="action">Action</th>
                                 </tr>
@@ -4810,7 +4811,6 @@
         </div>
     </nav>
 
-    <!--prompt: เพิ่ม nav mobile ไปหน้า ('manage-user') (บัญชีของฉัน)-->
 
 
 
@@ -9602,6 +9602,38 @@
             applyTranslations()
         }
 
+        // ── Deduplicate and Group Memos by ID ──────────────
+        function deduplicateAndGroupMemos(memos) {
+            const grouped = {}
+            
+            for (let memo of memos) {
+                const id = memo.memoId || memo.id
+                
+                if (!grouped[id]) {
+                    // First occurrence - create a new entry
+                    grouped[id] = { ...memo }
+                } else {
+                    // Duplicate - merge recipients
+                    if (memo.recipientNames && Array.isArray(memo.recipientNames)) {
+                        if (!grouped[id].recipientNames) {
+                            grouped[id].recipientNames = []
+                        }
+                        // Add unique recipients
+                        for (let name of memo.recipientNames) {
+                            if (!grouped[id].recipientNames.includes(name)) {
+                                grouped[id].recipientNames.push(name)
+                            }
+                        }
+                    }
+                    if (memo.recipientName && !grouped[id].recipientNames) {
+                        grouped[id].recipientName = memo.recipientName
+                    }
+                }
+            }
+            
+            return Object.values(grouped)
+        }
+
         // ── Render Received Memos (from cache) ──────────────
         function renderReceivedMemos(memos) {
             const tbody = document.getElementById('receivedMemosTbody')
@@ -9770,6 +9802,8 @@
 
                 // Cache the data
                 cachedSentMemos = data.memos || []
+                // Deduplicate memos with multiple recipients
+                cachedSentMemos = deduplicateAndGroupMemos(cachedSentMemos)
                 currentViewType = 'sent'
                 updateSearchPlaceholder()
                 if (searchInput) {
@@ -9816,6 +9850,8 @@
 
                 // Cache the data
                 cachedReceivedMemos = data.memos || []
+                // Deduplicate memos with multiple recipients
+                cachedReceivedMemos = deduplicateAndGroupMemos(cachedReceivedMemos)
                 currentViewType = 'received'
                 updateSearchPlaceholder()
                 if (searchInput) {
