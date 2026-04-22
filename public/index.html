@@ -7021,22 +7021,22 @@
                 localStorage.setItem('currentUser', JSON.stringify(currentUser))
 
                 // Log persistent login (เข้าใช้ค้างไว้)
-                // try {
-                //     await fetch('/log-event', {
-                //         method: 'POST',
-                //         headers: {
-                //             'Content-Type': 'application/json',
-                //             'Authorization': `Bearer ${authToken}`
-                //         },
-                //         body: JSON.stringify({
-                //             level: 'info',
-                //             messageKey: 'PersistentLogin',
-                //             data: { userId: user.userId, username: user.username }
-                //         })
-                //     })
-                // } catch (logErr) {
-                //     console.warn('Failed to log persistent login:', logErr)
-                // }
+                try {
+                    await fetch('/log-event', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({
+                            level: 'info',
+                            messageKey: 'PersistentLogin',
+                            data: { userId: user.userId, username: user.username }
+                        })
+                    })
+                } catch (logErr) {
+                    console.warn('Failed to log persistent login:', logErr)
+                }
 
                 await updateUIForLoggedIn()
                 // Load user data and linked profile after successful auth
