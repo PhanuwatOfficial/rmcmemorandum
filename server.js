@@ -3404,6 +3404,52 @@ app.get("/received-memos", verifyToken, async (req, res) => {
   }
 })
 
+// ── Get Memo Info by ID ─────────────────────────────────
+// Public endpoint to get memo information (for log rendering)
+app.get("/memo/:memoId", async (req, res) => {
+  try {
+    const memoId = req.params.memoId
+
+    // Search in all users' sent_memos and received_memos
+    const allUsers = await firebase_get('users')
+    if (!allUsers || typeof allUsers !== 'object') {
+      return res.status(404).json({ error: 'Memo not found' })
+    }
+
+    // Search in sent_memos
+    for (const [uid, userObj] of Object.entries(allUsers)) {
+      const sentMemos = await firebase_get(`sent_memos/${uid}`)
+      if (sentMemos && sentMemos[memoId]) {
+        return res.json({
+          memoId,
+          docNumber: sentMemos[memoId].docNumber || '',
+          title: sentMemos[memoId].title || '',
+          type: sentMemos[memoId].type || '',
+          found: true
+        })
+      }
+    }
+
+    // Search in received_memos
+    for (const [uid, userObj] of Object.entries(allUsers)) {
+      const receivedMemos = await firebase_get(`received_memos/${uid}`)
+      if (receivedMemos && receivedMemos[memoId]) {
+        return res.json({
+          memoId,
+          docNumber: receivedMemos[memoId].docNumber || '',
+          title: receivedMemos[memoId].title || '',
+          type: receivedMemos[memoId].type || '',
+          found: true
+        })
+      }
+    }
+
+    res.status(404).json({ error: 'Memo not found' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // ── Admin: Edit Memo ────────────────────────────────────
 app.put("/memo/:memoId", verifyToken, async (req, res) => {
   try {
@@ -3635,19 +3681,13 @@ app.delete("/memo/:memoId", verifyToken, async (req, res) => {
     }
 
     // Log activity
-    try {
-      const logEntry = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        timestamp: new Date().toISOString(),
-        action: 'memo_deleted',
-        admin: user.username,
-        memoId: memoId,
-        title: memoData?.title || 'Unknown'
-      }
-      await firebase_set(`logs/${logEntry.id}`, logEntry)
-    } catch (e) {
-      // Silent logging error
-    }
+    addLog('info', 'Deleted memo', {
+      memoId,
+      docNumber: memoData?.docNumber || '',
+      title: memoData?.title || 'Unknown',
+      deletedBy: user.username,
+      deletedByName: `${user.name} ${user.surname}`
+    })
 
     res.json({ success: true, message: 'Memo deleted successfully' })
   } catch (err) {

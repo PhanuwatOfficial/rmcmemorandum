@@ -2735,7 +2735,7 @@
                     <span style="display: inline-block; position: relative; margin-left:0.5rem;">
                         <span data-translate="pendingApprovals">Pending Approvals</span>
                         <span id="pendingBadge"
-                            style="display:none; position: absolute; top: -8px; right: -20px; background: #c8a96e; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;">0</span>
+                            style="display: none; position: absolute; top: -8px; right: -20px; background: #c8a96e; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: 700; align-items: center; justify-content: center;"></span>
                     </span>
                 </a>
 
@@ -2748,7 +2748,7 @@
                     <span style="display: inline-block; position: relative;">
                         <span data-translate="usersManagement">Users Management</span>
                         <span id="followersPendingBadge"
-                            style="display:none; position: absolute; top: -8px; right: -20px; background: #c8a96e; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;">0</span>
+                            style="display: none; position: absolute; top: -8px; right: -20px; background: #c8a96e; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 10px; font-weight: 700; align-items: center; justify-content: center;"></span>
                     </span>
                 </a>
                 <a class="nav-item" data-view="logs" onclick="showView('logs')">
@@ -6571,12 +6571,12 @@
             return title // fallback to original title
         }
 
-        function refreshLogsForLanguageChange() {
+        async function refreshLogsForLanguageChange() {
             // Re-render dashboard logs if there's cached data
             if (cachedDashboardLogs && cachedDashboardLogs.length > 0) {
                 const dashLogsViewer = document.getElementById('dash-logs-preview')
                 if (dashLogsViewer) {
-                    renderLogs(cachedDashboardLogs.slice(0, 30), 'dash-logs-preview')
+                    await renderLogs(cachedDashboardLogs.slice(0, 30), 'dash-logs-preview')
                 }
             }
 
@@ -6584,7 +6584,7 @@
             if (cachedFullLogs && cachedFullLogs.length > 0) {
                 const logsViewer = document.getElementById('logsViewer')
                 if (logsViewer) {
-                    renderLogs(cachedFullLogs, 'logsViewer')
+                    await renderLogs(cachedFullLogs, 'logsViewer')
                 }
             }
         }
@@ -6862,6 +6862,22 @@
         // View Management (Must be declared before auth)
         // ──────────────────────────────────────────────
         const views = ['login', 'register', 'manage-user', 'dashboard', 'compose', 'rdproject', 'sent-memos', 'received-memos', 'pending-approvals', 'broadcast', 'followers', 'logs', 'memo-approvers', 'tab-access']
+        
+        // Function to manually refresh a view's data
+        function refreshViewData(viewName) {
+            if (viewLoadStatus.hasOwnProperty(viewName)) {
+                viewLoadStatus[viewName] = false
+                showView(viewName)
+            }
+        }
+        
+        // Function to reset all view load status (useful after logout or data updates)
+        function resetAllViewLoadStatus() {
+            Object.keys(viewLoadStatus).forEach(view => {
+                viewLoadStatus[view] = false
+            })
+        }
+        
         function showView(name) {
             views.forEach(v => {
                 const el = document.getElementById('view-' + v)
@@ -6909,9 +6925,12 @@
                 reloadUserDepartments()
             }
             if (name === 'dashboard' && currentUser) {
-                refreshDashboard()
-                loadSentMemos()
-                updateMemoTableColumnVisibility()
+                if (!viewLoadStatus.dashboard) {
+                    refreshDashboard()
+                    loadSentMemos()
+                    updateMemoTableColumnVisibility()
+                    viewLoadStatus.dashboard = true
+                }
             }
             
             if (name === 'compose' && currentUser) {
@@ -6928,36 +6947,47 @@
                 updateTypeCheckboxStyle()
             }
             if (name === 'received-memos' && currentUser) {
-                loadReceivedMemos()
-                updateMemoTableColumnVisibility()
+                if (!viewLoadStatus['received-memos']) {
+                    loadReceivedMemos()
+                    updateMemoTableColumnVisibility()
+                    viewLoadStatus['received-memos'] = true
+                }
             }
             if (name === 'followers' && currentUser) {
-                loadFollowerRegistryStats()
-                loadFollowers()
-                // Show admin section if user is admin
-                const adminSection = document.getElementById('adminOnlyFollowerMgmt')
-                const pendingSection = document.getElementById('adminPendingApprovals')
-                if (adminSection) {
-                    adminSection.style.display = currentUser.role === 'admin' ? 'block' : 'none'
-                    if (pendingSection) {
-                        pendingSection.style.display = currentUser.role === 'admin' ? 'block' : 'none'
+                if (!viewLoadStatus.followers) {
+                    loadFollowerRegistryStats()
+                    loadFollowers()
+                    // Show admin section if user is admin
+                    const adminSection = document.getElementById('adminOnlyFollowerMgmt')
+                    const pendingSection = document.getElementById('adminPendingApprovals')
+                    if (adminSection) {
+                        adminSection.style.display = currentUser.role === 'admin' ? 'block' : 'none'
+                        if (pendingSection) {
+                            pendingSection.style.display = currentUser.role === 'admin' ? 'block' : 'none'
+                        }
+                        if (currentUser.role === 'admin') {
+                            loadAllUsers()
+                            loadLinkedFollowers()
+                            loadAvailableFollowersForLinking()
+                            loadUsersForLinking()
+                            loadPendingUsers()
+                            loadDepartmentsList()
+                            loadDepartmentStructure()
+                        }
                     }
-                    if (currentUser.role === 'admin') {
-                        loadAllUsers()
-                        loadLinkedFollowers()
-                        loadAvailableFollowersForLinking()
-                        loadUsersForLinking()
-                        loadPendingUsers()
-                        loadDepartmentsList()
-                        loadDepartmentStructure()
-                    }
+                    viewLoadStatus.followers = true
                 }
             }
             if (name === 'dashboard' && currentUser) {
                 refreshDashboard()
                 loadDashboardLogs()
             }
-            if (name === 'logs' && currentUser) loadLogs(false)
+            if (name === 'logs' && currentUser) {
+                if (!viewLoadStatus.logs) {
+                    loadLogs(false)
+                    viewLoadStatus.logs = true
+                }
+            }
             if (name === 'rdproject' && currentUser) {
                 clearRDProject()
             }
@@ -6976,6 +7006,7 @@
         // ──────────────────────────────────────────────
         let currentUser = null
         let authToken = localStorage.getItem('authToken')
+        let isInitialAuthCheckDone = false  // Flag to prevent double page load on login
         
         // Helper function to save currentUser to localStorage
         function saveCurrentUser() {
@@ -6996,15 +7027,30 @@
 
         // Check if user is already logged in
         if (authToken && currentUser) {
-            checkAuthStatus()
+            // Hide login and register views immediately for persistent login
+            const loginView = document.getElementById('view-login')
+            const registerView = document.getElementById('view-register')
+            if (loginView) loginView.style.display = 'none'
+            if (registerView) registerView.style.display = 'none'
+            checkAuthStatus(true)  // Pass true to indicate initial auth check
         } else if (authToken) {
             // Token exists but user data is missing, refresh from server
-            checkAuthStatus()
+            // Hide login and register views immediately for persistent login
+            const loginView = document.getElementById('view-login')
+            const registerView = document.getElementById('view-register')
+            if (loginView) loginView.style.display = 'none'
+            if (registerView) registerView.style.display = 'none'
+            checkAuthStatus(true)  // Pass true to indicate initial auth check
         } else {
             showView('login')
+            isInitialAuthCheckDone = true
         }
 
-        async function checkAuthStatus() {
+        async function checkAuthStatus(isInitialCheck = false) {
+            // Prevent double auth check on initial page load
+            if (isInitialAuthCheckDone && isInitialCheck) return
+            if (isInitialCheck) isInitialAuthCheckDone = true
+            
             try {
                 const res = await fetch('/user/me', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
@@ -7039,9 +7085,8 @@
                 }
 
                 await updateUIForLoggedIn()
-                // Load user data and linked profile after successful auth
-                await loadUserData()
-                showView('dashboard')
+                // Load user data and linked profile after successful auth (non-blocking)
+                void loadUserData()
             } catch (err) {
                 localStorage.removeItem('authToken')
                 localStorage.removeItem('currentUser')
@@ -7084,7 +7129,6 @@
                 // Update user menu info as well
                 document.getElementById('userMenuName').textContent = `${currentUser.name} ${currentUser.surname}`
                 updateDepartmentDisplay()
-                updateAvatarDisplay()
 
                 // console.log('👤 User logged in:', currentUser.username)
 
@@ -7093,27 +7137,28 @@
                 notifications = []
                 updateNotificationUI() // Ensure badge is cleared first
 
-                // Load notifications from Firebase
-                loadNotificationsFromFirebase()
+                // Load non-blocking operations asynchronously
+                void (async () => {
+                    // Update avatar display
+                    await updateAvatarDisplay()
 
-                // Start auto-refresh for notifications
-                startNotificationRefresh()
+                    // Load notifications from Firebase
+                    await loadNotificationsFromFirebase()
 
-                // Apply tab access restrictions first
-                applyTabAccessRestrictions()
+                    // Start auto-refresh for notifications
+                    startNotificationRefresh()
+                })()
 
-                // Check if user is an approver and load pending approvals - MUST AWAIT
-                // This runs AFTER tab access to override and show the tab if user is an approver
-                await checkApproverStatusAndLoadPending()
+                // Apply tab access restrictions and check approver status (non-blocking)
+                void applyTabAccessRestrictions()
+                void checkApproverStatusAndLoadPending()
 
                 // Load dashboard stats (sent, received, approved, pending approvals)
-                // console.log('📊 [LOGIN] Calling loadDashboardStats()...')
-                loadDashboardStats()
-                // console.log('📊 [LOGIN] loadDashboardStats() called')
+                void loadDashboardStats()
 
                 // Load pending users for admins and start refresh cycle
                 if (currentUser.role === 'admin') {
-                    loadPendingUsers()
+                    void loadPendingUsers()
                     startPendingApprovalsRefresh()
                 }
             }
@@ -7578,6 +7623,9 @@
 
                 setStatus('statusLogin', 'success', 'check_circle', 'loginSuccessful')
 
+                // Mark that initial auth check should be skipped (since we're handling login here)
+                isInitialAuthCheckDone = true
+
                 setTimeout(async () => {
                     // Refresh user data from server to get complete info including department
                     try {
@@ -7587,6 +7635,7 @@
                         if (userRes.ok) {
                             const userData = await userRes.json()
                             currentUser = userData
+                            localStorage.setItem('currentUser', JSON.stringify(currentUser))
                         }
                     } catch (err) {
                         console.error('Error refreshing user data:', err)
@@ -7630,6 +7679,7 @@
             stopPendingApprovalsRefresh()
             updateNotificationUI()
             updateUIForLoggedOut()
+            resetAllViewLoadStatus()
             showView('login')
         }
 
@@ -8525,6 +8575,9 @@
                         // Skip if already has linked followers
                         if (linkedUserIds.has(user.userId)) continue
 
+                        // Skip RMCadmin (central user)
+                        if (user.username === 'RMCadmin') continue
+
                         const displayName = `${user.name} ${user.surname} (${user.username})`
                         const option = document.createElement('option')
                         option.value = user.userId
@@ -8884,8 +8937,8 @@
                     // Get set of user IDs that have linked followers
                     const usersWithLinkedSet = new Set(linkedFollowers.map(link => link.userId))
 
-                    // Find users without linked followers
-                    usersWithoutFollowers = allUsers.filter(user => !usersWithLinkedSet.has(user.userId) && user.userId !== currentUser.userId)
+                    // Find users without linked followers (exclude RMCadmin system user)
+                    usersWithoutFollowers = allUsers.filter(user => !usersWithLinkedSet.has(user.userId) && user.userId !== currentUser.userId && user.username !== 'RMCadmin')
 
                     // console.log('👑 Admin loaded linkedFollowers:', linkedFollowers.length, 'usersWithout:', usersWithoutFollowers.length)
                 } else {
@@ -8908,10 +8961,11 @@
                             // Get set of user IDs that are already in linkedFollowers (have linked followers)
                             const usersWithLinkedSet = new Set(linkedFollowers.map(link => link.userId))
 
-                            // Show only users who don't have linked followers
+                            // Show only users who don't have linked followers (exclude RMCadmin system user)
                             usersWithoutFollowers = allUsers.filter(user =>
                                 !usersWithLinkedSet.has(user.userId) &&
-                                user.userId !== currentUser.userId
+                                user.userId !== currentUser.userId &&
+                                user.username !== 'RMCadmin'
                             )
                         }
                     } catch (err) {
@@ -9078,6 +9132,7 @@
 
                 for (let recipient of byDept[dept]) {
                     if (currentUser.role === 'admin' && recipient.userId === currentUser.userId) continue
+                    if (recipient.username === 'RMCadmin') continue
 
                     const userName = `${recipient.name} ${recipient.surname}`
                     let avatar = ''
@@ -9378,6 +9433,11 @@
                     setStatus('statusSingleSend', 'success', 'check_circle', `Memorandum sent to ${totalSuccessCount} ${totalSuccessCount === 1 ? 'recipient' : 'recipients'} successfully!`)
                     const recipientDisplay = successfulRecipientNames.join(', ')
 
+                    // Reset view load status so fresh data loads on next tab switch
+                    viewLoadStatus['dashboard'] = false
+                    viewLoadStatus['sent-memos'] = false
+                    viewLoadStatus['received-memos'] = false
+                    
                     loadNotificationsFromFirebase()
                     clearCompose()
                     loadMemoDocNumber() // Regenerate DocNumber for next memo
@@ -9386,6 +9446,11 @@
                     setStatus('statusSingleSend', 'warn', 'warning', `Sent to ${totalSuccessCount} recipients, failed for ${totalFailCount}`)
                     const recipientDisplay = successfulRecipientNames.join(', ')
 
+                    // Reset view load status so fresh data loads on next tab switch
+                    viewLoadStatus['dashboard'] = false
+                    viewLoadStatus['sent-memos'] = false
+                    viewLoadStatus['received-memos'] = false
+                    
                     clearCompose()
                     loadMemoDocNumber()
                 } else {
@@ -9525,6 +9590,20 @@
         let cachedFullLogs = []
         let currentViewType = null // 'sent' | 'received' | 'pending' | null
         let searchDebounceTimer = null
+        
+        // Track which views have been loaded to prevent unnecessary reloads
+        const viewLoadStatus = {
+            dashboard: false,
+            compose: false,
+            rdproject: false,
+            'received-memos': false,
+            'pending-approvals': false,
+            followers: false,
+            logs: false,
+            'sent-memos': false,
+            broadcast: false,
+            'manage-user': false
+        }
 
         // Update search placeholder based on current view
         function updateSearchPlaceholder() {
@@ -9691,6 +9770,11 @@
                     `Broadcast complete — ${data.successCount} sent, ${data.errorCount} failed, ${data.totalFollowers} total.`)
                 document.getElementById('broadcastMsg').value = ''
                 sentCount += data.successCount
+                
+                // Reset view load status so fresh data loads on next tab switch
+                viewLoadStatus['dashboard'] = false
+                viewLoadStatus['sent-memos'] = false
+                viewLoadStatus['received-memos'] = false
 
                 setTimeout(() => {
                     document.getElementById('broadcastProgress').classList.remove('show')
@@ -10201,6 +10285,8 @@
             if (msg.includes('approved memo')) {
                 return { type: 'approval', icon: 'check_circle', title: 'Approved Memo', color: 'green' };
             }
+            // Deleted memo
+            if (msg.includes('deleted memo')) return { type: 'error', icon: 'delete_outline', title: 'Deleted Memo', color: 'red' }
             // Rejected memo
             if (msg.includes('rejected memo')) return { type: 'error', icon: 'cancel', title: 'Rejected Memo', color: 'red' }
             // New followers
@@ -10217,7 +10303,21 @@
 
 
 
-        function renderLogs(logs, containerId) {
+        // Helper function to fetch memo docNumber by memoId
+        async function getMemoDocNumber(memoId) {
+            try {
+                const res = await fetch(`/memo/${memoId}`)
+                if (res.ok) {
+                    const data = await res.json()
+                    return data.docNumber || ''
+                }
+            } catch (err) {
+                // Silent error
+            }
+            return ''
+        }
+
+        async function renderLogs(logs, containerId) {
             const el = document.getElementById(containerId)
             if (!logs || logs.length === 0) {
                 el.innerHTML = '<div style="color:#4a5568;font-style:italic;padding:24px 28px;">No activity logged yet.</div>'
@@ -10226,21 +10326,78 @@
 
             const recent = logs.slice(0, 300) // Most recent first
 
-            el.innerHTML = recent.map(log => {
-                const eventInfo = getEventTypeAndIcon(log.message, log.data)
+            // Process logs with async docNumber fetching for old logs
+            const processedLogs = await Promise.all(recent.map(async log => {
+                // Handle backward compatibility: if message doesn't exist, convert action to message
+                let messageKey = log.message;
+                if (!messageKey && log.action) {
+                    // Convert old action format to new message format
+                    if (log.action === 'memo_deleted') {
+                        messageKey = 'Deleted memo';
+                    } else {
+                        messageKey = log.action;
+                    }
+                }
+                
+                // Fallback to prevent errors
+                if (!messageKey) {
+                    messageKey = 'Unknown Activity';
+                }
+
+                const eventInfo = getEventTypeAndIcon(messageKey, log.data)
                 const timestamp = log.timestamp ? new Date(log.timestamp) : new Date()
                 const timeStr = formatActivityTime(timestamp)
                 const fullDateStr = formatFullDateTime(timestamp)
-                const dataStr = log.data ? formatActivityData(log.data) : ''
+                let dataStr = log.data ? formatActivityData(log.data) : ''
+
+                // Don't show dataStr for deleted memo to avoid duplication
+                if (messageKey && messageKey.toLowerCase().includes('deleted memo')) {
+                    dataStr = ''
+                }
 
                 // Get translated message display
-                let displayMessage = getMessageDisplay(log.message)
+                let displayMessage = getMessageDisplay(messageKey)
+
+                // Support old deleted memo format - fetch docNumber if not available
+                if (
+                    messageKey &&
+                    messageKey.toLowerCase().includes('deleted memo')
+                ) {
+                    // Support both old format (log.admin, log.title, log.memoId) and new format (log.data.*)
+                    const docNumber = log.data?.docNumber || log.docNumber || ''
+                    const title = log.data?.title || log.title || ''
+                    const deletedByName = log.data?.deletedByName || log.admin || ''
+                    const memoId = log.data?.memoId || log.memoId || ''
+                    
+                    // If docNumber is empty but we have memoId, fetch it
+                    let finalDocNumber = docNumber
+                    if (!finalDocNumber && memoId) {
+                        finalDocNumber = await getMemoDocNumber(memoId)
+                    }
+                    
+                    if (finalDocNumber || title || deletedByName) {
+                        let message = 'deleted memo';
+                        if (finalDocNumber) message += ` ${finalDocNumber}`;
+                        if (title) message += `: "${title}"`;
+                        if (deletedByName) {
+                            const byText = translations[currentLanguage]['by'] || 'by';
+                            message += ` ${byText} ${deletedByName}`;
+                        }
+                        displayMessage = getMessageDisplay('deleted memo');
+                        if (finalDocNumber) displayMessage += ` ${finalDocNumber}`;
+                        if (title) displayMessage += `: "${title}"`;
+                        if (deletedByName) {
+                            const byText = translations[currentLanguage]['by'] || 'by';
+                            displayMessage += ` ${byText} ${deletedByName}`;
+                        }
+                    }
+                }
 
                 // เพิ่มรายละเอียด approved memo ใน log.message
-                let message = log.message;
+                let message = messageKey;
                 if (
-                    log.message &&
-                    log.message.toLowerCase().includes('approved memo') &&
+                    messageKey &&
+                    messageKey.toLowerCase().includes('approved memo') &&
                     log.data && (log.data.docNumber || log.data.approvedByName)
                 ) {
                     message = 'approved memo';
@@ -10256,6 +10413,7 @@
                         displayMessage += ` ${byText} ${log.data.approvedByName}`;
                     }
                 }
+
                 return `<div class="activity-event event-${eventInfo.type}">
                     <div class="activity-event-icon">
                         <span class="material-symbols-outlined" style="font-size: 24px; color: inherit;">
@@ -10268,8 +10426,25 @@
                         <div class="activity-event-time">${timeStr} <span style="color: var(--ink-faint); font-size: 11px;">(${fullDateStr})</span></div>
                     </div>
                 </div>`
-            }).join('')
+            }))
+
+            el.innerHTML = processedLogs.join('')
         }
+
+        /*
+    prompt: แก้ไขเมื่อลบ memo ไปแล้ว จะเก็บข้อมูลแบบนี้ใน firebase (json)
+
+    "1776938181930u5wbfp7yr": {
+      "action": "memo_deleted",
+      "admin": "Kritsada",
+      "id": "1776938181930u5wbfp7yr",
+      "memoId": "memo_1776936865068_q9pid2pp8",
+      "timestamp": "2026-04-23T09:56:21.930Z",
+      "title": "เทส"
+    },
+
+    แล้วกลายเป็นว่า table log จะแสดงผล "ยังไม่มีกิจกรรมที่บันทึก" (noActivityLogged)
+        */
 
         function formatFullDateTime(date) {
             return date.toLocaleDateString('en-US', {
@@ -10379,7 +10554,7 @@
         }
 
         // ── Load logs for dashboard (current user only) ─────────────────────────
-        function loadDashboardLogs() {
+        async function loadDashboardLogs() {
             try {
                 // Show "View All" button only for admin users
                 const viewAllBtn = document.getElementById('dashViewAllLogsBtn')
@@ -10391,30 +10566,29 @@
                 const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
                 // const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
+                try {
+                    const res = await fetch(firebaseUrl)
+                    const logsData = await res.json()
+                    
+                    let logs = []
+                    if (logsData && typeof logsData === 'object') {
+                        logs = Object.values(logsData)
+                            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                    }
 
-                fetch(firebaseUrl)
-                    .then(res => res.json())
-                    .then(logsData => {
-                        let logs = []
-                        if (logsData && typeof logsData === 'object') {
-                            logs = Object.values(logsData)
-                                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                        }
+                    // Filter for current user only
+                    const userLogs = filterLogsForCurrentUser(logs)
 
-                        // Filter for current user only
-                        const userLogs = filterLogsForCurrentUser(logs)
+                    // Cache logs for language change refresh
+                    cachedDashboardLogs = userLogs
 
-                        // Cache logs for language change refresh
-                        cachedDashboardLogs = userLogs
-
-                        // Show only 30 most recent logs on dashboard
-                        renderLogs(userLogs.slice(0, 30), 'dash-logs-preview')
-                    })
-                    .catch(e => {
-                        console.warn('Could not load dashboard logs:', e)
-                        document.getElementById('dash-logs-preview').innerHTML =
-                            '<div style="color:#4a5568;font-style:italic;padding:24px 28px;">Unable to load activity...</div>'
-                    })
+                    // Show only 30 most recent logs on dashboard
+                    await renderLogs(userLogs.slice(0, 30), 'dash-logs-preview')
+                } catch (e) {
+                    console.warn('Could not load dashboard logs:', e)
+                    document.getElementById('dash-logs-preview').innerHTML =
+                        '<div style="color:#4a5568;font-style:italic;padding:24px 28px;">Unable to load activity...</div>'
+                }
             } catch (e) {
                 console.warn('Dashboard logs error:', e)
             }
@@ -10454,7 +10628,7 @@
                 if (logsCountEl) {
                     logsCountEl.textContent = `${logCount} entries`
                 }
-                renderLogs(logs, 'logsViewer')
+                await renderLogs(logs, 'logsViewer')
                 
                 const statLogsEl = document.getElementById('stat-logs')
                 if (statLogsEl) {
@@ -12332,6 +12506,10 @@ function printMemoDetail() {
                 const data = await res.json()
                 if (res.ok) {
                     await showAlertModal('memoApprovedSuccessfully', 'success')
+                    // Reset and reload views to show updated data
+                    viewLoadStatus['pending-approvals'] = false
+                    viewLoadStatus['sent-memos'] = false
+                    viewLoadStatus['dashboard'] = false
                     loadPendingApprovals()
                     loadSentMemos()
                     // Update badge immediately after approval
@@ -12363,6 +12541,10 @@ function printMemoDetail() {
                 const data = await res.json()
                 if (res.ok) {
                     await showAlertModal('memoRejectedSuccessfully', 'success')
+                    // Reset and reload views to show updated data
+                    viewLoadStatus['pending-approvals'] = false
+                    viewLoadStatus['sent-memos'] = false
+                    viewLoadStatus['dashboard'] = false
                     loadPendingApprovals()
                     loadSentMemos()
                     // Update badge immediately after rejection
