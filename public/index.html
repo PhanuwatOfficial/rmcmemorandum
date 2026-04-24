@@ -5319,6 +5319,28 @@
         }
 
         // ──────────────────────────────────────────────
+        // Follower Registry Stats Refresh System
+        // ──────────────────────────────────────────────
+        let followerStatsRefreshInterval = null
+
+        function startFollowerStatsRefresh() {
+            if (followerStatsRefreshInterval) clearInterval(followerStatsRefreshInterval)
+            // Refresh immediately on start
+            loadFollowerRegistryStats()
+            // Then refresh every 3 seconds for real-time updates
+            followerStatsRefreshInterval = setInterval(() => {
+                loadFollowerRegistryStats()
+            }, 3000)
+        }
+
+        function stopFollowerStatsRefresh() {
+            if (followerStatsRefreshInterval) {
+                clearInterval(followerStatsRefreshInterval)
+                followerStatsRefreshInterval = null
+            }
+        }
+
+        // ──────────────────────────────────────────────
         // Pending Approvals Badge Refresh System
         // ──────────────────────────────────────────────
         let pendingApprovalsRefreshInterval = null
@@ -5859,7 +5881,7 @@
                 clickToViewFullSize: "คลิกเพื่อดูในขนาดเต็ม",
                 dateAndTime: "วันที่และเวลา",
                 rejectionReason: "เหตุผลในการปฏิเสธ",
-                memoRequiresApproval: "เมมโมนี้ต้องการการอนุมัติของคุณ",
+                memoRequiresApproval: "เมมโมนี้ขอรับการอนุมัติจากคุณ",
                 approve: "อนุมัติ",
                 reject: "ปฏิเสธ",
                 provideRejectionReason: "กรุณาระบุเหตุผลในการปฏิเสธ",
@@ -6934,6 +6956,10 @@
             views.forEach(v => {
                 const el = document.getElementById('view-' + v)
                 if (el) el.style.display = v === name ? '' : 'none'
+                // Stop follower stats refresh when leaving followers view
+                if (v === 'followers' && v !== name) {
+                    stopFollowerStatsRefresh()
+                }
             })
 
             // Update active nav item
@@ -7029,6 +7055,8 @@
                     }
                     viewLoadStatus.followers = true
                 }
+                // Start real-time stats refresh every time the followers view is shown
+                startFollowerStatsRefresh()
             }
             if (name === 'dashboard' && currentUser) {
                 refreshDashboard()
