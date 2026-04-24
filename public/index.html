@@ -7647,7 +7647,7 @@
                     // Load user data and linked profile after successful login
                     await loadUserData()
                     await initializeTabAccess()
-                    showView('dashboard')
+                    // showView('dashboard')
                 }, 1000)
             } catch (err) {
                 setStatus('statusLogin', 'error', 'error', err.message)
