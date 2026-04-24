@@ -3689,6 +3689,7 @@
                                 <label data-translate="date">Date</label>
                                 <input id="rdProjectDate" type="date">
                             </div>
+<!--prompt: ไม่ต้องให้กรอก date ให้ใช้วันที่ปัจจุบัน เหมือนกับ compose memo-->                            
                             <div class="field">
                                 <label data-translate="projectNo">Project No</label>
                                 <input id="rdProjectNo" type="text" placeholder="Enter project number..."
@@ -3744,7 +3745,7 @@
                                 data-translate="specification">Specification</h4>
                         <div class="field">
                             <label data-translate="productDetails">Product Details</label>
-                            <textarea id="rdSpecification" placeholder="Enter specification..." rows="3"
+                            <textarea id="rdSpecification" placeholder="Enter Product Details..." rows="3"
                                 data-translate="enterSpecification"></textarea>
                         </div>
 
@@ -3753,44 +3754,67 @@
                             <div class="field">
                                 <label data-translate="conditions">Conditions</label>
 
-                                <div style="display: flex; gap: 20%; margin-top: 8px; white-space: nowrap; ">
+                                <div style="display: flex; gap: 15%; margin-top: 8px; white-space: nowrap; ">
                                     <label class="memo-type-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input  class="memo-type-checkbox" type="radio" name="conditions" value="RMC Stock" style="cursor: pointer; accent-color: var(--accent);"
-                                        onchange="updateTypeCheckboxStyle()" checked>
+                                        <input id="rdConditionsRMC" class="memo-type-checkbox" type="radio" name="conditions" value="RMC Stock" style="cursor: pointer; accent-color: var(--accent);"
+                                        onchange="updateTypeCheckboxStyle(); toggleRDShopNameField()" checked>
                                         <span>RMC Stock</span>
                                     </label>
                                     <label class="memo-type-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input  class="memo-type-checkbox" type="radio" name="conditions" value="Other" style="cursor: pointer; accent-color: var(--accent);"
-                                        onchange="updateTypeCheckboxStyle()">
+                                        <input id="rdConditionsOther" class="memo-type-checkbox" type="radio" name="conditions" value="Other" style="cursor: pointer; accent-color: var(--accent);"
+                                        onchange="updateTypeCheckboxStyle(); toggleRDShopNameField()">
                                         <span data-translate="customer">for Customer</span>
                                     </label>
                                 </div>
                             </div>
 
-                        <div class="field">
-                            <label data-translate="productionLocation">Production Location / ชื่อสถานที่ผลิตภัณฑ์</label>
-                            <input id="rdProductionLocation" type="text" placeholder="Enter location..."
-                                data-translate="enterLocation">
-                        </div>
+                            <!-- Shop/Company Name Field (shows only when "for Customer" is selected) -->
+                            <div id="rdShopNameField" class="field" style="display: none;">
+                                <label data-translate="shopCompanyName">Shop / Company Name</label>
+                                <input id="rdShopName" type="text" placeholder="Enter shop or company name..." data-translate="enterShopCompanyName">
+                            </div>
 
                         <div class="field">
-                            <label data-translate="saleObjective">Sale Objective / Purpose</label>
-                            <textarea id="rdSaleObjective" placeholder="Enter sale objective..." rows="3"
-                                data-translate="enterSaleObjective"></textarea>
+                            <label data-translate="productSample">Product Sample</label>
+                            <input id="rdProductSample" type="text" placeholder="Enter Product Sample..."
+                                data-translate="enterSample">
+                        </div>
+
+                        <!-- Sales Information Section -->
+                        <h4 style="font-size: 12px; color: var(--ink-faint); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; margin-top: 24px;"
+                                data-translate="salesInformation">Sales Information</h4>
+                        
+                        <div class="field">
+                            <label data-translate="targetCustomerGroup">Target Customer Group</label>
+                            <input id="rdTargetCustomerGroup" type="text" placeholder="Enter target customer group..."
+                                data-translate="enterTargetCustomer">
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div class="field">
-                                <label data-translate="customerInfo">Customer Information / ลูกค้าตามป้าย</label>
-                                <input id="rdCustomer" type="text" placeholder="Enter customer info..."
-                                    data-translate="enterCustomer">
+                                <label data-translate="monthlyQuantity">Monthly Quantity</label>
+                                <input id="rdMonthlyQuantity" type="number" placeholder="0" min="0"
+                                    data-translate="enterQuantity">
                             </div>
                             <div class="field">
-                                <label data-translate="estimatedMarket">Estimated Market / ตลาดสติก</label>
-                                <input id="rdMarket" type="text" placeholder="Enter market estimate..."
-                                    data-translate="enterMarket">
+                                <label data-translate="unitSalePrice">Unit Sale Price</label>
+                                <input id="rdUnitSalePrice" type="number" placeholder="0.00" step="0.01" min="0"
+                                    data-translate="enterPrice">
                             </div>
                         </div>
+
+                        <div class="field">
+                            <label data-translate="monthlySalesRevenue">Monthly Sales Revenue</label>
+                            <input id="rdMonthlySalesRevenue" type="number" placeholder="0.00" step="0.01" min="0"
+                                data-translate="enterRevenue" >
+                        </div>
+
+                        <div class="field">
+                            <label data-translate="purchaseSaleTerms">Purchase/Sale Terms</label>
+                            <textarea id="rdPurchaseSaleTerms" rows="2"
+                                data-translate="enterTerms" placeholder="Enter purchase/sale terms..."></textarea>
+                        </div>
+
                     </div>
                 </div>
 
@@ -3809,28 +3833,30 @@
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                                 <div class="field">
                                     <label data-translate="rawMaterialCost">Raw Material Cost / Unit</label>
-                                    <input id="rdRawMaterialCost" type="number" placeholder="0.00" step="0.01"
+                                    <input id="rdRawMaterialCost" type="number" placeholder="0.00" step="0.01" oninput="calculateRDTotalCost()"
                                         data-translate="enterCost">
                                 </div>
                                 <div class="field">
                                     <label data-translate="otherCost">Other Cost / Unit</label>
-                                    <input id="rdOtherCost" type="number" placeholder="0.00" step="0.01"
+                                    <input id="rdOtherCost" type="number" placeholder="0.00" step="0.01" oninput="calculateRDTotalCost()"
                                         data-translate="enterCost">
                                 </div>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px;">
                                 <div class="field">
                                     <label data-translate="productionCost">Production Cost / Unit</label>
-                                    <input id="rdProductionCost" type="number" placeholder="0.00" step="0.01"
+                                    <input id="rdProductionCost" type="number" placeholder="0.00" step="0.01" oninput="calculateRDTotalCost()"
                                         data-translate="enterCost">
                                 </div>
                                 <div class="field">
                                     <label data-translate="totalCost">Total Cost / Unit</label>
-                                    <input id="rdTotalCost" type="number" placeholder="0.00" step="0.01"
+                                    <input id="rdTotalCost" type="number" placeholder="0.00" step="0.01" readonly
                                         data-translate="enterCost">
                                 </div>
                             </div>
                         </div>
+
+    <!--prompt:ให้ rdTotalCost = rdRawMaterialCost + rdOtherCost + rdProductionCost -->                        
 
                         <div style="border-top: 1px solid var(--border); padding-top: 20px;">
                             <div class="field">
@@ -4745,7 +4771,7 @@
                                                     style="width: 16px; height: 16px; cursor: pointer;">
                                                 <span>Activity Log</span>
                                             </label>
-                                                              <label
+                                            <label
                                                 style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                                                 <input type="checkbox" class="tab-checkbox" value="rdproject"
                                                     style="width: 16px; height: 16px; cursor: pointer;">
@@ -5932,14 +5958,14 @@
                 enterPurpose: "กรอกวัตถุประสงค์ของโครงการ...",
                 marketingSection: "มาร์เกตติ้ง",
                 specification: "ข้อมูลจำเพาะ / วิธีการ",
-                enterSpecification: "กรอกข้อมูลจำเพาะ...",
+                enterSpecification: "กรอกรายละเอียดสินค้า...",
                 packaging: "ขนาดบรรจุภัณฑ์",
                 enterPackaging: "เช่น 1000x500x300 mm",
                 conditions: "เงื่อนไข",
                 new: "ใหม่",
-                customer: "สำหรับลูกค้า ร้าน/บริษัท",
-                productionLocation: "สถานที่ผลิต",
-                enterLocation: "กรอกสถานที่...",
+                customer: "สำหรับลูกค้า",
+                productSample: "ตัวอย่างที่ต้องการ",
+                enterSample: "กรอกตัวอย่างสินค้าที่ต้องการ...",
                 saleObjective: "วัตถุประสงค์การขาย",
                 enterSaleObjective: "กรอกวัตถุประสงค์การขาย...",
                 customerInfo: "ข้อมูลลูกค้า",
@@ -5961,7 +5987,20 @@
                 enterBreakEven: "กรอกจุดคุ้มทุน...",
                 submitProject: "ส่งโครงการ",
                 followers: "ผู้ติดตาม",
-                links: "การเชื่อมโยง"
+                links: "การเชื่อมโยง",
+                shopCompanyName: "ร้าน / บริษัท",
+                enterShopCompanyName: "กรอกชื่อร้าน / บริษัท...",
+                salesInformation: "ข้อมูลการขาย",
+                targetCustomerGroup: "ลูกค้ากลุ่มเป้าหมาย",
+                enterTargetCustomer: "กรอกกลุ่มลูกค้าเป้าหมาย...",
+                monthlyQuantity: "ปริมาณต่อเดือน",
+                enterQuantity: "กรอกปริมาณ...",
+                unitSalePrice: "ราคาขายต่อหน่วย",
+                enterPrice: "กรอกราคา...",
+                monthlySalesRevenue: "ยอดขายต่อเดือน",
+                enterRevenue: "กรอกยอดขาย...",
+                purchaseSaleTerms: "เงื่อนไขการซื้อขาย",
+                enterTerms: "กรอกเงื่อนไขการซื้อขาย..."
             },
             en: {
                 dept_arch_NXT: "Architect",
@@ -6355,14 +6394,14 @@
                 enterPurpose: "Enter project purpose/objective...",
                 marketingSection: "Marketing",
                 specification: "Specification",
-                enterSpecification: "Enter specification...",
+                enterSpecification: "Enter Product Details...",
                 packaging: "Packaging Size",
                 enterPackaging: "e.g., 1000x500x300 mm",
                 conditions: "Conditions",
                 new: "New",
                 customer: "for Customer",
-                productionLocation: "Production Location",
-                enterLocation: "Enter location...",
+                productSample: "Product Sample",
+                enterSample: "Enter Product Sample...",
                 saleObjective: "Sale Objective",
                 enterSaleObjective: "Enter sale objective...",
                 customerInfo: "Customer Information",
@@ -6384,7 +6423,20 @@
                 enterBreakEven: "Enter break-even point...",
                 submitProject: "Submit Project",
                 followers: "followers",
-                links: "links"
+                links: "links",
+                shopCompanyName: "Shop / Company Name",
+                enterShopCompanyName: "Enter shop or company name...",
+                salesInformation: "Sales Information",
+                targetCustomerGroup: "Target Customer Group",
+                enterTargetCustomer: "Enter target customer group...",
+                monthlyQuantity: "Monthly Quantity",
+                enterQuantity: "Enter quantity...",
+                unitSalePrice: "Unit Sale Price",
+                enterPrice: "Enter price...",
+                monthlySalesRevenue: "Monthly Sales Revenue",
+                enterRevenue: "Enter sales revenue...",
+                purchaseSaleTerms: "Purchase/Sale Terms",
+                enterTerms: "Enter purchase/sale terms..."
             }
 
         };
@@ -7807,11 +7859,12 @@
             const followersBadge = document.getElementById('followersPendingBadge')
 
             if (pendingBadge && followersBadge) {
-                const count = pendingBadge.textContent
+                const count = pendingBadge.textContent.trim()
                 if (count && parseInt(count) > 0) {
-                    followersBadge.textContent = count > 9 ? '9+' : count
+                    followersBadge.textContent = parseInt(count) > 9 ? '9+' : count
                     followersBadge.style.display = 'flex'
                 } else {
+                    followersBadge.textContent = ''
                     followersBadge.style.display = 'none'
                 }
             }
@@ -7866,6 +7919,7 @@
 
                 if (!data.pendingUsers || data.pendingUsers.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined">check_circle</span><p>No pending registrations.</p></div></td></tr>`
+                    badge.textContent = ''
                     badge.style.display = 'none'
                     updatePendingApprovalsVisibility()
                     refreshFollowersPendingBadge()
@@ -7936,7 +7990,8 @@
                     'success',
                     null
                 )
-                loadPendingUsers()
+                await loadPendingUsers()
+                refreshFollowersPendingBadge()
             } catch (e) {
                 console.error('❌ Error approving user:', e)
                 alert('Error: ' + e.message)
@@ -7966,7 +8021,8 @@
                     null,
                     'notif_userRejected'
                 )
-                loadPendingUsers()
+                await loadPendingUsers()
+                refreshFollowersPendingBadge()
             } catch (e) {
                 console.error('❌ Error rejecting user:', e)
                 alert('Error: ' + e.message)
@@ -9298,6 +9354,25 @@
             updateRecipientsCount()
         }
 
+        // ── Toggle Shop/Company Name Field for R&D Project ────────
+        function toggleRDShopNameField() {
+            const conditionsOtherRadio = document.getElementById('rdConditionsOther')
+            const shopNameField = document.getElementById('rdShopNameField')
+            
+            if (conditionsOtherRadio && shopNameField) {
+                shopNameField.style.display = conditionsOtherRadio.checked ? 'block' : 'none'
+            }
+        }
+
+        // ── Calculate Total Cost (Raw Material + Other + Production) ──────
+        function calculateRDTotalCost() {
+            const rawMaterialCost = parseFloat(document.getElementById('rdRawMaterialCost').value) || 0
+            const otherCost = parseFloat(document.getElementById('rdOtherCost').value) || 0
+            const productionCost = parseFloat(document.getElementById('rdProductionCost').value) || 0
+            const totalCost = rawMaterialCost + otherCost + productionCost
+            document.getElementById('rdTotalCost').value = totalCost.toFixed(2)
+        }
+
         // ── Update Type Checkbox Styling ────────
         function updateTypeCheckboxStyle() {
             document.querySelectorAll('.memo-type-checkbox').forEach(radio => {
@@ -9478,11 +9553,20 @@
                 
                 // Marketing Section
                 const specification = document.getElementById('rdSpecification').value.trim()
+                const conditions = document.querySelector('input[name="conditions"]:checked')?.value || 'RMC Stock'
+                const shopName = document.getElementById('rdShopName')?.value.trim() || ''
                 const packagingType = document.querySelector('input[name="packagingType"]:checked')?.value
-                const productionLocation = document.getElementById('rdProductionLocation').value.trim()
+                const productSample = document.getElementById('rdProductSample').value.trim()
                 const saleObjective = document.getElementById('rdSaleObjective').value.trim()
                 const customerInfo = document.getElementById('rdCustomer').value.trim()
                 const marketInfo = document.getElementById('rdMarket').value.trim()
+                
+                // Sales Information Section
+                const targetCustomerGroup = document.getElementById('rdTargetCustomerGroup').value.trim()
+                const monthlyQuantity = parseInt(document.getElementById('rdMonthlyQuantity').value) || 0
+                const unitSalePrice = parseFloat(document.getElementById('rdUnitSalePrice').value) || 0
+                const monthlySalesRevenue = parseFloat(document.getElementById('rdMonthlySalesRevenue').value) || 0
+                const purchaseSaleTerms = document.getElementById('rdPurchaseSaleTerms').value.trim()
                 
                 // Engineering Section
                 const rawMaterialCost = parseFloat(document.getElementById('rdRawMaterialCost').value) || 0
@@ -9508,12 +9592,19 @@
                     division,
                     purpose,
                     specification,
+                    conditions,
+                    shopName,
                     packaging,
                     packagingType,
-                    productionLocation,
+                    productSample,
                     saleObjective,
                     customerInfo,
                     marketInfo,
+                    targetCustomerGroup,
+                    monthlyQuantity,
+                    unitSalePrice,
+                    monthlySalesRevenue,
+                    purchaseSaleTerms,
                     rawMaterialCost,
                     otherCost,
                     productionCost,
@@ -9560,13 +9651,26 @@
             
             // Marketing Section
             document.getElementById('rdSpecification').value = ''
+            // Reset conditions to default (RMC Stock)
+            document.getElementById('rdConditionsRMC').checked = true
+            document.getElementById('rdConditionsOther').checked = false
+            document.getElementById('rdShopName').value = ''
+            // Hide shop name field
+            document.getElementById('rdShopNameField').style.display = 'none'
             document.querySelectorAll('input[name="packagingType"]').forEach(radio => {
                 radio.checked = false
             })
-            document.getElementById('rdProductionLocation').value = ''
+            document.getElementById('rdProductSample').value = ''
             document.getElementById('rdSaleObjective').value = ''
             document.getElementById('rdCustomer').value = ''
             document.getElementById('rdMarket').value = ''
+            
+            // Sales Information Section
+            document.getElementById('rdTargetCustomerGroup').value = ''
+            document.getElementById('rdMonthlyQuantity').value = ''
+            document.getElementById('rdUnitSalePrice').value = ''
+            document.getElementById('rdMonthlySalesRevenue').value = ''
+            document.getElementById('rdPurchaseSaleTerms').value = ''
             
             // Engineering Section
             document.getElementById('rdRawMaterialCost').value = ''
