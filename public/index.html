@@ -8770,7 +8770,7 @@
                 }
 
                 let rows = ''
-                for (let user of data.users) {
+                for (let user of (data.users || []).filter(u => u.username !== 'RMCadmin')) {
                     const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'
                     const role = user.role || 'user'
                     const roleStyle = role === 'admin' ? 'color: var(--accent); font-weight: 700;' : ''
@@ -10251,7 +10251,7 @@
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
                 const usersData = await usersRes.json()
-                const totalUsers = (usersData.users || []).length
+                const totalUsers = (usersData.users || []).filter(u => u.username !== 'RMCadmin').length
 
                 // Fetch total followers
                 const followersRes = await fetch('/followers')
@@ -10270,7 +10270,10 @@
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
                 const linkedData = await linkedRes.json()
-                const linkedFollowers = linkedData.linkedFollowers || []
+                const linkedFollowers = (linkedData.linkedFollowers || []).filter(link => {
+                    const user = (usersData.users || []).find(u => u.userId === link.userId)
+                    return user && user.username !== 'RMCadmin'
+                })
 
                 // Count unique users with linked followers
                 const usersWithLinked = new Set(linkedFollowers.map(link => link.userId)).size
