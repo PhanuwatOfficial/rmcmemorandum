@@ -7003,12 +7003,9 @@
                 reloadUserDepartments()
             }
             if (name === 'dashboard' && currentUser) {
-                if (!viewLoadStatus.dashboard) {
-                    refreshDashboard()
-                    loadSentMemos()
-                    updateMemoTableColumnVisibility()
-                    viewLoadStatus.dashboard = true
-                }
+                refreshDashboard()
+                loadSentMemos()
+                updateMemoTableColumnVisibility()
             }
             
             if (name === 'compose' && currentUser) {
@@ -7025,35 +7022,29 @@
                 updateTypeCheckboxStyle()
             }
             if (name === 'received-memos' && currentUser) {
-                if (!viewLoadStatus['received-memos']) {
-                    loadReceivedMemos()
-                    updateMemoTableColumnVisibility()
-                    viewLoadStatus['received-memos'] = true
-                }
+                loadReceivedMemos()
+                updateMemoTableColumnVisibility()
             }
             if (name === 'followers' && currentUser) {
-                if (!viewLoadStatus.followers) {
-                    loadFollowerRegistryStats()
-                    loadFollowers()
-                    // Show admin section if user is admin
-                    const adminSection = document.getElementById('adminOnlyFollowerMgmt')
-                    const pendingSection = document.getElementById('adminPendingApprovals')
-                    if (adminSection) {
-                        adminSection.style.display = currentUser.role === 'admin' ? 'block' : 'none'
-                        if (pendingSection) {
-                            pendingSection.style.display = currentUser.role === 'admin' ? 'block' : 'none'
-                        }
-                        if (currentUser.role === 'admin') {
-                            loadAllUsers()
-                            loadLinkedFollowers()
-                            loadAvailableFollowersForLinking()
-                            loadUsersForLinking()
-                            loadPendingUsers()
-                            loadDepartmentsList()
-                            loadDepartmentStructure()
-                        }
+                loadFollowerRegistryStats()
+                loadFollowers()
+                // Show admin section if user is admin
+                const adminSection = document.getElementById('adminOnlyFollowerMgmt')
+                const pendingSection = document.getElementById('adminPendingApprovals')
+                if (adminSection) {
+                    adminSection.style.display = currentUser.role === 'admin' ? 'block' : 'none'
+                    if (pendingSection) {
+                        pendingSection.style.display = currentUser.role === 'admin' ? 'block' : 'none'
                     }
-                    viewLoadStatus.followers = true
+                    if (currentUser.role === 'admin') {
+                        loadAllUsers()
+                        loadLinkedFollowers()
+                        loadAvailableFollowersForLinking()
+                        loadUsersForLinking()
+                        loadPendingUsers()
+                        loadDepartmentsList()
+                        loadDepartmentStructure()
+                    }
                 }
                 // Start real-time stats refresh every time the followers view is shown
                 startFollowerStatsRefresh()
@@ -7063,10 +7054,7 @@
                 loadDashboardLogs()
             }
             if (name === 'logs' && currentUser) {
-                if (!viewLoadStatus.logs) {
-                    loadLogs(false)
-                    viewLoadStatus.logs = true
-                }
+                loadLogs(false)
             }
             if (name === 'rdproject' && currentUser) {
                 clearRDProject()
@@ -10179,7 +10167,7 @@
             const statusEl = document.getElementById('sentMemosStatus')
             const searchInput = document.getElementById('topbarSearchInput')
 
-            tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingSentMemos">Loading sent memos...</p></div></td></tr>`
+            tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingSentMemos">Loading sent memos...</p></div></td></tr>`
             applyTranslations()
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
@@ -10227,7 +10215,7 @@
             const statusEl = document.getElementById('receivedMemosStatus')
             const searchInput = document.getElementById('topbarSearchInput')
 
-            document.getElementById('receivedMemosTbody').innerHTML = `<tr><td colspan="6"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingReceivedMemos">Loading received memos...</p></div></td></tr>`
+            document.getElementById('receivedMemosTbody').innerHTML = `<tr><td colspan="7"><div class="empty-state"><span class="material-symbols-outlined" style="animation:spin 1s linear infinite;display:inline-block;">refresh</span><p data-translate="loadingReceivedMemos">Loading received memos...</p></div></td></tr>`
             applyTranslations()
             statusEl.className = 'status-msg loading show'
             statusEl.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty'
