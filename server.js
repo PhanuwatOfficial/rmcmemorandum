@@ -2929,6 +2929,125 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
 })
 
 // ──────────────────────────────────────────────
+// Acknowledge Memo (Mark as Read)
+// ──────────────────────────────────────────────
+app.post("/memo/acknowledge/:memoId", verifyToken, async (req, res) => {
+  try {
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    const memoId = req.params.memoId
+    const { senderUserId } = req.body
+
+    // Find the memo in received_memos first
+    let receivedMemo = await firebase_get(`received_memos/${req.userId}/${memoId}`)
+    
+    let memoData = null
+    let actualSenderId = senderUserId
+
+    if (!receivedMemo) {
+      // If not in received_memos, search for it in sent_memos (for linked followers)
+      const allUsers = await firebase_get('users')
+      if (allUsers && typeof allUsers === 'object') {
+        for (let userId in allUsers) {
+          const sentMemos = await firebase_get(`sent_memos/${userId}`)
+          if (sentMemos && sentMemos[memoId]) {
+            memoData = sentMemos[memoId]
+            actualSenderId = userId
+            break
+          }
+        }
+      }
+    } else {
+      memoData = receivedMemo
+      // If senderUserId not provided, try to get it from the memo
+      if (!actualSenderId && receivedMemo.senderUserId) {
+        actualSenderId = receivedMemo.senderUserId
+      }
+    }
+
+    if (!memoData) {
+      return res.status(404).json({ error: "Memo not found" })
+    }
+
+    // Update sent memo to track acknowledgment status per recipient (do this first)
+    if (actualSenderId) {
+      const sentMemo = await firebase_get(`sent_memos/${actualSenderId}/${memoId}`)
+      if (sentMemo) {
+        // Initialize acknowledgments tracking if not exists
+        if (!sentMemo.acknowledgments) {
+          sentMemo.acknowledgments = {}
+        }
+        
+        // Track this recipient's acknowledgment
+        sentMemo.acknowledgments[req.userId] = {
+          acknowledged: true,
+          acknowledgedAt: new Date().toISOString(),
+          acknowledgedByName: `${currentUser.name} ${currentUser.surname}`,
+          userId: req.userId
+        }
+        
+        await firebase_set(`sent_memos/${actualSenderId}/${memoId}`, sentMemo)
+      }
+    }
+
+    // Update received memo with acknowledgment and copy acknowledgments from sent_memos
+    if (receivedMemo) {
+      receivedMemo.acknowledged = true
+      receivedMemo.acknowledgedAt = new Date().toISOString()
+      receivedMemo.acknowledgedBy = req.userId
+      receivedMemo.acknowledgedByName = `${currentUser.name} ${currentUser.surname}`
+      
+      // Also copy acknowledgments from sent_memos to received_memos for display consistency
+      if (actualSenderId) {
+        const sentMemo = await firebase_get(`sent_memos/${actualSenderId}/${memoId}`)
+        if (sentMemo && sentMemo.acknowledgments) {
+          receivedMemo.acknowledgments = sentMemo.acknowledgments
+        }
+      }
+      
+      await firebase_set(`received_memos/${req.userId}/${memoId}`, receivedMemo)
+    }
+
+    // Send notification to sender
+    if (actualSenderId) {
+
+      // Send notification to sender
+      const notification = {
+        id: Date.now().toString(),
+        title: 'ผู้รับอ่านเมมโมแล้ว',
+        message: `${currentUser.name} ${currentUser.surname} ได้อ่านเมมโมเรื่อง "${memoData.title}"`,
+        type: 'acknowledged',
+        read: false,
+        timestamp: new Date().toISOString(),
+        memoId: memoId,
+        acknowledgedBy: req.userId,
+        acknowledgedByName: `${currentUser.name} ${currentUser.surname}`
+      }
+
+      try {
+        await firebase_set(`notifications/${actualSenderId}/${notification.id}`, notification)
+      } catch (err) {
+        // Silent error - notification not critical
+      }
+    }
+
+    addLog('info', 'Acknowledged memo', {
+      memoId,
+      acknowledgedBy: req.userId,
+      acknowledgedByName: `${currentUser.name} ${currentUser.surname}`,
+      memoTitle: memoData.title,
+      docNumber: memoData.docNumber || ''
+    })
+    res.json({ status: "Memo acknowledged", memoId })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ──────────────────────────────────────────────
 // Tab Access Control System
 // ──────────────────────────────────────────────
 

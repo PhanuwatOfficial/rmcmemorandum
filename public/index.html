@@ -45,6 +45,8 @@
             --green-bg: #eaf5ef;
             --red: #8b1a1a;
             --red-bg: #fdf0f0;
+            --yellow: #b8860b;
+            --yellow-bg: #fcfae5;
             --amber: #7a5200;
             --amber-bg: #fdf6e3;
             --blue: #1a3a6b;
@@ -775,6 +777,20 @@
             border-color: var(--red);
         }
 
+
+        .btn-edit {
+            background: var(--yellow-bg);
+            color: var(--yellow);
+            border: 1px solid #eeebbe;
+        }
+
+        .btn-edit:hover {
+            background: #f8f5c7;
+            border-color: var(--yellow);
+        }
+
+   
+
         .btn-sm {
             padding: 7px 13px;
             font-size: 11px;
@@ -894,10 +910,10 @@
             box-shadow: 0 4px 12px rgba(26, 39, 64, 0.2);
         }
 
-        .memo-detail-footer .btn-ghost:hover {
+        /* .memo-detail-footer .btn-ghost:hover {
             background: rgba(26, 39, 64, 0.08);
             box-shadow: 0 2px 6px rgba(26, 39, 64, 0.08);
-        }
+        } */
 
         /* Memo Status Section Styles */
         #memoApprovalStatusSection,
@@ -1131,7 +1147,8 @@
 
         tbody tr:hover {
             background: #e2e8f088;
-            transform: scale(1.01);
+            /* transform: scale(1.01); */
+            transform: translateY(-2px);
             transition: all 0.2s ease;
         }
 
@@ -3684,17 +3701,10 @@
                     </div>
                     <div class="section-body">
                         <!-- Project Details Grid -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                            <div class="field">
-                                <label data-translate="date">Date</label>
-                                <input id="rdProjectDate" type="date">
-                            </div>
-<!--prompt: ไม่ต้องให้กรอก date ให้ใช้วันที่ปัจจุบัน เหมือนกับ compose memo-->                            
-                            <div class="field">
-                                <label data-translate="projectNo">Project No</label>
-                                <input id="rdProjectNo" type="text" placeholder="Enter project number..."
-                                    data-translate="enterProjectNo">
-                            </div>
+                        <div class="field">
+                            <label data-translate="projectNo">Project No</label>
+                            <input id="rdProjectNo" type="text" placeholder="Enter project number..."
+                                data-translate="enterProjectNo">
                         </div>
 
                         <div class="field">
@@ -4003,6 +4013,14 @@
                     </div>
                 </div>
             </div>
+<!--
+prompt:            
+ใน th จัดการ ให้เพิ่มให้ผู้รับกดปุ่ม รับทราบ
+เพื่อให้ผู้รับเมมโม รับทราบว่าอ่านเมมโมแล้ว
+
+เพิ่มข้อมูลใน db.ref("received_memos") , db.ref("sent_memos")
+ด้วย-->
+
 
             <!-- ── PENDING APPROVALS VIEW ────────────── -->
             <div id="view-pending-approvals" class="view" style="display:none;">
@@ -5860,7 +5878,9 @@
                 logLogout: "ออกจากระบบ",
                 logSendMemo: "ส่งเมมโม",
                 logApprovedMemo: "อนุมัติเมมโม",
+                logAcknowledgedMemo: "รับทราบเมมโม",
                 logRejectedMemo: "ปฏิเสธเมมโม",
+                logDeletedMemo: "ลบเมมโม",
                 logNewFollowers: "ผู้ติดตามใหม่",
                 logUserDeleted: "ลบผู้ใช้",
                 logSendMemoPendingApproval: "ส่งเมมโม (รอการอนุมัติ)",
@@ -5948,6 +5968,10 @@
                 errorApprovingMemo: "เกิดข้อผิดพลาดในการอนุมัติเมมโม",
                 memoRejectedSuccessfully: "ปฏิเสธเมมโมสำเร็จ",
                 errorRejectingMemo: "เกิดข้อผิดพลาดในการปฏิเสธเมมโม",
+                acknowledge: "รับทราบ",
+                acknowledged: "รับทราบแล้ว",
+                memoAcknowledgedSuccessfully: "รับทราบเมมโมแล้ว",
+                errorAcknowledgingMemo: "เกิดข้อผิดพลาดในการรับทราบเมมโม",
                 success: "สำเร็จ",
                 error: "ข้อผิดพลาด",
                 alert: "แจ้งเตือน",
@@ -6272,7 +6296,9 @@
                 logLogout: "Logout",
                 logSendMemo: "Sent Memo",
                 logApprovedMemo: "Approved Memo",
+                logAcknowledgedMemo: "Acknowledged Memo",
                 logRejectedMemo: "Rejected Memo",
+                logDeletedMemo: "Deleted Memo",
                 logNewFollowers: "New Follower",
                 logUserDeleted: "User Deleted",
                 logSendMemoPendingApproval: "Send Memo (Pending Approval)",
@@ -6360,6 +6386,10 @@
                 errorApprovingMemo: "Error approving memo",
                 memoRejectedSuccessfully: "Memo rejected successfully",
                 errorRejectingMemo: "Error rejecting memo",
+                acknowledge: "Acknowledge",
+                acknowledged: "Acknowledged",
+                memoAcknowledgedSuccessfully: "Memo acknowledged successfully",
+                errorAcknowledgingMemo: "Error acknowledging memo",
                 success: "Success",
                 error: "Error",
                 "dept_บริหาร": "Administration",
@@ -6602,7 +6632,9 @@
             'logout': 'logLogout',
             'send memo': 'logSendMemo',
             'approved memo': 'logApprovedMemo',
+            'acknowledged memo': 'logAcknowledgedMemo',
             'rejected memo': 'logRejectedMemo',
+            'deleted memo': 'logDeletedMemo',
             'new followers': 'logNewFollowers',
             'user deleted': 'logUserDeleted',
             'send memo (pending approval)': 'logSendMemoPendingApproval'
@@ -6617,7 +6649,9 @@
             'Logout': 'logLogout',
             'Sent Memo': 'logSendMemo',
             'Approved Memo': 'logApprovedMemo',
+            'Acknowledged Memo': 'logAcknowledgedMemo',
             'Rejected Memo': 'logRejectedMemo',
+            'Deleted Memo': 'logDeletedMemo',
             'New Follower': 'logNewFollowers',
             'Follower Linked': 'logFollowerLinked',
             'Follower Unlinked': 'logFollowerUnlinked',
@@ -9561,7 +9595,9 @@
         async function submitRDProject() {
             try {
                 const projectNo = document.getElementById('rdProjectNo').value.trim()
-                const projectDate = document.getElementById('rdProjectDate').value
+                // Use current date automatically
+                const today = new Date()
+                const projectDate = today.toISOString().split('T')[0]
                 const projectName = document.getElementById('rdProjectName').value.trim()
                 const department = document.getElementById('rdDepartment').value
                 const division = document.getElementById('rdDivision').value
@@ -9659,7 +9695,6 @@
         function clearRDProject() {
             // Project Information
             document.getElementById('rdProjectNo').value = ''
-            document.getElementById('rdProjectDate').value = ''
             document.getElementById('rdProjectName').value = ''
             document.getElementById('rdDepartment').value = ''
             document.getElementById('rdDivision').value = ''
@@ -9935,7 +9970,7 @@
                 const recipientName = memo.recipientNames ? memo.recipientNames.join(', ') : (memo.recipientName || 'Unknown')
 
                 // Determine status badge
-                let statusBadge = '<span class="badge badge-pending">ส่งแล้ว</span>'
+                let statusBadge = '<span class="badge" style="background: var(--green-bg); color: var(--green);">ส่งแล้ว</span>'
                 if (memo.status === 'pending_approval') {
                     statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber);">รอการอนุมัติ</span>'
                 } else if (memo.status === 'approved') {
@@ -9943,6 +9978,11 @@
                 } else if (memo.status === 'rejected') {
                     statusBadge = '<span class="badge" style="background: var(--red-bg); color: var(--red);">ปฏิเสธ</span>'
                 }
+
+                // Count acknowledgments
+                const acknowledgmentCount = memo.acknowledgments ? Object.keys(memo.acknowledgments).length : 0
+                const recipientCount = memo.recipientIds ? memo.recipientIds.length : (memo.recipientId ? 1 : 0)
+                const acknowledgedInfo = recipientCount > 0 ? `<span style="font-size: 11px; color: var(--green);">✓ ${acknowledgmentCount}/${recipientCount} อ่านแล้ว</span>` : ''
 
                 rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
           <td data-label="Date" style="font-size:12px;">
@@ -9956,6 +9996,7 @@
           </td>
           <td data-label="Title">
             <div style="font-weight:500;">${escHtml(memo.title)}</div>
+            ${acknowledgedInfo}
           </td>
           <td data-label="Sender" class="td-sender-col" style="font-size:12px;color:var(--ink-muted);display:none;">
             ${escHtml(memo.senderName || currentUser?.name || 'Unknown')}
@@ -9975,7 +10016,7 @@
                 <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
                 <span data-translate="view">View</span>
               </button>
-              ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${memoJson})" title="Edit memo">
+              ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-edit btn-sm" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${memoJson})" title="Edit memo">
                 <span class="material-symbols-outlined" style="font-size: 14px;">edit</span>
                 <span data-translate="edit">Edit</span>
               </button>
@@ -10052,10 +10093,42 @@
                 // Get recipient name for admin/approver view
                 const recipientName = memo.recipientNames ? memo.recipientNames.join(', ') : (memo.recipientName || 'Unknown')
 
+                // Determine if current user should see acknowledge button
+                // For admin: only show if they are a recipient of the memo
+                let showAcknowledgeButton = true
+                if (currentUser && currentUser.role === 'admin') {
+                    const memoRecipientIds = memo.recipientIds || []
+                    showAcknowledgeButton = memoRecipientIds.includes(currentUser.userId)
+                }
+
+                // Build acknowledge button HTML
+                let acknowledgeButtonHtml = ''
+                if (showAcknowledgeButton) {
+                    // Show active acknowledge button for recipients
+                    if (memo.acknowledged) {
+                        // Already acknowledged - muted color
+                        acknowledgeButtonHtml = `<button class="btn btn-ghost btn-sm" disabled style="color: var(--ink-muted); opacity: 0.6;" title="Already acknowledged">
+                <span class="material-symbols-outlined" style="font-size: 14px;">done_all</span>
+                <span data-translate="acknowledged">Acknowledged</span>
+              </button>`
+                    } else {
+                        // Not yet acknowledged - prominent color
+                        acknowledgeButtonHtml = `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); acknowledgeMemo('${memo.memoId}', '${memo.senderUserId || ''}')" style="font-weight: 600;" title="Mark as acknowledged">
+                <span class="material-symbols-outlined" style="font-size: 14px;">done</span>
+                <span data-translate="acknowledge">Acknowledge</span>
+              </button>`
+                    }
+                }
+
+                // Count acknowledgments (for admin view showing acknowledgment status)
+                const acknowledgmentCount = memo.acknowledgments ? Object.keys(memo.acknowledgments).length : 0
+                const recipientCount = memo.recipientIds ? memo.recipientIds.length : (memo.recipientId ? 1 : 0)
+                const acknowledgedInfo = recipientCount > 0 ? `<span style="font-size: 11px; color: var(--green);">✓ ${acknowledgmentCount}/${recipientCount} อ่านแล้ว</span>` : ''
+
                 rows += `<tr style="cursor: pointer;" onclick="openMemoDetail(${memoJson})">
           <td data-label="Date" style="font-size:12px;"><span style="color:var(--ink-muted);">${dateStr}<br><span style="font-size:11px;">${timeStr}</span></span></td>
           <td data-label="Doc Number" style="font-size:12px;font-weight:600;color:var(--accent);">${memo.docNumber || '—'}</td>
-          <td data-label="Title"><div style="font-weight:500;">${escHtml(memo.title)}</div></td>
+          <td data-label="Title"><div style="font-weight:500;">${escHtml(memo.title)}</div>${acknowledgedInfo}</td>
           <td data-label="Sender" style="font-size:12px;color:var(--ink-muted);">${escHtml(memo.senderName || 'Unknown')}</td>
           <td data-label="Recipients" class="td-recipient-col" style="font-size:12px;color:var(--ink-muted);display:none;">
             ${escHtml(recipientName)}
@@ -10063,11 +10136,13 @@
           <td data-label="Preview" style="font-size:12px;color:var(--ink-faint);max-width:200px;"><span title="${escHtml(memo.content)}">${escHtml(preview)}</span></td>
           <td data-label="Action" style="text-align: center;">
             <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+              ${acknowledgeButtonHtml}
+
               <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openMemoDetail(${memoJson})">
                 <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
                 <span data-translate="view">View</span>
               </button>
-              ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${memoJson})" title="Edit memo">
+              ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-edit btn-sm" onclick="event.stopPropagation(); editMemo('${memo.memoId}', ${memoJson})" title="Edit memo">
                 <span class="material-symbols-outlined" style="font-size: 14px;">edit</span>
                 <span data-translate="edit">Edit</span>
               </button>
@@ -10408,6 +10483,10 @@
             if (msg.includes('approved memo')) {
                 return { type: 'approval', icon: 'check_circle', title: 'Approved Memo', color: 'green' };
             }
+            // Acknowledged memo
+            if (msg.includes('acknowledged memo')) {
+                return { type: 'approval', icon: 'done_all', title: 'Acknowledged Memo', color: 'green' };
+            }
             // Deleted memo
             if (msg.includes('deleted memo')) return { type: 'error', icon: 'delete_outline', title: 'Deleted Memo', color: 'red' }
             // Rejected memo
@@ -10490,13 +10569,9 @@
                     const docNumber = log.data?.docNumber || log.docNumber || ''
                     const title = log.data?.title || log.title || ''
                     const deletedByName = log.data?.deletedByName || log.admin || ''
-                    const memoId = log.data?.memoId || log.memoId || ''
                     
-                    // If docNumber is empty but we have memoId, fetch it
-                    let finalDocNumber = docNumber
-                    if (!finalDocNumber && memoId) {
-                        finalDocNumber = await getMemoDocNumber(memoId)
-                    }
+                    // docNumber is already stored in the deletion log, no need to fetch deleted memos
+                    const finalDocNumber = docNumber
                     
                     if (finalDocNumber || title || deletedByName) {
                         let message = 'deleted memo';
@@ -10534,6 +10609,28 @@
                     if (log.data.approvedByName) {
                         const byText = translations[currentLanguage]['by'] || 'by';
                         displayMessage += ` ${byText} ${log.data.approvedByName}`;
+                    }
+                }
+
+                // เพิ่มรายละเอียด acknowledged memo ใน log.message
+                if (
+                    messageKey &&
+                    messageKey.toLowerCase().includes('acknowledged memo') &&
+                    log.data && (log.data.docNumber || log.data.memoTitle || log.data.acknowledgedByName)
+                ) {
+                    message = 'acknowledged memo';
+                    if (log.data.memoTitle) message += ` "${log.data.memoTitle}"`;
+                    if (log.data.docNumber) message += ` ${log.data.docNumber}`;
+                    if (log.data.acknowledgedByName) {
+                        const byText = translations[currentLanguage]['by'] || 'by';
+                        message += ` ${byText} ${log.data.acknowledgedByName}`;
+                    }
+                    displayMessage = getMessageDisplay('acknowledged memo');
+                    if (log.data.memoTitle) displayMessage += ` "${log.data.memoTitle}"`;
+                    if (log.data.docNumber) displayMessage += ` ${log.data.docNumber}`;
+                    if (log.data.acknowledgedByName) {
+                        const byText = translations[currentLanguage]['by'] || 'by';
+                        displayMessage += ` ${byText} ${log.data.acknowledgedByName}`;
                     }
                 }
 
@@ -10935,16 +11032,35 @@
             // Show recipients list (always show if available)
             const recipientsElement = document.getElementById('memoDetailRecipients')
             if (memo.recipientObjects && Array.isArray(memo.recipientObjects) && memo.recipientObjects.length > 0) {
-                // Build HTML with each recipient's name and department
+                // Build HTML with each recipient's name, department, and acknowledgment status
                 const recipientHTML = memo.recipientObjects.map(recipient => {
                     const name = escHtml(recipient.name || 'Unknown')
                     const dept = recipient.department
+                    const recipientId = recipient.systemUserId  // Correct field name from database
+                    
+                    // Check if this recipient has acknowledged the memo
+                    const hasAcknowledged = memo.acknowledgments && recipientId && memo.acknowledgments[recipientId] && memo.acknowledgments[recipientId].acknowledged
+                    
+                    let recipientLine = ''
+                    if (hasAcknowledged) {
+                        recipientLine = `<span style="display: inline-flex; align-items: center; gap: 4px; color: var(--green);">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">done_all</span>
+                            <span>${name}</span>`
+                    } else {
+                        recipientLine = `<span>${name}</span>`
+                    }
+                    
                     if (dept) {
                         const deptKey = `dept_${dept}`
-                        return `${name} (<span data-translate="${deptKey}">${escHtml(dept)}</span>)`
+                        recipientLine += ` (<span data-translate="${deptKey}">${escHtml(dept)}</span>)`
                     }
-                    return name
-                }).join('\n')
+                    
+                    if (hasAcknowledged) {
+                        recipientLine += '</span>'
+                    }
+                    
+                    return recipientLine
+                }).join('<br>')
                 recipientsElement.innerHTML = recipientHTML
             } else if (memo.recipientNames && Array.isArray(memo.recipientNames) && memo.recipientNames.length > 0) {
                 recipientsElement.textContent = memo.recipientNames.join('\n')
@@ -12677,6 +12793,36 @@ function printMemoDetail() {
                 }
             } catch (err) {
                 await showAlertModal('errorRejectingMemo', 'error')
+            }
+        }
+
+        async function acknowledgeMemo(memoId, senderUserId) {
+            try {
+                const res = await fetch(`/memo/acknowledge/${memoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ senderUserId })
+                })
+
+                const data = await res.json()
+                if (res.ok) {
+                    await showAlertModal('memoAcknowledgedSuccessfully', 'success')
+                    // Reset and reload views to show updated data
+                    viewLoadStatus['received-memos'] = false
+                    viewLoadStatus['dashboard'] = false
+                    loadReceivedMemos()
+                    // Also reload sent memos if this is a sender to see updated read status
+                    viewLoadStatus['sent-memos'] = false
+                    loadSentMemos()
+                } else {
+                    await showAlertModal('errorAcknowledgingMemo', 'error')
+                }
+            } catch (err) {
+                console.error('Error acknowledging memo:', err)
+                await showAlertModal('errorAcknowledgingMemo', 'error')
             }
         }
 
