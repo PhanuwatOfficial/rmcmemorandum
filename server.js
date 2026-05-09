@@ -44,17 +44,17 @@ function addLog(level, messageKey, data = null) {
   })
 }
 
-// const config = {
-//   channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
-//   channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
-// }
+const config = {
+  channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
+  channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
+}
 
 //Test
 
-const config = {
-  channelAccessToken: "26QcmPpK39AJ60Mg9tnk9sorWmm9DhOv70KjkSradTe3UGenhIlhUrLii4kWukxF0BWOA/3FNhlZUQ25rMiS+cdsz33h/esKxpyXEEJx3i9Xv755YQABvc61s63yenpEmyvMC9ZUwFDTcAz/2ERAYQdB04t89/1O/w1cDnyilFU=",
-  channelSecret: "3e94265fab13b7b71fb338a355d4fc9d"
-}
+// const config = {
+//   channelAccessToken: "26QcmPpK39AJ60Mg9tnk9sorWmm9DhOv70KjkSradTe3UGenhIlhUrLii4kWukxF0BWOA/3FNhlZUQ25rMiS+cdsz33h/esKxpyXEEJx3i9Xv755YQABvc61s63yenpEmyvMC9ZUwFDTcAz/2ERAYQdB04t89/1O/w1cDnyilFU=",
+//   channelSecret: "3e94265fab13b7b71fb338a355d4fc9d"
+// }
 
 const client = new line.Client(config)
 
@@ -2767,15 +2767,19 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
       // Admins can approve any memo
       isAuthorizedApprover = true
     } else if (memoData.isRDProject) {
-      // Check if user is R&D Project approver
-      const rolesData = await firebase_get('rd_project_roles')
-      if (rolesData && rolesData.approverUserId === req.userId) {
-        isAuthorizedApprover = true
+      // Check if user is R&D Project approver (and not the sender)
+      if (req.userId !== memoSenderId) {
+        const rolesData = await firebase_get('rd_project_roles')
+        if (rolesData && rolesData.approverUserId === req.userId) {
+          isAuthorizedApprover = true
+        }
       }
     } else {
       // Verify current user is an authorized approver via memoApprovers
-      const sender = await firebase_get(`users/${memoSenderId}`)
-      const approvers = await firebase_get('memoApprovers')
+      // AND is not the sender (user cannot approve their own memo)
+      if (req.userId !== memoSenderId) {
+        const sender = await firebase_get(`users/${memoSenderId}`)
+        const approvers = await firebase_get('memoApprovers')
 
       // Convert sender's department name to UUID for comparison
       const allDepartments = await firebase_get('departments')
@@ -2810,6 +2814,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
             break
           }
         }
+      }
       }
     }
 
@@ -3148,6 +3153,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
+
 
 // Reject memo
 app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
@@ -4356,20 +4362,22 @@ app.post("/memo/:memoId/cc", verifyToken, async (req, res) => {
     // Allow CC if:
     // 1. Memo is approved (regular memos)
     // 2. Memo is R&D project with completed status
-    // 3. Current user is the sender
-    // 4. Current user is admin (can CC any approved memo)
+    // 3. Memo is Raw Material with acknowledged status
+    // 4. Memo is sent without approval requirement
+    // 5. Current user is the sender (can CC any memo they sent)
+    // 6. Current user is admin (can CC approved/completed memos)
     const isApprovedMemo = memo.status === 'approved'
     const isCompletedRDProject = memo.isRDProject && memo.status === 'completed'
+    const isAcknowledgedRawMat = (memo.isRawMaterialRequest || memo.type === 'Raw Material Request') && memo.status === 'acknowledged'
+    const isSentMemo = memo.status === 'sent' && !memo.isRDProject && !memo.isRawMaterialRequest
     const isSender = memo.senderId === req.userId
     const isAdmin = currentUser && currentUser.role === 'admin'
     
-    if (!isApprovedMemo && !isCompletedRDProject && !isSender && !isAdmin) {
-      return res.status(403).json({ error: 'Only approved or completed memos can be CC' })
-    }
+    // Determine if user can CC this memo
+    const canCC = isApprovedMemo || isCompletedRDProject || isAcknowledgedRawMat || isSentMemo || isSender || (isAdmin && (isApprovedMemo || isCompletedRDProject || isAcknowledgedRawMat))
     
-    // Admin users can only CC approved or completed memos
-    if (isAdmin && !isApprovedMemo && !isCompletedRDProject) {
-      return res.status(403).json({ error: 'Admin can only CC approved or completed memos' })
+    if (!canCC) {
+      return res.status(403).json({ error: 'This memo cannot be CCed' })
     }
 
     const sender = currentUser  // Use already fetched currentUser
@@ -4400,7 +4408,8 @@ app.post("/memo/:memoId/cc", verifyToken, async (req, res) => {
         type: memo.type || 'Memorandum',
         title: memo.title,
         content: memo.content,
-        docNumber: memo.docNumber || '',
+        documentNo: memo.documentNo || memo.docNumber || '',
+        docNumber: memo.docNumber || memo.documentNo || '',
         sentAt: new Date().toISOString(),
         recipientId: recipientId,
         recipientIds: [recipientId],
@@ -6310,12 +6319,7 @@ app.post("/api/rawmat", verifyToken, async (req, res) => {
   }
 })
 
-/*prompt:
-เพิ่มส่ง/บันทึกข้อมูล เลขที่เอกสาร,วันที่
 
-แก้ไขข้อมูล
--ผู้ส่งให้แสดงชื่อ-นามสกุล (ตอนนี้แสดงผลแค่ name ไม่มีsurname)
-*/
 
 // Approve Raw Material Request (approver sends to engineer)
 app.post("/api/rawmat/:memoId/approve", verifyToken, async (req, res) => {
