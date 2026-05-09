@@ -44,9 +44,16 @@ function addLog(level, messageKey, data = null) {
   })
 }
 
+// const config = {
+//   channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
+//   channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
+// }
+
+//Test
+
 const config = {
-  channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
-  channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
+  channelAccessToken: "26QcmPpK39AJ60Mg9tnk9sorWmm9DhOv70KjkSradTe3UGenhIlhUrLii4kWukxF0BWOA/3FNhlZUQ25rMiS+cdsz33h/esKxpyXEEJx3i9Xv755YQABvc61s63yenpEmyvMC9ZUwFDTcAz/2ERAYQdB04t89/1O/w1cDnyilFU=",
+  channelSecret: "3e94265fab13b7b71fb338a355d4fc9d"
 }
 
 const client = new line.Client(config)
@@ -804,6 +811,26 @@ app.post("/user/update-departments", verifyToken, async (req, res) => {
   }
 })
 
+// Update user signature image
+app.post("/user/update-signature", verifyToken, async (req, res) => {
+  try {
+    const { signatureImageUrl } = req.body
+
+    const user = await firebase_get(`users/${req.userId}`)
+    if (!user) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    // Update signature
+    user.signatureImageUrl = signatureImageUrl
+    await firebase_set(`users/${req.userId}`, user)
+
+    res.json({ status: "Signature updated successfully" })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Get user's linked followers
 app.get("/user/followers", verifyToken, async (req, res) => {
   try {
@@ -893,6 +920,88 @@ app.get("/user/linked-followers-with-pictures", verifyToken, async (req, res) =>
   }
 })
 
+// Get user data by userId (for displaying signatures in memos)
+app.get("/api/user/:userId", verifyToken, async (req, res) => {
+  try {
+    const { userId } = req.params
+    const user = await firebase_get(`users/${userId}`)
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    // Return only necessary user data to avoid exposing sensitive info
+    res.json({
+      userId: user.userId,
+      username: user.username,
+      name: user.name,
+      surname: user.surname,
+      department: user.department,
+      signatureImageUrl: user.signatureImageUrl || null
+    })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Get specific memo with enriched approver signatures (for print preview)
+app.get("/api/memo/:memoId", verifyToken, async (req, res) => {
+  try {
+    const { memoId } = req.params
+    const allUsers = await firebase_get('users')
+    let foundMemo = null
+
+    // Search for memo across all users' sent_memos
+    if (allUsers && typeof allUsers === 'object') {
+      for (let userId in allUsers) {
+        const sentMemos = await firebase_get(`sent_memos/${userId}`)
+        if (sentMemos && sentMemos[memoId]) {
+          foundMemo = sentMemos[memoId]
+          break
+        }
+      }
+    }
+
+    if (!foundMemo) {
+      return res.status(404).json({ error: "Memo not found" })
+    }
+
+    // Enrich memo with full approvers data including signatures
+    if (foundMemo.approvers && Array.isArray(foundMemo.approvers)) {
+      foundMemo.approvalsInfo = await Promise.all(
+        foundMemo.approvers.map(async (approver) => {
+          const userData = await firebase_get(`users/${approver.approverId}`)
+          return {
+            approverId: approver.approverId,
+            approverName: approver.approverName,
+            approverUsername: approver.approverUsername,
+            signatureImageUrl: userData?.signatureImageUrl || null
+          }
+        })
+      )
+    }
+
+    // Also enrich sender and approvedBy with signatures
+    if (foundMemo.senderUserId) {
+      const senderUser = await firebase_get(`users/${foundMemo.senderUserId}`)
+      if (senderUser) {
+        foundMemo.senderSignatureImageUrl = senderUser.signatureImageUrl || null
+      }
+    }
+
+    if (foundMemo.approvedByUserId) {
+      const approverUser = await firebase_get(`users/${foundMemo.approvedByUserId}`)
+      if (approverUser) {
+        foundMemo.approverSignatureImageUrl = approverUser.signatureImageUrl || null
+      }
+    }
+
+    res.json(foundMemo)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Get departments for autocomplete (accessible to all authenticated users)
 // Get next document number (format: YY-0001)
 app.get("/next-doc-number", verifyToken, async (req, res) => {
@@ -946,6 +1055,115 @@ app.get("/next-doc-number", verifyToken, async (req, res) => {
   }
 })
 
+// ── Get Next R&D Project Number (P26-0001 format) ──────────────────────
+app.get("/next-rdproject-number", verifyToken, async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear().toString().slice(-2) // Get last 2 digits of year
+
+    // Get all users to scan through their sent_memos for R&D projects
+    const allUsersData = await firebase_get('users')
+
+    const allRDProjects = []
+
+    // Scan through each user's sent memos
+    if (allUsersData && typeof allUsersData === 'object') {
+      for (let userId in allUsersData) {
+        try {
+          const sentMemosData = await firebase_get(`sent_memos/${userId}`)
+          if (sentMemosData && typeof sentMemosData === 'object') {
+            const memos = Object.values(sentMemosData)
+            // Filter only R&D Project memos
+            const rdProjects = memos.filter(memo => memo.isRDProject)
+            allRDProjects.push(...rdProjects)
+          }
+        } catch (err) {
+          // User has no memos yet, continue
+          continue
+        }
+      }
+    }
+
+    // Filter R&D projects from current year that have a docNumber (project number)
+    const currentYearProjects = allRDProjects.filter(project => {
+      if (!project.docNumber) return false
+      const projectYear = project.docNumber.replace(/[^0-9]/g, '').substring(0, 2)
+      return projectYear === currentYear
+    })
+
+    let nextNumber = 1
+    if (currentYearProjects.length > 0) {
+      // Extract the number part from project numbers (P26-0001 format)
+      const projectNumbers = currentYearProjects.map(project => {
+        const match = project.docNumber.match(/(\d+)$/)
+        return match ? parseInt(match[1]) : 0
+      })
+      const maxNumber = Math.max(...projectNumbers)
+      nextNumber = maxNumber + 1
+    }
+
+    const projectNumber = `P${currentYear}-${String(nextNumber).padStart(4, '0')}`
+
+    res.json({ projectNumber })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── RAW MATERIAL REQUEST NUMBER ENDPOINT ──
+app.get("/next-rawmat-number", verifyToken, async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear().toString().slice(-2) // Get last 2 digits of year
+
+    // Get all users to scan through their received_memos for Raw Material Requests
+    const allUsersData = await firebase_get('users')
+
+    const allRawMatRequests = []
+
+    // Scan through each user's received memos
+    if (allUsersData && typeof allUsersData === 'object') {
+      for (let userId in allUsersData) {
+        try {
+          const receivedMemosData = await firebase_get(`received_memos/${userId}`)
+          if (receivedMemosData && typeof receivedMemosData === 'object') {
+            const memos = Object.values(receivedMemosData)
+            // Filter only Raw Material Request memos
+            const rawMatRequests = memos.filter(memo => memo.isRawMaterialRequest)
+            allRawMatRequests.push(...rawMatRequests)
+          }
+        } catch (err) {
+          // User has no memos yet, continue
+          continue
+        }
+      }
+    }
+
+    // Filter requests from current year that have a documentNo (document number)
+    const currentYearRequests = allRawMatRequests.filter(request => {
+      if (!request.documentNo) return false
+      const requestYear = request.documentNo.replace(/[^0-9]/g, '').substring(0, 2)
+      return requestYear === currentYear
+    })
+
+    let nextNumber = 1
+    if (currentYearRequests.length > 0) {
+      // Extract the number part from document numbers (R26-0001 format)
+      const docNumbers = currentYearRequests.map(request => {
+        const match = request.documentNo.match(/(\d+)$/)
+        return match ? parseInt(match[1]) : 0
+      })
+      const maxNumber = Math.max(...docNumbers)
+      nextNumber = maxNumber + 1
+    }
+
+    const documentNumber = `R${currentYear}-${String(nextNumber).padStart(4, '0')}`
+
+    res.json({ number: documentNumber })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+
 // Check if current user is a memo approver
 app.get("/user/is-approver", verifyToken, async (req, res) => {
   try {
@@ -966,6 +1184,25 @@ app.get("/user/is-approver", verifyToken, async (req, res) => {
     }
 
     res.json({ isApprover, approvalCount })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Check if current user is an R&D Project approver
+app.get("/user/is-rdproject-approver", verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId
+
+    // Get R&D Project roles
+    const rolesData = await firebase_get('rd_project_roles')
+    let isRDProjectApprover = false
+
+    if (rolesData && rolesData.approverUserId === userId) {
+      isRDProjectApprover = true
+    }
+
+    res.json({ isRDProjectApprover })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -1561,7 +1798,7 @@ app.post("/admin/memo-approvers/add", verifyToken, async (req, res) => {
   }
 })
 
-// Get all memo approvers
+// Get all memo approvers (admin only)
 app.get("/admin/memo-approvers", verifyToken, async (req, res) => {
   try {
     const currentUser = await firebase_get(`users/${req.userId}`)
@@ -1594,6 +1831,35 @@ app.get("/admin/memo-approvers", verifyToken, async (req, res) => {
     }
 
     res.json({ approvers: formattedApprovers })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Get memo approvers (authenticated users - for checking if current user is an approver)
+app.get("/memo-approvers", verifyToken, async (req, res) => {
+  try {
+    const approvers = await firebase_get('memoApprovers')
+    
+    if (!approvers) {
+      return res.json({ approvers: [] })
+    }
+
+    // Return all approvers data
+    const approversList = []
+    if (typeof approvers === 'object') {
+      for (const [id, approver] of Object.entries(approvers)) {
+        approversList.push({
+          id,
+          approverId: approver.approverId,
+          approverName: approver.approverName,
+          departmentId: approver.departmentId,
+          subDepartmentId: approver.subDepartmentId
+        })
+      }
+    }
+
+    res.json({ approvers: approversList })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -2074,7 +2340,7 @@ app.post("/send", async (req, res) => {
               contents: [
                 {
                   type: "text",
-                  text: "📋 New Memorandum",
+                  text: "New Memorandum",
                   weight: "bold",
                   color: "#182034",
                   size: "xl"
@@ -2275,13 +2541,35 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
                 department: sender.department,
                 department2: sender.department2,
                 username: sender.username
-              }
+              },
+              recipientObjects: memo.recipientObjects || []
             })
           }
         }
       })
+
+      // Also check admin's received_memos for R&D project final_approval stage
+      const adminReceivedMemos = await firebase_get(`received_memos/${userId}`)
+      if (adminReceivedMemos && typeof adminReceivedMemos === 'object') {
+        for (let memoId in adminReceivedMemos) {
+          const memo = adminReceivedMemos[memoId]
+          // Include R&D project memos in final_approval stage
+          if (memo.status === 'pending_approval' && memo.isRDProject && memo.stage === 'final_approval') {
+            pendingMemos.push({
+              ...memo,
+              senderObject: {
+                userId: memo.senderUserId,
+                name: memo.senderName?.split(' ')[0] || memo.senderName || 'Unknown',
+                surname: memo.senderName?.split(' ')[1] || '',
+                username: memo.senderName
+              },
+              recipientObjects: memo.recipientObjects || []
+            })
+          }
+        }
+      }
     } else {
-      // Regular approver - check if user is in memoApprovers
+      // Regular approver - check if user is in memoApprovers or R&D Project approver
       // Get all approver assignments for this user
       const approversData = await firebase_get('memoApprovers')
       const userApprovals = []
@@ -2294,8 +2582,12 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
         }
       }
 
-      // If user is not an approver, return empty list
-      if (userApprovals.length === 0) {
+      // Check if user is R&D Project approver
+      const rolesData = await firebase_get('rd_project_roles')
+      const isRDProjectApprover = rolesData && rolesData.approverUserId === userId
+
+      // If user is not a memo approver and not an R&D project approver, return empty list
+      if (userApprovals.length === 0 && !isRDProjectApprover) {
         return res.json({ pendingMemos: [], count: 0 })
       }
 
@@ -2326,6 +2618,10 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
         senderIds.map(senderId => firebase_get(`sent_memos/${senderId}`).catch(() => null))
       )
 
+      // Also check current user's received_memos for R&D project final_approval stage
+      const userReceivedMemos = await firebase_get(`received_memos/${userId}`)
+      const addedMemoIds = new Set()  // Track memos already added to avoid duplicates
+
       senderIds.forEach((senderId, idx) => {
         const sender = allUsers[senderId]
         const sentMemos = allSentMemosArray[idx]
@@ -2337,30 +2633,8 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
 
           // Check if memo is pending approval
           if (memo.status === 'pending_approval') {
-
-            // Convert sender's department name to UUID
-            let senderDepartmentId = sender.department
-            if (departmentNameToId[sender.department]) {
-              senderDepartmentId = departmentNameToId[sender.department]
-            }
-
-            // Convert sender's sub-department name to UUID
-            let senderSubDepartmentId = sender.department2
-            if (subDepartmentNameToId[sender.department2]) {
-              senderSubDepartmentId = subDepartmentNameToId[sender.department2]
-            }
-
-            // Verify this user is one of the approvers for this sender
-            const canApprove = userApprovals.some(approval => {
-              const match = approval.departmentId === senderDepartmentId &&
-                (!approval.subDepartmentId || approval.subDepartmentId === senderSubDepartmentId)
-
-              if (!match) {
-              }
-              return match
-            })
-
-            if (canApprove) {
+            // Check if it's an R&D project memo and user is R&D project approver
+            if (memo.isRDProject && isRDProjectApprover) {
               pendingMemos.push({
                 ...memo,
                 senderObject: {
@@ -2370,12 +2644,76 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
                   department: sender.department,
                   department2: sender.department2,
                   username: sender.username
-                }
+                },
+                recipientObjects: memo.recipientObjects || []
               })
+              addedMemoIds.add(memoId)  // Mark as added to prevent duplicate
+            } else if (!memo.isRDProject) {
+              // Regular memo - check memoApprovers
+              // Convert sender's department name to UUID
+              let senderDepartmentId = sender.department
+              if (departmentNameToId[sender.department]) {
+                senderDepartmentId = departmentNameToId[sender.department]
+              }
+
+              // Convert sender's sub-department name to UUID
+              let senderSubDepartmentId = sender.department2
+              if (subDepartmentNameToId[sender.department2]) {
+                senderSubDepartmentId = subDepartmentNameToId[sender.department2]
+              }
+
+              // Verify this user is one of the approvers for this sender
+              const canApprove = userApprovals.some(approval => {
+                const match = approval.departmentId === senderDepartmentId &&
+                  (!approval.subDepartmentId || approval.subDepartmentId === senderSubDepartmentId)
+
+                if (!match) {
+                }
+                return match
+              })
+
+              if (canApprove) {
+                pendingMemos.push({
+                  ...memo,
+                  senderObject: {
+                    userId: sender.userId,
+                    name: sender.name,
+                    surname: sender.surname,
+                    department: sender.department,
+                    department2: sender.department2,
+                    username: sender.username
+                  },
+                  recipientObjects: memo.recipientObjects || []
+                })
+              }
             }
           }
         }
       })
+
+      // Add R&D project memos from received_memos if user is R&D project approver
+      // Only add memos that weren't already added from sent_memos (to avoid duplicates)
+      if (isRDProjectApprover && userReceivedMemos && typeof userReceivedMemos === 'object') {
+        for (let memoId in userReceivedMemos) {
+          // Skip if already added from sent_memos
+          if (addedMemoIds.has(memoId)) continue
+
+          const memo = userReceivedMemos[memoId]
+          // Include R&D project memos in both marketing_pending and final_approval stages
+          if (memo.status === 'pending_approval' && memo.isRDProject && (memo.stage === 'marketing_pending' || memo.stage === 'final_approval')) {
+            pendingMemos.push({
+              ...memo,
+              senderObject: {
+                userId: memo.senderUserId,
+                name: memo.senderName?.split(' ')[0] || memo.senderName || 'Unknown',
+                surname: memo.senderName?.split(' ')[1] || '',
+                username: memo.senderName
+              },
+              recipientObjects: memo.recipientObjects || []
+            })
+          }
+        }
+      }
     }
 
     // Sort by sentAt descending (newest first)
@@ -2422,14 +2760,20 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "Memo is not pending approval" })
     }
 
-    // Check if user is admin - admins can approve any memo without memoApprovers check
+    // Check if user is authorized to approve this memo
     let isAuthorizedApprover = false
 
     if (currentUser.role === 'admin') {
       // Admins can approve any memo
       isAuthorizedApprover = true
+    } else if (memoData.isRDProject) {
+      // Check if user is R&D Project approver
+      const rolesData = await firebase_get('rd_project_roles')
+      if (rolesData && rolesData.approverUserId === req.userId) {
+        isAuthorizedApprover = true
+      }
     } else {
-      // Verify current user is an authorized approver
+      // Verify current user is an authorized approver via memoApprovers
       const sender = await firebase_get(`users/${memoSenderId}`)
       const approvers = await firebase_get('memoApprovers')
 
@@ -2524,7 +2868,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
               contents: [
                 {
                   type: "text",
-                  text: "📋 New Memorandum",
+                  text: "New Memorandum",
                   weight: "bold",
                   color: "#182034",
                   size: "xl"
@@ -2859,13 +3203,25 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
       }
     }
 
+    // Convert sender's sub-department name to UUID for comparison
+    const allDepartments2 = await firebase_get('departments2')
+    let senderSubDepartmentId = sender.department2
+    if (allDepartments2 && typeof allDepartments2 === 'object') {
+      for (const [subDeptId, subDept] of Object.entries(allDepartments2)) {
+        if (subDept.name === sender.department2) {
+          senderSubDepartmentId = subDeptId
+          break
+        }
+      }
+    }
+
     let isAuthorizedApprover = false
 
     if (approvers && typeof approvers === 'object') {
       for (const approver of Object.values(approvers)) {
         if (approver.approverId === req.userId &&
           approver.departmentId === senderDepartmentId &&
-          (!approver.subDepartmentId || approver.subDepartmentId === sender.department2)) {
+          (!approver.subDepartmentId || approver.subDepartmentId === senderSubDepartmentId)) {
           isAuthorizedApprover = true
           break
         }
@@ -2946,6 +3302,7 @@ app.post("/memo/acknowledge/:memoId", verifyToken, async (req, res) => {
     
     let memoData = null
     let actualSenderId = senderUserId
+    let isCCMemo = false
 
     if (!receivedMemo) {
       // If not in received_memos, search for it in sent_memos (for linked followers)
@@ -2966,14 +3323,21 @@ app.post("/memo/acknowledge/:memoId", verifyToken, async (req, res) => {
       if (!actualSenderId && receivedMemo.senderUserId) {
         actualSenderId = receivedMemo.senderUserId
       }
+      // Also check for senderId (for rawmat memos)
+      if (!actualSenderId && receivedMemo.senderId) {
+        actualSenderId = receivedMemo.senderId
+      }
+      
+      // Check if this is a CC memo
+      isCCMemo = receivedMemo.isCC === true
     }
 
     if (!memoData) {
       return res.status(404).json({ error: "Memo not found" })
     }
 
-    // Update sent memo to track acknowledgment status per recipient (do this first)
-    if (actualSenderId) {
+    // For regular memos (not CC), track acknowledgment in the sender's sent memo
+    if (!isCCMemo && actualSenderId) {
       const sentMemo = await firebase_get(`sent_memos/${actualSenderId}/${memoId}`)
       if (sentMemo) {
         // Initialize acknowledgments tracking if not exists
@@ -2992,6 +3356,29 @@ app.post("/memo/acknowledge/:memoId", verifyToken, async (req, res) => {
         await firebase_set(`sent_memos/${actualSenderId}/${memoId}`, sentMemo)
       }
     }
+    // For CC memos, track acknowledgment separately in the CC memo sent record (by CC sender)
+    else if (isCCMemo && actualSenderId) {
+      // For CC memos, we track acknowledgments in a separate ccAcknowledgments field in the CC sender's sent_memos
+      const ccSenderMemos = await firebase_get(`sent_memos/${actualSenderId}`)
+      if (ccSenderMemos && ccSenderMemos[memoId]) {
+        const ccMemoRecord = ccSenderMemos[memoId]
+        
+        // Initialize CC acknowledgments tracking if not exists
+        if (!ccMemoRecord.ccAcknowledgments) {
+          ccMemoRecord.ccAcknowledgments = {}
+        }
+        
+        // Track this CC recipient's acknowledgment
+        ccMemoRecord.ccAcknowledgments[req.userId] = {
+          acknowledged: true,
+          acknowledgedAt: new Date().toISOString(),
+          acknowledgedByName: `${currentUser.name} ${currentUser.surname}`,
+          userId: req.userId
+        }
+        
+        await firebase_set(`sent_memos/${actualSenderId}/${memoId}`, ccMemoRecord)
+      }
+    }
 
     // Update received memo with acknowledgment and copy acknowledgments from sent_memos
     if (receivedMemo) {
@@ -3000,8 +3387,15 @@ app.post("/memo/acknowledge/:memoId", verifyToken, async (req, res) => {
       receivedMemo.acknowledgedBy = req.userId
       receivedMemo.acknowledgedByName = `${currentUser.name} ${currentUser.surname}`
       
-      // Also copy acknowledgments from sent_memos to received_memos for display consistency
-      if (actualSenderId) {
+      // Copy acknowledgments from sent_memos based on memo type
+      if (isCCMemo && actualSenderId) {
+        // For CC memos, copy CC acknowledgments only
+        const ccSenderMemos = await firebase_get(`sent_memos/${actualSenderId}`)
+        if (ccSenderMemos && ccSenderMemos[memoId] && ccSenderMemos[memoId].ccAcknowledgments) {
+          receivedMemo.ccAcknowledgments = ccSenderMemos[memoId].ccAcknowledgments
+        }
+      } else if (!isCCMemo && actualSenderId) {
+        // For regular memos, copy regular acknowledgments only (not CC related)
         const sentMemo = await firebase_get(`sent_memos/${actualSenderId}/${memoId}`)
         if (sentMemo && sentMemo.acknowledgments) {
           receivedMemo.acknowledgments = sentMemo.acknowledgments
@@ -3011,14 +3405,20 @@ app.post("/memo/acknowledge/:memoId", verifyToken, async (req, res) => {
       await firebase_set(`received_memos/${req.userId}/${memoId}`, receivedMemo)
     }
 
-    // Send notification to sender
+    // Send notification to sender (or CC sender for CC memos)
     if (actualSenderId) {
+      // For CC memos, notify the person who CC'd it; for regular memos, notify the original sender
+      const notificationRecipient = isCCMemo ? actualSenderId : actualSenderId
+      
+      const notificationTitle = isCCMemo ? 'ผู้รับสำเนาอ่านแล้ว' : 'ผู้รับอ่านเมมโมแล้ว'
+      const notificationMessage = isCCMemo 
+        ? `${currentUser.name} ${currentUser.surname} ได้อ่านสำเนาเมมโมเรื่อง "${memoData.title}"`
+        : `${currentUser.name} ${currentUser.surname} ได้อ่านเมมโมเรื่อง "${memoData.title}"`
 
-      // Send notification to sender
       const notification = {
         id: Date.now().toString(),
-        title: 'ผู้รับอ่านเมมโมแล้ว',
-        message: `${currentUser.name} ${currentUser.surname} ได้อ่านเมมโมเรื่อง "${memoData.title}"`,
+        title: notificationTitle,
+        message: notificationMessage,
         type: 'acknowledged',
         read: false,
         timestamp: new Date().toISOString(),
@@ -3028,7 +3428,7 @@ app.post("/memo/acknowledge/:memoId", verifyToken, async (req, res) => {
       }
 
       try {
-        await firebase_set(`notifications/${actualSenderId}/${notification.id}`, notification)
+        await firebase_set(`notifications/${notificationRecipient}/${notification.id}`, notification)
       } catch (err) {
         // Silent error - notification not critical
       }
@@ -3039,7 +3439,8 @@ app.post("/memo/acknowledge/:memoId", verifyToken, async (req, res) => {
       acknowledgedBy: req.userId,
       acknowledgedByName: `${currentUser.name} ${currentUser.surname}`,
       memoTitle: memoData.title,
-      docNumber: memoData.docNumber || ''
+      docNumber: memoData.docNumber || '',
+      isCC: isCCMemo
     })
     res.json({ status: "Memo acknowledged", memoId })
   } catch (err) {
@@ -3400,8 +3801,21 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
     // Enrich each memo with recipient name
     for (let memo of memosArray) {
       try {
+        // CC Memo: enrich recipientName(s) from ccRecipientObjects
+        if (memo.isCC && Array.isArray(memo.ccRecipientObjects) && memo.ccRecipientObjects.length > 0) {
+          // กรณี CC ถึงหลายคน ให้รวมชื่อทั้งหมด
+          memo.recipientName = memo.ccRecipientObjects.map(r => `${r.name || ''} ${r.surname || ''}`.trim()).join(', ')
+          // สำหรับแสดงจำนวนอ่านแล้ว
+          const total = Array.isArray(memo.ccRecipientIds) ? memo.ccRecipientIds.length : memo.ccRecipientObjects.length
+          let ack = 0
+          if (memo.ccAcknowledgments && typeof memo.ccAcknowledgments === 'object') {
+            ack = Object.values(memo.ccAcknowledgments).filter(a => a.acknowledged).length
+          }
+          memo.ccAcknowledgedCount = ack
+          memo.ccTotalRecipients = total
+        }
         // Handle system user recipient (recipientUserId)
-        if (memo.recipientUserId && allUsers) {
+        else if (memo.recipientUserId && allUsers) {
           const recipientUser = allUsers[memo.recipientUserId]
           if (recipientUser) {
             memo.recipientName = `${recipientUser.name} ${recipientUser.surname}`
@@ -3433,6 +3847,7 @@ app.get("/received-memos", verifyToken, async (req, res) => {
     const allUsers = await firebase_get('users')
 
     const receivedMemos = []
+    const seenMemoIds = new Set() // Track already added memos to avoid duplicates
 
     if (!allUsers || typeof allUsers !== 'object') {
       return res.json({ memos: [], count: 0 })
@@ -3453,13 +3868,15 @@ app.get("/received-memos", verifyToken, async (req, res) => {
 
         for (let memoId in senderMemos) {
           const memo = senderMemos[memoId]
-          if (memo.recipientId && memo.recipientId.startsWith('U')) {
-            const sender = allUsers[senderId]
-            if (sender) {
-              memo.senderName = `${sender.name} ${sender.surname}`
-              memo.senderUserId = senderId
-            }
+          // For admin: get ALL memos (both to LINE followers and system users)
+          const sender = allUsers[senderId]
+          if (sender) {
+            memo.senderName = `${sender.name} ${sender.surname}`
+            memo.senderUserId = senderId
+          }
+          if (!seenMemoIds.has(memoId)) {
             receivedMemos.push(memo)
+            seenMemoIds.add(memoId)
           }
         }
       })
@@ -3473,12 +3890,16 @@ app.get("/received-memos", verifyToken, async (req, res) => {
         const directReceivedMemos = allReceivedArray[idx]
         if (directReceivedMemos && typeof directReceivedMemos === 'object') {
           for (let memoId in directReceivedMemos) {
-            receivedMemos.push(directReceivedMemos[memoId])
+            const memo = directReceivedMemos[memoId]
+            if (!seenMemoIds.has(memoId)) {
+              receivedMemos.push(memo)
+              seenMemoIds.add(memoId)
+            }
           }
         }
       })
     } else {
-      // Regular user gets only memos for their linked followers
+      // Regular user gets memos for their linked followers
       const linkedFollowerIds = currentUser?.linkedFollowers ? Object.keys(currentUser.linkedFollowers) : []
 
       if (linkedFollowerIds.length > 0) {
@@ -3499,7 +3920,10 @@ app.get("/received-memos", verifyToken, async (req, res) => {
                 memo.senderName = `${sender.name} ${sender.surname}`
                 memo.senderUserId = senderId
               }
-              receivedMemos.push(memo)
+              if (!seenMemoIds.has(memoId)) {
+                receivedMemos.push(memo)
+                seenMemoIds.add(memoId)
+              }
             }
           }
         })
@@ -3509,9 +3933,58 @@ app.get("/received-memos", verifyToken, async (req, res) => {
       const directReceivedMemos = await firebase_get(`received_memos/${userId}`)
       if (directReceivedMemos && typeof directReceivedMemos === 'object') {
         for (let memoId in directReceivedMemos) {
-          receivedMemos.push(directReceivedMemos[memoId])
+          if (!seenMemoIds.has(memoId)) {
+            const directMemo = directReceivedMemos[memoId]
+            // Set senderName if not already set
+            if (!directMemo.senderName && directMemo.senderId) {
+              const sender = allUsers[directMemo.senderId]
+              if (sender) {
+                directMemo.senderName = `${sender.name} ${sender.surname}`
+                directMemo.senderUserId = directMemo.senderId
+              }
+            }
+            receivedMemos.push(directMemo)
+            seenMemoIds.add(memoId)
+          }
         }
       }
+
+      // ✅ NEW: Include memos where current user has approved or rejected
+      // Fetch all sent_memos to find memos where user is in approvalChain or rejected
+      const allSentMemosArray = await Promise.all(
+        senderIds.map(senderId => firebase_get(`sent_memos/${senderId}`).catch(() => null))
+      )
+
+      senderIds.forEach((senderId, idx) => {
+        const senderMemos = allSentMemosArray[idx]
+        if (!senderMemos || typeof senderMemos !== 'object') return
+
+        for (let memoId in senderMemos) {
+          const memo = senderMemos[memoId]
+          
+          // Check if user is in approval chain (approved the memo)
+          let userApprovedThisMemo = false
+          if (memo.approvalChain && Array.isArray(memo.approvalChain)) {
+            userApprovedThisMemo = memo.approvalChain.some(approval => approval.approverId === userId)
+          }
+
+          // Check if user rejected this memo
+          const userRejectedThisMemo = memo.rejectedBy === userId
+
+          // If user approved or rejected this memo, include it (but avoid duplicates)
+          if ((userApprovedThisMemo || userRejectedThisMemo) && !seenMemoIds.has(memoId)) {
+            const sender = allUsers[senderId]
+            if (sender) {
+              memo.senderName = `${sender.name} ${sender.surname}`
+              memo.senderUserId = senderId
+            }
+            memo.isApprovedByCurrentUser = userApprovedThisMemo
+            memo.isRejectedByCurrentUser = userRejectedThisMemo
+            receivedMemos.push(memo)
+            seenMemoIds.add(memoId)
+          }
+        }
+      })
     }
 
     // Sort by sentAt descending (newest first)
@@ -3576,10 +4049,10 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
     const memoId = req.params.memoId
     const { docNumber, title, type, content } = req.body
 
-    // Check authorization - only admin can edit
+    // Get current user
     const user = await firebase_get(`users/${userId}`)
-    if (!user || user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only administrators can edit memos' })
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' })
     }
 
     if (!docNumber || !title || !content) {
@@ -3595,12 +4068,14 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
     let memoFound = false
     let memoPath = null
     let isReceivedMemo = false
+    let existingMemo = null
 
     // First, search in sent_memos
     for (const [uid, userObj] of Object.entries(allUsers)) {
       const sentMemos = await firebase_get(`sent_memos/${uid}`)
       if (sentMemos && sentMemos[memoId]) {
         memoPath = `sent_memos/${uid}/${memoId}`
+        existingMemo = sentMemos[memoId]
         memoFound = true
         break
       }
@@ -3612,6 +4087,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
         const receivedMemos = await firebase_get(`received_memos/${uid}`)
         if (receivedMemos && receivedMemos[memoId]) {
           memoPath = `received_memos/${uid}/${memoId}`
+          existingMemo = receivedMemos[memoId]
           memoFound = true
           isReceivedMemo = true
           break
@@ -3623,8 +4099,17 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Memo not found' })
     }
 
-    // Get the existing memo
-    const existingMemo = await firebase_get(memoPath)
+    // Check authorization:
+    // - Admin can edit any memo
+    // - Memo sender can edit only if memo status is 'pending_approval'
+    const isAdmin = user.role === 'admin'
+    const isSender = userId === existingMemo.senderUserId
+    const isPendingApproval = existingMemo.status === 'pending_approval'
+    const canEdit = isAdmin || (isSender && isPendingApproval)
+
+    if (!canEdit) {
+      return res.status(403).json({ error: 'Only administrators or memo senders (before approval) can edit memos' })
+    }
     const oldDocNumber = existingMemo.docNumber
 
     // Check for duplicate docNumber if it's being changed
@@ -3686,19 +4171,13 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
     }
 
     // Log activity
-    try {
-      const logEntry = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        timestamp: new Date().toISOString(),
-        action: 'memo_edited',
-        admin: user.username,
-        memoId: memoId,
-        title: title
-      }
-      await firebase_set(`logs/${logEntry.id}`, logEntry)
-    } catch (e) {
-      // Silent logging error
-    }
+    addLog('info', 'Memo edited', {
+      memoId,
+      editedBy: userId,
+      editedByName: `${user.name} ${user.surname}`,
+      docNumber: docNumber,
+      title: title
+    })
 
     res.json({ success: true, message: 'Memo updated successfully' })
   } catch (err) {
@@ -3713,10 +4192,10 @@ app.delete("/memo/:memoId", verifyToken, async (req, res) => {
     const userId = req.userId
     const memoId = req.params.memoId
 
-    // Check authorization - only admin can delete
+    // Get current user
     const user = await firebase_get(`users/${userId}`)
-    if (!user || user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only administrators can delete memos' })
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' })
     }
 
     // Find the memo - it could be in any user's sent_memos or received_memos
@@ -3729,6 +4208,7 @@ app.delete("/memo/:memoId", verifyToken, async (req, res) => {
     let memoPath = null
     let memoData = null
     let isReceivedMemo = false
+    let memoOwnerUserId = null
 
     // Search in sent_memos first
     for (const [uid, userObj] of Object.entries(allUsers)) {
@@ -3737,6 +4217,7 @@ app.delete("/memo/:memoId", verifyToken, async (req, res) => {
         memoPath = `sent_memos/${uid}/${memoId}`
         memoData = sentMemos[memoId]
         memoFound = true
+        memoOwnerUserId = uid
         break
       }
     }
@@ -3750,6 +4231,7 @@ app.delete("/memo/:memoId", verifyToken, async (req, res) => {
           memoData = receivedMemos[memoId]
           memoFound = true
           isReceivedMemo = true
+          memoOwnerUserId = uid
           break
         }
       }
@@ -3757,6 +4239,18 @@ app.delete("/memo/:memoId", verifyToken, async (req, res) => {
 
     if (!memoFound) {
       return res.status(404).json({ error: 'Memo not found' })
+    }
+
+    // Check authorization:
+    // - Admin can delete any memo
+    // - Memo sender can delete only if memo status is 'pending_approval'
+    const isAdmin = user.role === 'admin'
+    const isSender = userId === memoData.senderUserId
+    const isPendingApproval = memoData.status === 'pending_approval'
+    const canDelete = isAdmin || (isSender && isPendingApproval)
+
+    if (!canDelete) {
+      return res.status(403).json({ error: 'Only administrators or memo senders (before approval) can delete memos' })
     }
 
     // Delete from the found path
@@ -3811,6 +4305,283 @@ app.delete("/memo/:memoId", verifyToken, async (req, res) => {
     res.json({ success: true, message: 'Memo deleted successfully' })
   } catch (err) {
     console.error('Error deleting memo:', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── CC Memo to other users ──────────────────────────────
+app.post("/memo/:memoId/cc", verifyToken, async (req, res) => {
+  try {
+    const memoId = req.params.memoId
+    const { recipientIds } = req.body
+    
+    if (!Array.isArray(recipientIds) || recipientIds.length === 0) {
+      return res.status(400).json({ error: 'recipientIds must be a non-empty array' })
+    }
+
+    // Get the memo from sent_memos or received_memos
+    let memo = null
+    let senderUserId = req.userId
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    
+    // Try to find memo in sender's sent_memos first
+    memo = await firebase_get(`sent_memos/${req.userId}/${memoId}`)
+    
+    if (!memo) {
+      // Try to find in received_memos
+      memo = await firebase_get(`received_memos/${req.userId}/${memoId}`)
+      if (memo) {
+        senderUserId = memo?.senderId || req.userId
+      }
+    }
+
+    // If still not found and user is admin, search in all users' sent_memos
+    if (!memo && currentUser && currentUser.role === 'admin') {
+      const allUsers = await firebase_get('users')
+      if (allUsers && typeof allUsers === 'object') {
+        for (const userId in allUsers) {
+          memo = await firebase_get(`sent_memos/${userId}/${memoId}`)
+          if (memo) {
+            senderUserId = memo.senderId || userId
+            break
+          }
+        }
+      }
+    }
+
+    if (!memo) {
+      return res.status(404).json({ error: 'Memo not found' })
+    }
+
+    // Allow CC if:
+    // 1. Memo is approved (regular memos)
+    // 2. Memo is R&D project with completed status
+    // 3. Current user is the sender
+    // 4. Current user is admin (can CC any approved memo)
+    const isApprovedMemo = memo.status === 'approved'
+    const isCompletedRDProject = memo.isRDProject && memo.status === 'completed'
+    const isSender = memo.senderId === req.userId
+    const isAdmin = currentUser && currentUser.role === 'admin'
+    
+    if (!isApprovedMemo && !isCompletedRDProject && !isSender && !isAdmin) {
+      return res.status(403).json({ error: 'Only approved or completed memos can be CC' })
+    }
+    
+    // Admin users can only CC approved or completed memos
+    if (isAdmin && !isApprovedMemo && !isCompletedRDProject) {
+      return res.status(403).json({ error: 'Admin can only CC approved or completed memos' })
+    }
+
+    const sender = currentUser  // Use already fetched currentUser
+    
+    // Build CC recipient objects array with full user information
+    const ccRecipientObjects = []
+    for (const recipientId of recipientIds) {
+      const recipient = await firebase_get(`users/${recipientId}`)
+      if (recipient) {
+        ccRecipientObjects.push({
+          userId: recipientId,
+          name: recipient.name,
+          surname: recipient.surname,
+          username: recipient.username,
+          department: recipient.department,
+          department2: recipient.department2
+        })
+      }
+    }
+    
+    // Send CC to each recipient
+    for (const recipientId of recipientIds) {
+      // Create unique ccMemoKey for each recipient to avoid overwrites
+      const ccMemoKey = `${memoId}_cc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const ccMemo = {
+        memoId: memoId,
+        memoKey: ccMemoKey,
+        type: memo.type || 'Memorandum',
+        title: memo.title,
+        content: memo.content,
+        docNumber: memo.docNumber || '',
+        sentAt: new Date().toISOString(),
+        recipientId: recipientId,
+        recipientIds: [recipientId],
+        isCC: true,
+        // CC Sender Information
+        ccSenderId: req.userId,
+        ccSenderName: sender ? `${sender.name} ${sender.surname}` : 'Unknown',
+        ccSenderObject: sender ? {
+          userId: req.userId,
+          name: sender.name,
+          surname: sender.surname,
+          username: sender.username,
+          department: sender.department,
+          department2: sender.department2
+        } : null,
+        // CC Recipients
+        ccRecipientIds: recipientIds,
+        ccRecipientObjects: ccRecipientObjects,
+        // Original Memo Information (preserved)
+        originalSenderId: memo.senderId || memo.senderUserId,
+        originalSenderName: memo.senderName || '',
+        originalSenderObject: memo.senderObject || null,
+        originalRecipientIds: memo.recipientIds || [],
+        originalRecipientObjects: memo.recipientObjects || [],
+        // Original memo status
+        approvedByName: memo.approvedByName || '',
+        approvedAt: memo.approvedAt || new Date().toISOString(),
+        imageUrl: memo.imageUrl || ''
+      }
+      
+      // Save CC memo to receiver's received_memos
+      await firebase_set(`received_memos/${recipientId}/${ccMemoKey}`, ccMemo)
+      
+      // Also save CC memo to sender's sent_memos (so sender can see what they CC'd)
+      // This is important so that the person who CC'd the memo can see it in their sent list
+      await firebase_set(`sent_memos/${req.userId}/${ccMemoKey}`, ccMemo)
+      
+      // Create notification for CC recipient
+      const ccSenderName = sender ? `${sender.name} ${sender.surname}` : 'Unknown'
+      const notificationTitle = `สำเนา: ${memo.title}`
+      const notificationMessage = `จาก: ${ccSenderName}`
+      
+      try {
+        await firebase_set(`notifications/${recipientId}/${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, {
+          title: notificationTitle,
+          message: notificationMessage,
+          type: 'cc',
+          titleKey: 'ccMemoNotification',
+          messageKey: 'ccMemoFrom',
+          memoId: memoId,
+          memoKey: ccMemoKey,
+          memoType: 'received',
+          read: false,
+          timestamp: new Date().toISOString()
+        })
+      } catch (notifErr) {
+        // Silent error - notification not critical
+        console.log('Silent: Could not create notification:', notifErr.message)
+      }
+      
+      // Send LINE notification if recipient is linked to LINE
+      try {
+        const recipient = await firebase_get(`users/${recipientId}`)
+        if (recipient && recipient.linkedFollowers && typeof recipient.linkedFollowers === 'object') {
+          // Get all LINE followers for this recipient
+          for (const followerId in recipient.linkedFollowers) {
+            if (recipient.linkedFollowers.hasOwnProperty(followerId)) {
+              try {
+                // Build LINE message for CC notification
+                const memoTitle = memo.title || 'Untitled Memo'
+                const ccSenderName = sender ? `${sender.name} ${sender.surname}` : 'Unknown'
+                const memoContent = typeof memo.content === 'string' 
+                  ? memo.content.substring(0, 100) 
+                  : JSON.stringify(memo.content).substring(0, 100)
+                
+                const lineMessage = {
+                  type: "flex",
+                  altText: `📋 สำเนา: ${memoTitle} จาก ${ccSenderName}`,
+                  contents: {
+                    type: "bubble",
+                    header: {
+                      type: "box",
+                      layout: "vertical",
+                      contents: [
+                        {
+                          type: "text",
+                          text: `📋 สำเนา: ${memoTitle}`,
+                          weight: "bold",
+                          color: "#182034",
+                          size: "xl"
+                        }
+                      ]
+                    },
+                    body: {
+                      type: "box",
+                      layout: "vertical",
+                      spacing: "md",
+                      contents: [
+                        {
+                          type: "text",
+                          text: memoTitle,
+                          weight: "bold",
+                          size: "lg", 
+                          wrap: true,
+                          color: "#182034"
+                        },
+                        {
+                          type: "text",
+                          text: `จาก: ${ccSenderName}`,
+                          size: "sm",
+                          color: "#c8a96e",
+                          weight: "bold",
+                          margin: "md"
+                        },
+                        {
+                          type: "text",
+                          text: "ประเภท: สำเนา (CC)",
+                          size: "sm",
+                          color: "#1a2740",
+                          weight: "bold",
+                          margin: "md"
+                        },
+                        {
+                          type: "separator",
+                          margin: "md"
+                        },
+                        {
+                          type: "text",
+                          text: memoContent,
+                          size: "sm",
+                          color: "#666666",
+                          wrap: true,
+                          margin: "md"
+                        }
+                      ]
+                    },
+                    footer: {
+                      type: "box",
+                      layout: "vertical",
+                      spacing: "sm",
+                      contents: [
+                        {
+                          type: "button",
+                          action: {
+                            type: "uri",
+                            label: "ดูรายละเอียด",
+                            uri: "https://rmcmemorandum.onrender.com/"
+                          },
+                          style: "primary",
+                          color: "#1a2740"
+                        }
+                      ]
+                    }
+                  }
+                }
+                
+                await client.pushMessage(followerId, lineMessage)
+              } catch (lineErr) {
+                // Silent error - LINE notification not critical
+                console.log(`Silent: Could not send LINE notification to ${followerId}:`, lineErr.message)
+              }
+            }
+          }
+        }
+      } catch (notifErr) {
+        // Silent error - LINE notification is not critical to CC delivery
+        console.log('Silent: Error checking for LINE notifications:', notifErr.message)
+      }
+    }
+
+    addLog('info', 'cc_memo_sent', {
+      memoId,
+      memoTitle: memo.title,
+      docNumber: memo.docNumber || '',
+      sentByName: `${sender.name} ${sender.surname}`,
+      ccCount: recipientIds.length
+    })
+
+    res.json({ success: true, message: 'CC sent successfully' })
+  } catch (err) {
+    console.error('Error sending CC:', err)
     res.status(500).json({ error: err.message })
   }
 })
@@ -4679,6 +5450,2445 @@ app.get("/info", (req, res) => {
   })
 })
 
+// ──────────────────────────────────────────────
+// R&D Project Workflow System
+// ──────────────────────────────────────────────
+
+// Set R&D Project roles (approver and engineer)
+app.post("/api/rdproject/roles/set", verifyToken, async (req, res) => {
+  try {
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+
+    const { approverUserId, engineerUserId } = req.body
+
+    if (!approverUserId || !engineerUserId) {
+      return res.status(400).json({ error: "approverUserId and engineerUserId required" })
+    }
+
+    // Verify both users exist
+    const approver = await firebase_get(`users/${approverUserId}`)
+    const engineer = await firebase_get(`users/${engineerUserId}`)
+
+    if (!approver) {
+      return res.status(404).json({ error: "Approver user not found" })
+    }
+    if (!engineer) {
+      return res.status(404).json({ error: "Engineer user not found" })
+    }
+
+    // Get existing roles to preserve rawmat approver if already set
+    const existingRoles = await firebase_get('rd_project_roles') || {}
+
+    // Store roles globally (one approver, one engineer for all R&D projects)
+    const rolesData = {
+      approverUserId,
+      approverName: `${approver.name} ${approver.surname}`,
+      approverUsername: approver.username,
+      engineerUserId,
+      engineerName: `${engineer.name} ${engineer.surname}`,
+      engineerUsername: engineer.username,
+      rawMatApproverId: existingRoles.rawMatApproverId || null,
+      rawMatApproverName: existingRoles.rawMatApproverName || null,
+      rawMatApproverUsername: existingRoles.rawMatApproverUsername || null,
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.userId
+    }
+
+    await firebase_set('rd_project_roles', rolesData)
+
+    res.json({ status: "R&D Project roles assigned successfully", rolesData })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Get R&D Project roles
+app.get("/api/rdproject/roles", verifyToken, async (req, res) => {
+  try {
+    const rolesData = await firebase_get('rd_project_roles')
+
+    if (!rolesData) {
+      return res.json({ 
+        approverUserId: null,
+        approverName: "Not assigned",
+        approverSignatureImageUrl: null,
+        engineerUserId: null,
+        engineerName: "Not assigned",
+        engineerSignatureImageUrl: null,
+        rawMatApproverId: null,
+        rawMatApproverName: "Not assigned",
+        rawMatApproverSignatureImageUrl: null
+      })
+    }
+
+    // Fetch signature image URLs from user records
+    let approverSignatureImageUrl = null
+    let engineerSignatureImageUrl = null
+    let rawMatApproverSignatureImageUrl = null
+
+    if (rolesData.approverUserId) {
+      const approverUser = await firebase_get(`users/${rolesData.approverUserId}`)
+      if (approverUser) {
+        approverSignatureImageUrl = approverUser.signatureImageUrl || null
+      }
+    }
+
+    if (rolesData.engineerUserId) {
+      const engineerUser = await firebase_get(`users/${rolesData.engineerUserId}`)
+      if (engineerUser) {
+        engineerSignatureImageUrl = engineerUser.signatureImageUrl || null
+      }
+    }
+
+    if (rolesData.rawMatApproverId) {
+      const rawMatApproverUser = await firebase_get(`users/${rolesData.rawMatApproverId}`)
+      if (rawMatApproverUser) {
+        rawMatApproverSignatureImageUrl = rawMatApproverUser.signatureImageUrl || null
+      }
+    }
+
+    // Return roles data with signature image URLs
+    const enrichedRolesData = {
+      ...rolesData,
+      approverSignatureImageUrl,
+      engineerSignatureImageUrl,
+      rawMatApproverSignatureImageUrl
+    }
+
+    res.json(enrichedRolesData)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Delete R&D Project role
+app.post("/api/rdproject/roles/delete", verifyToken, async (req, res) => {
+  try {
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+
+    await firebase_delete('rd_project_roles')
+
+    res.json({ status: "R&D Project roles deleted successfully" })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Set Raw Material Approver role
+app.post("/api/rawmat/approver/set", verifyToken, async (req, res) => {
+  try {
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+
+    const { approverId } = req.body
+
+    if (!approverId) {
+      return res.status(400).json({ error: "approverId required" })
+    }
+
+    // Verify user exists
+    const approver = await firebase_get(`users/${approverId}`)
+    if (!approver) {
+      return res.status(404).json({ error: "Approver user not found" })
+    }
+
+    // Get existing roles
+    const existingRoles = await firebase_get('rd_project_roles') || {}
+
+    // Update with rawmat approver
+    const rolesData = {
+      ...existingRoles,
+      rawMatApproverId: approverId,
+      rawMatApproverName: `${approver.name} ${approver.surname}`,
+      rawMatApproverUsername: approver.username,
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.userId
+    }
+
+    await firebase_set('rd_project_roles', rolesData)
+
+    res.json({ status: "Raw Material Approver set successfully", rolesData })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Create R&D Project (submitted by user1 - initiator)
+app.post("/api/rdproject", verifyToken, async (req, res) => {
+  try {
+    const initiatorUserId = req.userId
+    const initiatorUser = await firebase_get(`users/${initiatorUserId}`)
+
+    if (!initiatorUser) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    // Get R&D Project roles
+    const rolesData = await firebase_get('rd_project_roles')
+    if (!rolesData || !rolesData.approverUserId || !rolesData.engineerUserId) {
+      return res.status(400).json({ error: "R&D Project roles not configured. Please assign approver and engineer first." })
+    }
+
+    const approverUserId = rolesData.approverUserId
+    const engineerUserId = rolesData.engineerUserId
+    const approverName = rolesData.approverName
+    const engineerName = rolesData.engineerName
+
+    // Get approver and engineer user data for senderObject/recipientObjects
+    const approverUser = await firebase_get(`users/${approverUserId}`)
+    const engineerUser = await firebase_get(`users/${engineerUserId}`)
+
+    if (!approverUser) {
+      return res.status(404).json({ error: "Approver user not found" })
+    }
+
+    if (!engineerUser) {
+      return res.status(404).json({ error: "Engineer user not found" })
+    }
+
+    // Extract R&D project form data from request
+    const { projectNumber, projectName, division, purpose, specification, conditions, shopName,
+            productSample, targetCustomer, customerAddress, monthlyQuantity, salesPrice, revenue, terms } = req.body
+
+    if (!projectName) {
+      return res.status(400).json({ error: "Project name is required" })
+    }
+
+    // Create memo ID for R&D project (as memo instead of separate table)
+    const memoId = `rdproject_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    // Format content with labels
+    const content = {
+      'Project Number': projectNumber || '—',
+      'Project Name': projectName,
+      'Division': division || '—',
+      'Purpose': purpose || '—',
+      'Specification': specification || '—',
+      'Conditions': conditions || '—',
+      'Shop Name': shopName || '—',
+      'Product Sample': productSample || '—',
+      'Target Customer': targetCustomer || '—',
+      'Customer Address': customerAddress || '—',
+      'Monthly Quantity': monthlyQuantity || '—',
+      'Unit Sale Price': salesPrice || '—',
+      'Monthly Sales Revenue': revenue || '—',
+      'Purchase Sale Terms': terms || '—'
+    }
+
+    // Create memo record for sent_memos
+    const sentMemoData = {
+      memoId,
+      type: 'R&D Project',
+      title: `R&D Project: ${projectName}`,
+      content: content,
+      projectId: memoId,
+      stage: 'marketing_pending',
+      senderId: initiatorUserId,
+      senderName: `${initiatorUser.name} ${initiatorUser.surname}`,
+      senderUserId: initiatorUserId,
+      senderObject: {
+        userId: initiatorUserId,
+        name: initiatorUser.name,
+        surname: initiatorUser.surname,
+        username: initiatorUser.username,
+        department: initiatorUser.department,
+        department2: initiatorUser.department2
+      },
+      recipientId: approverUserId,
+      recipientName: `${approverUser.name} ${approverUser.surname}`,
+      recipientIds: [approverUserId],
+      recipientObjects: [{
+        systemUserId: approverUserId,
+        name: `${approverUser.name} ${approverUser.surname}`,
+        department: approverUser.department,
+        department2: approverUser.department2
+      }],
+      sentAt: new Date().toISOString(),
+      status: 'pending_approval',
+      docNumber: projectNumber || '',
+      isRDProject: true,
+      approvalType: 'marketing'
+    }
+
+    await firebase_set(`sent_memos/${initiatorUserId}/${memoId}`, sentMemoData)
+
+    // Create memo record for received_memos (for approver)
+    const receivedMemoData = {
+      memoId,
+      type: 'R&D Project',
+      title: `R&D Project: ${projectName}`,
+      content: content,
+      projectId: memoId,
+      stage: 'marketing_pending',
+      senderId: initiatorUserId,
+      senderName: `${initiatorUser.name} ${initiatorUser.surname}`,
+      senderUserId: initiatorUserId,
+      senderObject: {
+        userId: initiatorUserId,
+        name: initiatorUser.name,
+        surname: initiatorUser.surname,
+        username: initiatorUser.username,
+        department: initiatorUser.department,
+        department2: initiatorUser.department2
+      },
+      recipientId: approverUserId,
+      recipientName: `${approverUser.name} ${approverUser.surname}`,
+      recipientIds: [approverUserId],
+      recipientObjects: [{
+        systemUserId: approverUserId,
+        name: `${approverUser.name} ${approverUser.surname}`,
+        department: approverUser.department,
+        department2: approverUser.department2
+      }],
+      sentAt: new Date().toISOString(),
+      status: 'pending_approval',
+      docNumber: projectNumber || '',
+      isRDProject: true,
+      approvalType: 'marketing'
+    }
+
+    await firebase_set(`received_memos/${approverUserId}/${memoId}`, receivedMemoData)
+
+    // Create notification for approver
+    const notification = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      title: 'R&D Project Awaiting Review',
+      message: `New R&D project "${projectName}" from ${initiatorUser.name} ${initiatorUser.surname} awaits your marketing review`,
+      type: 'rdproject_pending_approval',
+      read: false,
+      timestamp: new Date().toISOString(),
+      memoId,
+      stage: 'marketing_pending',
+      senderId: initiatorUserId,
+      senderName: `${initiatorUser.name} ${initiatorUser.surname}`
+    }
+
+    await firebase_set(`notifications/${approverUserId}/${notification.id}`, notification)
+
+    // Send LINE message to approver if they have linked followers
+    try {
+      const approverUser = await firebase_get(`users/${approverUserId}`)
+      if (approverUser && approverUser.linkedFollowers) {
+        const approverFollowerIds = Object.keys(approverUser.linkedFollowers)
+
+        if (approverFollowerIds.length > 0) {
+          const lineMessage = {
+            type: "flex",
+            altText: `R&D Project Awaiting Approval: ${projectName}`,
+            contents: {
+              type: "bubble",
+              header: {
+                type: "box",
+                layout: "vertical",
+                contents: [
+                  {
+                    type: "text",
+                    text: "R&D Project Review",
+                    weight: "bold",
+                    color: "#182034",
+                    size: "xl"
+                  }
+                ]
+              },
+              body: {
+                type: "box",
+                layout: "vertical",
+                spacing: "md",
+                contents: [
+                  {
+                    type: "text",
+                    text: projectName,
+                    weight: "bold",
+                    size: "lg",
+                    wrap: true,
+                    color: "#182034"
+                  },
+                  {
+                    type: "text",
+                    text: `From: ${initiatorUser.name} ${initiatorUser.surname}`,
+                    size: "sm",
+                    color: "#c8a96e",
+                    weight: "bold",
+                    margin: "md"
+                  },
+                  {
+                    type: "text",
+                    text: `Status: ⏳ Awaiting Your Review`,
+                    size: "sm",
+                    color: "#1a2740",
+                    weight: "bold",
+                    margin: "md"
+                  },
+                  ...(projectNumber ? [{
+                    type: "text",
+                    text: `Project No.: ${projectNumber}`,
+                    size: "sm",
+                    color: "#1a2740",
+                    weight: "bold",
+                    margin: "md"
+                  }] : []),
+                  {
+                    type: "separator",
+                    margin: "md"
+                  },
+                  {
+                    type: "text",
+                    text: `Stage: Marketing Review\n\nPlease review project information and approve or reject.`,
+                    size: "sm",
+                    color: "#666666",
+                    wrap: true,
+                    margin: "md"
+                  }
+                ]
+              },
+              footer: {
+                type: "box",
+                layout: "vertical",
+                spacing: "sm",
+                contents: [
+                  {
+                    type: "button",
+                    action: {
+                      type: "uri",
+                      label: "Review Project",
+                      uri: "https://rmcmemorandum.onrender.com/"
+                    },
+                    style: "primary",
+                    color: "#1a2740"
+                  }
+                ]
+              }
+            }
+          }
+
+          for (const followerId of approverFollowerIds) {
+            try {
+              await client.pushMessage(followerId, lineMessage)
+            } catch (lineErr) {
+              // Silent error
+            }
+          }
+        }
+      }
+    } catch (lineErr) {
+      // Silent error - LINE notification not critical
+    }
+
+    addLog('info', 'create_rdproject', {
+      memoId,
+      projectName,
+      initiatorId: initiatorUserId,
+      initiatorName: `${initiatorUser.name} ${initiatorUser.surname}`,
+      docNumber: projectNumber || '',
+      stage: 'marketing_pending'
+    })
+
+    res.json({
+      status: "R&D Project created successfully",
+      memoId,
+      stage: 'marketing_pending',
+      message: `Project submitted to ${approverName} for marketing review`
+    })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── RAW MATERIAL REQUEST ENDPOINT ──
+app.post("/api/rawmat", verifyToken, async (req, res) => {
+  try {
+    const initiatorUserId = req.userId
+    const initiatorUser = await firebase_get(`users/${initiatorUserId}`)
+
+    if (!initiatorUser) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    // Get raw material approver and engineer from roles
+    const rolesData = await firebase_get('rd_project_roles')
+    const rawMatApproverId = rolesData?.rawMatApproverId
+    const rawMatApproverName = rolesData?.rawMatApproverName
+    const engineerId = rolesData?.engineerUserId
+    const engineerName = rolesData?.engineerName
+
+    if (!rawMatApproverId) {
+      return res.status(400).json({ error: "Raw Material Approver is not assigned. Please configure approver first." })
+    }
+
+    if (!engineerId) {
+      return res.status(400).json({ error: "R&D Engineer is not assigned. Please configure engineer first." })
+    }
+
+    const approverUser = await firebase_get(`users/${rawMatApproverId}`)
+    if (!approverUser) {
+      return res.status(404).json({ error: "Raw Material Approver user not found" })
+    }
+
+    const engineerUser = await firebase_get(`users/${engineerId}`)
+    if (!engineerUser) {
+      return res.status(404).json({ error: "Engineer user not found" })
+    }
+
+    // Extract raw material request form data
+    const { documentNo, projectName, purpose, purposeOther, supplierName, supplierContact,
+            materialName, quantity, lot, price, moq, description } = req.body
+
+    if (!projectName || !supplierName || !materialName) {
+      return res.status(400).json({ error: "Project name, supplier name, and material name are required" })
+    }
+
+    // Create memo ID for raw material request
+    const memoId = `rawmat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    // Build sender name with surname
+    const senderName = `${initiatorUser.name} ${initiatorUser.surname || ''}`.trim()
+    
+    // Get current date/time
+    const currentDate = new Date().toISOString()
+
+    // Build engineer recipient info
+    const engineerRecipient = {
+      userId: engineerId,
+      systemUserId: engineerId,
+      name: engineerName,
+      department: engineerUser.department || '—'
+    }
+    
+    // Format content with labels (Thai labels for display)
+    const content = {
+      'Document No': documentNo || '—',
+      'Date': new Date(currentDate).toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      'Project Name': projectName,
+      'Purpose': purpose || '—',
+      'Purpose Other': purposeOther || '—',
+      'Supplier Name': supplierName || '—',
+      'Supplier Contact': supplierContact || '—',
+      'Material Name': materialName || '—',
+      'Quantity': quantity || '—',
+      'Lot': lot || '—',
+      'Price': price || '—',
+      'MOQ': moq || '—',
+      'Description': description || '—'
+    }
+
+    // Create memo record for sent_memos with pending_approval status
+    const sentMemoData = {
+      memoId,
+      type: 'Raw Material Request',
+      title: `Raw Material Request: ${materialName}`,
+      content: content,
+      isRawMaterialRequest: true,
+      senderId: initiatorUserId,
+      senderUserId: initiatorUserId,
+      senderName: senderName,
+      senderDepartment: initiatorUser.department || '—',
+      timestamp: currentDate,
+      date: currentDate,
+      sentAt: currentDate,
+      documentNo: documentNo,
+      projectName: projectName,
+      materialName: materialName,
+      status: 'pending_approval',
+      approverRequired: true,
+      approverId: rawMatApproverId,
+      approverName: rawMatApproverName,
+      recipients: [engineerId],
+      recipientNames: [engineerName],
+      recipientObjects: [engineerRecipient]
+    }
+
+    // Store in sent_memos for initiator
+    await firebase_set(`sent_memos/${initiatorUserId}/${memoId}`, sentMemoData)
+
+    // Send to approver with pending_approval status
+    const approverMemoData = {
+      ...sentMemoData,
+      receivedBy: rawMatApproverId,
+      isRead: false,
+      acknowledged: false,
+      acknowledgedAt: null
+    }
+    
+    await firebase_set(`received_memos/${rawMatApproverId}/${memoId}`, approverMemoData)
+
+    // Create notification for approver
+    const approverNotificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const approverNotification = {
+      id: approverNotificationId,
+      type: 'raw_material_request_approval',
+      title: `Raw Material Request from ${senderName}`,
+      message: `Raw material request for: ${materialName} (requires your approval)`,
+      timestamp: currentDate,
+      memoId: memoId,
+      isRead: false,
+      fromUser: senderName,
+      documentNo: documentNo,
+      status: 'pending'
+    }
+
+    await firebase_set(`notifications/${rawMatApproverId}/${approverNotificationId}`, approverNotification)
+
+    // Send LINE notification to approver
+    try {
+      if (approverUser.linkedFollowers && Object.keys(approverUser.linkedFollowers).length > 0 && client) {
+        const approverFollowerIds = Object.keys(approverUser.linkedFollowers)
+        console.log(`[RAWMAT] Sending approver notification to ${approverFollowerIds.length} follower(s)`)
+        
+        for (const followerId of approverFollowerIds) {
+          try {
+            const approvalLineMessage = {
+              type: "flex",
+              altText: `Raw Material Request - Approval Needed: ${materialName}`,
+              contents: {
+                type: "bubble",
+                header: {
+                  type: "box",
+                  layout: "vertical",
+                  contents: [
+                    {
+                      type: "text",
+                      text: "⏳ Approval Required",
+                      weight: "bold",
+                      color: "#c9a84c",
+                      size: "xl"
+                    }
+                  ]
+                },
+                body: {
+                  type: "box",
+                  layout: "vertical",
+                  spacing: "md",
+                  contents: [
+                    {
+                      type: "text",
+                      text: materialName,
+                      weight: "bold",
+                      size: "lg",
+                      wrap: true,
+                      color: "#1e2c4e"
+                    },
+                    {
+                      type: "text",
+                      text: `From: ${senderName}`,
+                      size: "sm",
+                      color: "#1e2c4e",
+                      weight: "bold",
+                      margin: "md"
+                    },
+                    ...(documentNo ? [{
+                      type: "text",
+                      text: `Doc No.: ${documentNo}`,
+                      size: "sm",
+                      color: "#1e2c4e",
+                      weight: "bold",
+                      margin: "md"
+                    }] : []),
+                    {
+                      type: "text",
+                      text: `Project: ${projectName}`,
+                      size: "sm",
+                      color: "#1e2c4e",
+                      weight: "bold",
+                      margin: "md"
+                    },
+                    {
+                      type: "text",
+                      text: `Status: Waiting for your approval`,
+                      size: "sm",
+                      color: "#c9a84c",
+                      weight: "bold",
+                      margin: "md"
+                    },
+                    {
+                      type: "separator",
+                      margin: "md"
+                    },
+                    {
+                      type: "text",
+                      text: `Quantity: ${quantity || '—'}`,
+                      size: "sm",
+                      color: "#1e2c4e",
+                      wrap: true,
+                      margin: "md"
+                    }
+                  ]
+                },
+                footer: {
+                  type: "box",
+                  layout: "vertical",
+                  spacing: "sm",
+                  contents: [
+                    {
+                      type: "button",
+                      action: {
+                        type: "uri",
+                        label: "Review & Approve",
+                        uri: "https://rmcmemorandum.onrender.com/"
+                      },
+                      style: "primary",
+                      color: "#1e2c4e"
+                    }
+                  ]
+                }
+              }
+            }
+            await client.pushMessage(followerId, approvalLineMessage)
+          } catch (lineErr) {
+            console.error(`Error sending approval LINE notification to follower ${followerId}:`, lineErr)
+          }
+        }
+      }
+    } catch (lineErr) {
+      console.error('Error sending approval LINE notifications:', lineErr)
+    }
+
+    // Send acknowledgment to initiator (request submitted, waiting for approval)
+    try {
+      const initiatorNotificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const initiatorNotification = {
+        id: initiatorNotificationId,
+        type: 'raw_material_request_submitted',
+        title: `Raw Material Request Submitted: ${materialName}`,
+        message: `Your raw material request (${documentNo}) has been submitted to approver and is awaiting approval`,
+        timestamp: currentDate,
+        memoId: memoId,
+        isRead: false,
+        documentNo: documentNo,
+        status: 'pending_approval'
+      }
+
+      await firebase_set(`notifications/${initiatorUserId}/${initiatorNotificationId}`, initiatorNotification)
+
+      // Send LINE notification to initiator
+      try {
+        if (initiatorUser.linkedFollowers && Object.keys(initiatorUser.linkedFollowers).length > 0 && client) {
+          const initiatorFollowerIds = Object.keys(initiatorUser.linkedFollowers)
+          
+          for (const followerId of initiatorFollowerIds) {
+            try {
+              const initiatorLineMessage = {
+                type: "flex",
+                altText: `Raw Material Request Submitted: ${materialName}`,
+                contents: {
+                  type: "bubble",
+                  header: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                      {
+                        type: "text",
+                        text: "📤 Request Submitted",
+                        weight: "bold",
+                        color: "#1e2c4e",
+                        size: "xl"
+                      }
+                    ]
+                  },
+                  body: {
+                    type: "box",
+                    layout: "vertical",
+                    spacing: "md",
+                    contents: [
+                      {
+                        type: "text",
+                        text: materialName,
+                        weight: "bold",
+                        size: "lg",
+                        wrap: true,
+                        color: "#1e2c4e"
+                      },
+                      {
+                        type: "text",
+                        text: `Doc No.: ${documentNo}`,
+                        size: "sm",
+                        color: "#1e2c4e",
+                        weight: "bold",
+                        margin: "md"
+                      },
+                      {
+                        type: "text",
+                        text: `Project: ${projectName}`,
+                        size: "sm",
+                        color: "#1e2c4e",
+                        weight: "bold",
+                        margin: "md"
+                      },
+                      {
+                        type: "text",
+                        text: `Awaiting approval from: ${rawMatApproverName}`,
+                        size: "sm",
+                        color: "#c9a84c",
+                        weight: "bold",
+                        margin: "md"
+                      },
+                      {
+                        type: "separator",
+                        margin: "md"
+                      },
+                      {
+                        type: "text",
+                        text: `Quantity: ${quantity || '—'}`,
+                        size: "sm",
+                        color: "#1e2c4e",
+                        wrap: true,
+                        margin: "md"
+                      }
+                    ]
+                  },
+                  footer: {
+                    type: "box",
+                    layout: "vertical",
+                    spacing: "sm",
+                    contents: [
+                      {
+                        type: "button",
+                        action: {
+                          type: "uri",
+                          label: "View Details",
+                          uri: "https://rmcmemorandum.onrender.com/"
+                        },
+                        style: "primary",
+                        color: "#1e2c4e"
+                      }
+                    ]
+                  }
+                }
+              }
+              await client.pushMessage(followerId, initiatorLineMessage)
+            } catch (lineErr) {
+              console.error(`Error sending initiator LINE notification to follower ${followerId}:`, lineErr)
+            }
+          }
+        }
+      } catch (lineErr) {
+        console.error('Error sending initiator LINE notifications:', lineErr)
+      }
+    } catch (err) {
+      console.error('Error sending initiator notification:', err)
+    }
+
+    res.json({
+      status: "Raw material request submitted for approval",
+      memoId,
+      documentNo,
+      senderName: senderName,
+      approverId: rawMatApproverId,
+      approverName: rawMatApproverName,
+      message: `Raw material request for ${materialName} has been submitted to ${rawMatApproverName} for approval`
+    })
+
+    // Log success
+    addLog('info', 'rawmat_memo_submitted_for_approval', {
+      memoId,
+      documentNo,
+      initiatorUserId,
+      initiatorName: `${initiatorUser.name} ${initiatorUser.surname}`,
+      approverId: rawMatApproverId,
+      approverName: rawMatApproverName,
+      projectName,
+      materialName
+    })
+  } catch (err) {
+    addLog('error', 'rawmat_memo_submission_failed', {
+      error: err.message,
+      initiatorUserId: req.userId,
+      stack: err.stack
+    })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+/*prompt:
+เพิ่มส่ง/บันทึกข้อมูล เลขที่เอกสาร,วันที่
+
+แก้ไขข้อมูล
+-ผู้ส่งให้แสดงชื่อ-นามสกุล (ตอนนี้แสดงผลแค่ name ไม่มีsurname)
+*/
+
+// Approve Raw Material Request (approver sends to engineer)
+app.post("/api/rawmat/:memoId/approve", verifyToken, async (req, res) => {
+  try {
+    const memoId = req.params.memoId
+    const approverId = req.userId
+    const approverUser = await firebase_get(`users/${approverId}`)
+
+    if (!approverUser) {
+      return res.status(404).json({ error: "Approver user not found" })
+    }
+
+    // Get the memo from any user's received_memos
+    let memo = null
+    let senderUserId = null
+    
+    // Search for the memo in received_memos
+    const notifRef = await firebase_get('received_memos')
+    if (notifRef) {
+      for (const userId in notifRef) {
+        if (notifRef[userId] && notifRef[userId][memoId]) {
+          memo = notifRef[userId][memoId]
+          senderUserId = memo.senderId
+          break
+        }
+      }
+    }
+
+    if (!memo) {
+      return res.status(404).json({ error: "Raw material memo not found" })
+    }
+
+    if (memo.status !== 'pending_approval') {
+      return res.status(400).json({ error: "Memo is not pending approval" })
+    }
+
+    if (memo.approverId !== approverId) {
+      return res.status(403).json({ error: "Only the assigned approver can approve this memo" })
+    }
+
+    // Get engineer from roles
+    const rolesData = await firebase_get('rd_project_roles')
+    const engineerId = rolesData?.engineerUserId
+    const engineerName = rolesData?.engineerName
+
+    if (!engineerId) {
+      return res.status(400).json({ error: "R&D Engineer is not assigned" })
+    }
+
+    const engineerUser = await firebase_get(`users/${engineerId}`)
+    if (!engineerUser) {
+      return res.status(404).json({ error: "Engineer user not found" })
+    }
+
+    const currentDate = new Date().toISOString()
+
+    // Build engineer recipient info
+    const engineerRecipient = {
+      userId: engineerId,
+      systemUserId: engineerId,
+      name: engineerName,
+      department: engineerUser.department || '—'
+    }
+
+    // Update memo status to acknowledged and add to engineer
+    const approvedMemoData = {
+      ...memo,
+      status: 'acknowledged',
+      approvedAt: currentDate,
+      approvedBy: approverId,
+      approvedByName: `${approverUser.name} ${approverUser.surname}`,
+      sentToEngineer: true,
+      engineerId: engineerId,
+      engineerName: engineerName,
+      recipients: [engineerId],
+      recipientNames: [engineerName],
+      recipientObjects: [engineerRecipient]
+    }
+
+    // Update in sent_memos for original sender
+    if (senderUserId) {
+      await firebase_set(`sent_memos/${senderUserId}/${memoId}`, approvedMemoData)
+    }
+
+    // Update in approver's received_memos to show it's been approved
+    await firebase_set(`received_memos/${approverId}/${memoId}`, {
+      ...approvedMemoData,
+      receivedBy: approverId,
+      status: 'acknowledged'
+    })
+
+    // Send memo to engineer
+    const engineerMemoData = {
+      ...approvedMemoData,
+      receivedBy: engineerId,
+      isRead: false,
+      acknowledged: false,
+      acknowledgedAt: null
+    }
+
+    await firebase_set(`received_memos/${engineerId}/${memoId}`, engineerMemoData)
+
+    // Create notification for engineer
+    const engineerNotificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const engineerNotification = {
+      id: engineerNotificationId,
+      type: 'raw_material_request',
+      title: `Raw Material Request: ${memo.materialName}`,
+      message: `Raw material request from ${memo.senderName} (approved by ${approverUser.name})`,
+      timestamp: currentDate,
+      memoId: memoId,
+      isRead: false,
+      fromUser: memo.senderName,
+      documentNo: memo.documentNo,
+      status: 'approved',
+      approverName: `${approverUser.name} ${approverUser.surname}`
+    }
+
+    await firebase_set(`notifications/${engineerId}/${engineerNotificationId}`, engineerNotification)
+
+    // Send LINE notification to engineer
+    try {
+      if (engineerUser.linkedFollowers && Object.keys(engineerUser.linkedFollowers).length > 0 && client) {
+        const engineerFollowerIds = Object.keys(engineerUser.linkedFollowers)
+        
+        for (const followerId of engineerFollowerIds) {
+          try {
+            const engineerLineMessage = {
+              type: "flex",
+              altText: `Raw Material Request: ${memo.materialName}`,
+              contents: {
+                type: "bubble",
+                header: {
+                  type: "box",
+                  layout: "vertical",
+                  contents: [
+                    {
+                      type: "text",
+                      text: "✓ Raw Material Request",
+                      weight: "bold",
+                      color: "#2e8b57",
+                      size: "xl"
+                    }
+                  ]
+                },
+                body: {
+                  type: "box",
+                  layout: "vertical",
+                  spacing: "md",
+                  contents: [
+                    {
+                      type: "text",
+                      text: memo.materialName,
+                      weight: "bold",
+                      size: "lg",
+                      wrap: true,
+                      color: "#1e2c4e"
+                    },
+                    {
+                      type: "text",
+                      text: `From: ${memo.senderName}`,
+                      size: "sm",
+                      color: "#1e2c4e",
+                      weight: "bold",
+                      margin: "md"
+                    },
+                    ...(memo.documentNo ? [{
+                      type: "text",
+                      text: `Doc No.: ${memo.documentNo}`,
+                      size: "sm",
+                      color: "#1e2c4e",
+                      weight: "bold",
+                      margin: "md"
+                    }] : []),
+                    {
+                      type: "text",
+                      text: `Project: ${memo.projectName}`,
+                      size: "sm",
+                      color: "#1e2c4e",
+                      weight: "bold",
+                      margin: "md"
+                    },
+                    {
+                      type: "text",
+                      text: `Approved by: ${approverUser.name}`,
+                      size: "sm",
+                      color: "#2e8b57",
+                      weight: "bold",
+                      margin: "md"
+                    },
+                    {
+                      type: "separator",
+                      margin: "md"
+                    },
+                    {
+                      type: "text",
+                      text: `Quantity: ${memo.content?.Quantity || '—'}`,
+                      size: "sm",
+                      color: "#1e2c4e",
+                      wrap: true,
+                      margin: "md"
+                    }
+                  ]
+                },
+                footer: {
+                  type: "box",
+                  layout: "vertical",
+                  spacing: "sm",
+                  contents: [
+                    {
+                      type: "button",
+                      action: {
+                        type: "uri",
+                        label: "View Details",
+                        uri: "https://rmcmemorandum.onrender.com/"
+                      },
+                      style: "primary",
+                      color: "#1e2c4e"
+                    }
+                  ]
+                }
+              }
+            }
+            await client.pushMessage(followerId, engineerLineMessage)
+          } catch (lineErr) {
+            console.error(`Error sending LINE notification to engineer follower ${followerId}:`, lineErr)
+          }
+        }
+      }
+    } catch (lineErr) {
+      console.error('Error sending engineer LINE notifications:', lineErr)
+    }
+
+    // Send notification to sender about approval
+    try {
+      const senderNotificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const senderNotification = {
+        id: senderNotificationId,
+        type: 'raw_material_request_approved',
+        title: `Raw Material Request Approved: ${memo.materialName}`,
+        message: `Your raw material request (${memo.documentNo}) has been approved and sent to ${engineerName}`,
+        timestamp: currentDate,
+        memoId: memoId,
+        isRead: false,
+        documentNo: memo.documentNo,
+        status: 'approved'
+      }
+
+      if (senderUserId) {
+        await firebase_set(`notifications/${senderUserId}/${senderNotificationId}`, senderNotification)
+      }
+
+      // Send LINE notification to sender
+      if (senderUserId) {
+        try {
+          const senderUser = await firebase_get(`users/${senderUserId}`)
+          if (senderUser && senderUser.linkedFollowers && Object.keys(senderUser.linkedFollowers).length > 0 && client) {
+            const senderFollowerIds = Object.keys(senderUser.linkedFollowers)
+            
+            for (const followerId of senderFollowerIds) {
+              try {
+                const senderLineMessage = {
+                  type: "flex",
+                  altText: `Raw Material Request Approved: ${memo.materialName}`,
+                  contents: {
+                    type: "bubble",
+                    header: {
+                      type: "box",
+                      layout: "vertical",
+                      contents: [
+                        {
+                          type: "text",
+                          text: "✓ Request Approved",
+                          weight: "bold",
+                          color: "#2e8b57",
+                          size: "xl"
+                        }
+                      ]
+                    },
+                    body: {
+                      type: "box",
+                      layout: "vertical",
+                      spacing: "md",
+                      contents: [
+                        {
+                          type: "text",
+                          text: memo.materialName,
+                          weight: "bold",
+                          size: "lg",
+                          wrap: true,
+                          color: "#1e2c4e"
+                        },
+                        {
+                          type: "text",
+                          text: `Doc No.: ${memo.documentNo}`,
+                          size: "sm",
+                          color: "#1e2c4e",
+                          weight: "bold",
+                          margin: "md"
+                        },
+                        {
+                          type: "text",
+                          text: `Project: ${memo.projectName}`,
+                          size: "sm",
+                          color: "#1e2c4e",
+                          weight: "bold",
+                          margin: "md"
+                        },
+                        {
+                          type: "text",
+                          text: `Approved by: ${approverUser.name}`,
+                          size: "sm",
+                          color: "#2e8b57",
+                          weight: "bold",
+                          margin: "md"
+                        },
+                        {
+                          type: "text",
+                          text: `Sent to: ${engineerName}`,
+                          size: "sm",
+                          color: "#2e6da4",
+                          weight: "bold",
+                          margin: "md"
+                        },
+                        {
+                          type: "separator",
+                          margin: "md"
+                        },
+                        {
+                          type: "text",
+                          text: `Status: 📤 Approved & Forwarded`,
+                          size: "sm",
+                          color: "#2e8b57",
+                          weight: "bold",
+                          margin: "md"
+                        }
+                      ]
+                    },
+                    footer: {
+                      type: "box",
+                      layout: "vertical",
+                      spacing: "sm",
+                      contents: [
+                        {
+                          type: "button",
+                          action: {
+                            type: "uri",
+                            label: "View Details",
+                            uri: "https://rmcmemorandum.onrender.com/"
+                          },
+                          style: "primary",
+                          color: "#1e2c4e"
+                        }
+                      ]
+                    }
+                  }
+                }
+                await client.pushMessage(followerId, senderLineMessage)
+              } catch (lineErr) {
+                console.error(`Error sending approval LINE notification to sender follower ${followerId}:`, lineErr)
+              }
+            }
+          }
+        } catch (lineErr) {
+          console.error('Error sending sender LINE notifications:', lineErr)
+        }
+      }
+    } catch (err) {
+      console.error('Error sending sender notification:', err)
+    }
+
+    res.json({
+      status: "Raw material request approved and sent to engineer",
+      memoId,
+      engineerId,
+      engineerName,
+      message: `Request has been sent to ${engineerName}`
+    })
+
+    addLog('info', 'rawmat_memo_approved', {
+      memoId,
+      approverId,
+      approverName: `${approverUser.name} ${approverUser.surname}`,
+      engineerId,
+      engineerName,
+      materialName: memo.materialName
+    })
+  } catch (err) {
+    addLog('error', 'rawmat_approval_failed', {
+      error: err.message,
+      approverId: req.userId,
+      memoId: req.params.memoId,
+      stack: err.stack
+    })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Reject Raw Material Request (approver rejects request)
+app.post("/api/rawmat/:memoId/reject", verifyToken, async (req, res) => {
+  try {
+    const memoId = req.params.memoId
+    const approverId = req.userId
+    const { reason } = req.body
+    
+    const approverUser = await firebase_get(`users/${approverId}`)
+    if (!approverUser) {
+      return res.status(404).json({ error: "Approver user not found" })
+    }
+
+    // Get the memo from received_memos
+    let memo = null
+    let senderUserId = null
+    
+    const notifRef = await firebase_get('received_memos')
+    if (notifRef) {
+      for (const userId in notifRef) {
+        if (notifRef[userId] && notifRef[userId][memoId]) {
+          memo = notifRef[userId][memoId]
+          senderUserId = memo.senderId
+          break
+        }
+      }
+    }
+
+    if (!memo) {
+      return res.status(404).json({ error: "Raw material memo not found" })
+    }
+
+    if (memo.status !== 'pending_approval') {
+      return res.status(400).json({ error: "Memo is not pending approval" })
+    }
+
+    if (memo.approverId !== approverId) {
+      return res.status(403).json({ error: "Only the assigned approver can reject this memo" })
+    }
+
+    const currentDate = new Date().toISOString()
+
+    // Update memo status to rejected
+    const rejectedMemoData = {
+      ...memo,
+      status: 'rejected',
+      rejectedAt: currentDate,
+      rejectedBy: approverId,
+      rejectedByName: `${approverUser.name} ${approverUser.surname}`,
+      rejectionReason: reason || 'No reason provided'
+    }
+
+    // Update in sent_memos
+    if (senderUserId) {
+      await firebase_set(`sent_memos/${senderUserId}/${memoId}`, rejectedMemoData)
+    }
+
+    // Update in approver's received_memos
+    await firebase_set(`received_memos/${approverId}/${memoId}`, rejectedMemoData)
+
+    // Send notification to sender
+    try {
+      const senderNotificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const senderNotification = {
+        id: senderNotificationId,
+        type: 'raw_material_request_rejected',
+        title: `Raw Material Request Rejected: ${memo.materialName}`,
+        message: `Your raw material request (${memo.documentNo}) has been rejected`,
+        timestamp: currentDate,
+        memoId: memoId,
+        isRead: false,
+        documentNo: memo.documentNo,
+        status: 'rejected',
+        reason: reason
+      }
+
+      if (senderUserId) {
+        await firebase_set(`notifications/${senderUserId}/${senderNotificationId}`, senderNotification)
+      }
+
+      // Send LINE notification to sender
+      if (senderUserId) {
+        try {
+          const senderUser = await firebase_get(`users/${senderUserId}`)
+          if (senderUser && senderUser.linkedFollowers && Object.keys(senderUser.linkedFollowers).length > 0 && client) {
+            const senderFollowerIds = Object.keys(senderUser.linkedFollowers)
+            
+            for (const followerId of senderFollowerIds) {
+              try {
+                const rejectionLineMessage = {
+                  type: "flex",
+                  altText: `Raw Material Request Rejected: ${memo.materialName}`,
+                  contents: {
+                    type: "bubble",
+                    header: {
+                      type: "box",
+                      layout: "vertical",
+                      contents: [
+                        {
+                          type: "text",
+                          text: "✗ Request Rejected",
+                          weight: "bold",
+                          color: "#c0392b",
+                          size: "xl"
+                        }
+                      ]
+                    },
+                    body: {
+                      type: "box",
+                      layout: "vertical",
+                      spacing: "md",
+                      contents: [
+                        {
+                          type: "text",
+                          text: memo.materialName,
+                          weight: "bold",
+                          size: "lg",
+                          wrap: true,
+                          color: "#1e2c4e"
+                        },
+                        {
+                          type: "text",
+                          text: `Doc No.: ${memo.documentNo}`,
+                          size: "sm",
+                          color: "#1e2c4e",
+                          weight: "bold",
+                          margin: "md"
+                        },
+                        {
+                          type: "text",
+                          text: `Rejected by: ${approverUser.name}`,
+                          size: "sm",
+                          color: "#c0392b",
+                          weight: "bold",
+                          margin: "md"
+                        },
+                        ...(reason ? [{
+                          type: "text",
+                          text: `Reason: ${reason}`,
+                          size: "sm",
+                          color: "#7b1a1a",
+                          wrap: true,
+                          margin: "md"
+                        }] : [])
+                      ]
+                    },
+                    footer: {
+                      type: "box",
+                      layout: "vertical",
+                      spacing: "sm",
+                      contents: [
+                        {
+                          type: "button",
+                          action: {
+                            type: "uri",
+                            label: "View Details",
+                            uri: "https://rmcmemorandum.onrender.com/"
+                          },
+                          style: "primary",
+                          color: "#1e2c4e"
+                        }
+                      ]
+                    }
+                  }
+                }
+                await client.pushMessage(followerId, rejectionLineMessage)
+              } catch (lineErr) {
+                console.error(`Error sending rejection LINE notification to sender follower ${followerId}:`, lineErr)
+              }
+            }
+          }
+        } catch (lineErr) {
+          console.error('Error sending sender rejection LINE notifications:', lineErr)
+        }
+      }
+    } catch (err) {
+      console.error('Error sending sender notification:', err)
+    }
+
+    res.json({
+      status: "Raw material request rejected",
+      memoId,
+      message: `Request has been rejected${reason ? ` with reason: ${reason}` : ''}`
+    })
+
+    addLog('info', 'rawmat_memo_rejected', {
+      memoId,
+      approverId,
+      approverName: `${approverUser.name} ${approverUser.surname}`,
+      materialName: memo.materialName,
+      reason
+    })
+  } catch (err) {
+    addLog('error', 'rawmat_rejection_failed', {
+      error: err.message,
+      approverId: req.userId,
+      memoId: req.params.memoId,
+      stack: err.stack
+    })
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Approve R&D Project (multi-stage approval workflow)
+app.post("/api/rdproject/:projectId/approve", verifyToken, async (req, res) => {
+  try {
+    const approverId = req.userId
+    const approverUser = await firebase_get(`users/${approverId}`)
+    const memoId = req.params.projectId  // This is actually the memoId with rdproject_ prefix
+    const { action, notes } = req.body  // action: 'approve', 'reject', or 'engineering_submit'
+
+    if (!['approve', 'reject', 'engineering_submit'].includes(action)) {
+      return res.status(400).json({ error: "Action must be 'approve', 'reject', or 'engineering_submit'" })
+    }
+
+    if (!approverUser) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    // Get the memo from received_memos for current approver
+    const memo = await firebase_get(`received_memos/${approverId}/${memoId}`)
+    if (!memo) {
+      return res.status(404).json({ error: "R&D Project memo not found" })
+    }
+
+    const projectData = {
+      memoId: memo.memoId,
+      title: memo.title,
+      content: memo.content,
+      projectName: memo.title?.replace('R&D Project: ', '').replace(' - Engineering Review', '').replace(' - Final Approval', '') || '',
+      stage: memo.stage || 'marketing_pending',
+      senderId: memo.senderId,
+      senderName: memo.senderName,
+      initiatorUserId: memo.senderId,
+      docNumber: memo.docNumber || ''
+    }
+
+    // Get approver roles
+    const rolesData = await firebase_get('rd_project_roles')
+    const approverUserId = rolesData?.approverUserId
+    const engineerUserId = rolesData?.engineerUserId
+
+    console.log('🔧 [APPROVE_MEMO]', {
+      memoId,
+      action,
+      approverId,
+      stage: projectData.stage,
+      approverUserId,
+      engineerUserId
+    })
+
+    // Verify approver is authorized based on current stage and action
+    if (projectData.stage === 'marketing_pending') {
+      // Only approver (assigned user) or admin can approve in marketing stage
+      if (approverId !== approverUserId && approverUser.role !== 'admin') {
+        return res.status(403).json({ error: "Only the assigned approver can approve in this stage" })
+      }
+    } else if (projectData.stage === 'engineering_pending') {
+      // Only engineer (assigned user) can submit engineering section data
+      if (approverId !== engineerUserId) {
+        return res.status(403).json({ error: "Only the assigned engineer can submit engineering data" })
+      }
+      // Engineering stage only accepts engineering_submit, not approve
+      if (action !== 'engineering_submit') {
+        return res.status(400).json({ error: "Engineering stage requires engineering_submit action, not approve" })
+      }
+    } else if (projectData.stage === 'final_approval') {
+      // Only approver (assigned user) or admin can give final approval
+      if (approverId !== approverUserId && approverUser.role !== 'admin') {
+        return res.status(403).json({ error: "Only the approver can give final approval" })
+      }
+    } else {
+      return res.status(400).json({ error: "Project is not in a pending approval stage" })
+    }
+
+    // Handle engineering submit (engineer submitting the engineering section)
+    if (action === 'engineering_submit') {
+      // Extract engineering data from request
+      const { rawMaterialCost, otherCost, productionCost, totalCost, moq, breakEvenPoint } = req.body
+      
+      // Extract base project ID from memoId (remove _engineering_XXX suffix)
+      const baseProjectId = memoId.split('_engineering_')[0]
+      
+      // Debug log
+      console.log('🔧 [ENGINEERING_SUBMIT]', {
+        memoId,
+        baseProjectId,
+        approverId,
+        approverUserId,
+        engineerUserId,
+        memo: { stage: memo.stage, senderId: memo.senderId }
+      })
+      
+      const approver = await firebase_get(`users/${approverUserId}`)
+
+      // Update the engineering memo in received_memos for ENGINEER (mark as submitted) with engineering data
+      const submittedEngineeringMemo = {
+        ...memo,
+        status: 'pending_approval',
+        submittedBy: approverId,
+        submittedByName: `${approverUser.name} ${approverUser.surname}`,
+        submittedAt: new Date().toISOString(),
+        engineeringData: {
+          rawMaterialCost,
+          otherCost,
+          productionCost,
+          totalCost,
+          moq,
+          breakEvenPoint
+        },
+        content: {
+          ...memo.content,
+          'Raw Material Cost': rawMaterialCost,
+          'Other Cost': otherCost,
+          'Production Cost': productionCost,
+          'Total Cost': totalCost,
+          'MOQ': moq,
+          'Break-even Point': breakEvenPoint
+        }
+      }
+      await firebase_set(`received_memos/${engineerUserId}/${memoId}`, submittedEngineeringMemo)
+
+      // Create final_approval memo for approver in received_memos for final review
+      const finalApprovalMemoId = `${baseProjectId}_final_${Date.now()}`
+      
+      // Merge engineering data into content
+      const contentWithEngineering = {
+        ...memo.content,
+        'Raw Material Cost': rawMaterialCost,
+        'Other Cost': otherCost,
+        'Production Cost': productionCost,
+        'Total Cost': totalCost,
+        'MOQ': moq,
+        'Break-even Point': breakEvenPoint
+      }
+      
+      const finalApprovalMemoData = {
+        memoId: finalApprovalMemoId,
+        type: 'R&D Project',
+        title: `R&D Project: ${projectData.projectName} - Final Approval`,
+        content: contentWithEngineering,
+        projectId: baseProjectId,
+        stage: 'final_approval',
+        senderId: approverId,
+        senderName: `${approverUser.name} ${approverUser.surname}`,
+        senderUserId: approverId,
+        senderObject: {
+          userId: approverId,
+          name: approverUser.name,
+          surname: approverUser.surname,
+          username: approverUser.username,
+          department: approverUser.department,
+          department2: approverUser.department2
+        },
+        recipientId: approverUserId,
+        recipientName: approver?.name ? `${approver.name} ${approver.surname}` : 'Approver',
+        recipientIds: [approverUserId],
+        recipientObjects: [{
+          systemUserId: approverUserId,
+          name: approver?.name ? `${approver.name} ${approver.surname}` : 'Approver',
+          department: approver?.department || '',
+          department2: approver?.department2 || ''
+        }],
+        sentAt: new Date().toISOString(),
+        status: 'pending_approval',
+        docNumber: memo.docNumber || '',
+        isRDProject: true,
+        approvalType: 'final',
+        submittedAt: new Date().toISOString(),
+        submittedBy: approverId,
+        submittedByName: `${approverUser.name} ${approverUser.surname}`
+      }
+      await firebase_set(`received_memos/${approverUserId}/${finalApprovalMemoId}`, finalApprovalMemoData)
+
+      console.log('✅ [FINAL_APPROVAL_CREATED]', {
+        saveLocation: `received_memos/${approverUserId}/${finalApprovalMemoId}`,
+        approverUserId,
+        expectedUserId: 'user_1774408705336' // Phanuwat
+      })
+
+      // Create notification for approver for final review
+      if (approver) {
+        const notification = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          title: 'R&D Project Final Approval',
+          message: `R&D project "${projectData.projectName}" engineering section completed by ${approverUser.name} ${approverUser.surname}. Ready for your final approval.`,
+          type: 'rdproject_pending_final',
+          read: false,
+          timestamp: new Date().toISOString(),
+          memoId: finalApprovalMemoId,
+          stage: 'final_approval',
+          submittedByName: `${approverUser.name} ${approverUser.surname}`
+        }
+        await firebase_set(`notifications/${approverUserId}/${notification.id}`, notification)
+
+        // Send LINE message to approver
+        try {
+          if (approver.linkedFollowers) {
+            const approverFollowerIds = Object.keys(approver.linkedFollowers)
+            if (approverFollowerIds.length > 0) {
+              const lineMessage = {
+                type: "flex",
+                altText: `R&D Project Final Approval: ${projectData.projectName}`,
+                contents: {
+                  type: "bubble",
+                  header: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                      {
+                        type: "text",
+                        text: "✅ R&D Project Final Approval",
+                        weight: "bold",
+                        color: "#1a5c3a",
+                        size: "xl"
+                      }
+                    ]
+                  },
+                  body: {
+                    type: "box",
+                    layout: "vertical",
+                    spacing: "md",
+                    contents: [
+                      {
+                        type: "text",
+                        text: projectData.projectName,
+                        weight: "bold",
+                        size: "lg",
+                        wrap: true,
+                        color: "#182034"
+                      },
+                      {
+                        type: "text",
+                        text: `Status: ⏳ Awaiting Your Final Approval`,
+                        size: "sm",
+                        color: "#1a2740",
+                        weight: "bold",
+                        margin: "md"
+                      },
+                      {
+                        type: "text",
+                        text: `Engineering Completed by: ${approverUser.name} ${approverUser.surname}`,
+                        size: "sm",
+                        color: "#1a5c3a",
+                        weight: "bold",
+                        margin: "md"
+                      },
+                      {
+                        type: "separator",
+                        margin: "md"
+                      },
+                      {
+                        type: "text",
+                        text: `All sections completed. Please review and provide final approval.`,
+                        size: "sm",
+                        color: "#666666",
+                        wrap: true,
+                        margin: "md"
+                      }
+                    ]
+                  },
+                  footer: {
+                    type: "box",
+                    layout: "vertical",
+                    spacing: "sm",
+                    contents: [
+                      {
+                        type: "button",
+                        action: {
+                          type: "uri",
+                          label: "Final Review & Approve",
+                          uri: "https://rmcmemorandum.onrender.com/"
+                        },
+                        style: "primary",
+                        color: "#1a5c3a"
+                      }
+                    ]
+                  }
+                }
+              }
+
+              for (const followerId of approverFollowerIds) {
+                try {
+                  await client.pushMessage(followerId, lineMessage)
+                } catch (lineErr) {
+                  // Silent error
+                }
+              }
+            }
+          }
+        } catch (lineErr) {
+          // Silent error
+        }
+      }
+
+      addLog('info', 'rd_project_engineering_submitted', {
+        memoId,
+        projectName: projectData.projectName,
+        submittedByName: `${approverUser.name} ${approverUser.surname}`,
+        docNumber: projectData.docNumber,
+        nextStage: 'final_approval'
+      })
+
+      return res.json({
+        status: "R&D Project engineering submitted - awaiting final approval",
+        memoId,
+        nextStage: 'final_approval'
+      })
+    }
+
+    if (action === 'reject') {
+      // Handle rejection - update memo status to rejected
+      const updatedMemo = {
+        ...memo,
+        status: 'rejected',
+        rejectedBy: approverId,
+        rejectedByName: `${approverUser.name} ${approverUser.surname}`,
+        rejectedAt: new Date().toISOString(),
+        rejectionReason: notes || 'No reason provided',
+        sentAt: memo.sentAt || new Date().toISOString()  // Preserve original sentAt
+      }
+
+      // Update in received_memos for current approver
+      await firebase_set(`received_memos/${approverId}/${memoId}`, updatedMemo)
+
+      // Also update sent_memos for initiator
+      await firebase_set(`sent_memos/${memo.senderId}/${memoId}`, updatedMemo)
+
+      // Notify initiator of rejection
+      const initiator = await firebase_get(`users/${projectData.initiatorUserId}`)
+      if (initiator) {
+        const notification = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          title: 'R&D Project Rejected',
+          message: `Your R&D project "${projectData.projectName}" was rejected by ${approverUser.name} ${approverUser.surname}: ${updatedMemo.rejectionReason}`,
+          type: 'rdproject_rejected',
+          read: false,
+          timestamp: new Date().toISOString(),
+          memoId,
+          rejectedBy: approverId,
+          reason: updatedMemo.rejectionReason
+        }
+        await firebase_set(`notifications/${projectData.initiatorUserId}/${notification.id}`, notification)
+      }
+
+      addLog('info', 'rd_project_rejected', {
+        memoId,
+        projectName: projectData.projectName,
+        rejectedByName: `${approverUser.name} ${approverUser.surname}`,
+        docNumber: projectData.docNumber,
+        rejectionReason: updatedMemo.rejectionReason,
+        stage: projectData.stage
+      })
+
+      return res.json({
+        status: "R&D Project rejected",
+        memoId,
+        stage: 'rejected'
+      })
+    }
+
+    // Handle approval - route to next stage
+    if (projectData.stage === 'marketing_pending') {
+      // Marketing stage approval -> route to engineer (user3)
+      const engineer = await firebase_get(`users/${engineerUserId}`)
+
+      // Update the original memo in received_memos for approver (mark as pending engineering)
+      const approvedMemo = {
+        ...memo,
+        status: 'pending_engineering',
+        approvedBy: approverId,
+        approvedByName: `${approverUser.name} ${approverUser.surname}`,
+        approvedAt: new Date().toISOString(),
+        stage: 'marketing_pending',
+        notes: notes || '',
+        sentAt: memo.sentAt || new Date().toISOString()  // Preserve original sentAt
+      }
+      await firebase_set(`received_memos/${approverId}/${memoId}`, approvedMemo)
+
+      // Also update sent_memos for initiator - preserve original sentAt
+      const sentMemosUpdate = {
+        ...approvedMemo,
+        sentAt: memo.sentAt || new Date().toISOString()  // Ensure sentAt is preserved
+      }
+      await firebase_set(`sent_memos/${memo.senderId}/${memoId}`, sentMemosUpdate)
+
+      // Create engineering_pending memo for engineer in received_memos
+      const engineeringMemoId = `${memoId}_engineering_${Date.now()}`
+      const engineeringMemoData = {
+        memoId: engineeringMemoId,
+        type: 'R&D Project',
+        title: `R&D Project: ${projectData.projectName} - Engineering Review`,
+        content: memo.content,
+        projectId: memoId,
+        stage: 'engineering_pending',
+        senderId: approverId,
+        senderName: `${approverUser.name} ${approverUser.surname}`,
+        senderUserId: approverId,
+        senderObject: {
+          userId: approverId,
+          name: approverUser.name,
+          surname: approverUser.surname,
+          username: approverUser.username,
+          department: approverUser.department,
+          department2: approverUser.department2
+        },
+        recipientId: engineerUserId,
+        recipientName: engineer?.name ? `${engineer.name} ${engineer.surname}` : 'Engineer',
+        recipientIds: [engineerUserId],
+        recipientObjects: [{
+          systemUserId: engineerUserId,
+          name: engineer?.name ? `${engineer.name} ${engineer.surname}` : 'Engineer',
+          department: engineer?.department || '',
+          department2: engineer?.department2 || ''
+        }],
+        sentAt: new Date().toISOString(),
+        status: 'pending_approval',
+        docNumber: memo.docNumber || '',
+        isRDProject: true,
+        approvalType: 'engineering'
+      }
+      await firebase_set(`received_memos/${engineerUserId}/${engineeringMemoId}`, engineeringMemoData)
+
+      // Create notification for engineer
+      if (engineer) {
+        const notification = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          title: 'R&D Project Awaiting Engineering Review',
+          message: `R&D project "${projectData.projectName}" approved by marketing. Now awaiting your engineering input.`,
+          type: 'rdproject_pending_engineering',
+          read: false,
+          timestamp: new Date().toISOString(),
+          memoId,
+          stage: 'engineering_pending',
+          approvedByName: `${approverUser.name} ${approverUser.surname}`
+        }
+        await firebase_set(`notifications/${engineerUserId}/${notification.id}`, notification)
+
+        // Send LINE message to engineer
+        try {
+          if (engineer.linkedFollowers) {
+            const engineerFollowerIds = Object.keys(engineer.linkedFollowers)
+            if (engineerFollowerIds.length > 0) {
+              const lineMessage = {
+                type: "flex",
+                altText: `R&D Project Engineering Review: ${projectData.projectName}`,
+                contents: {
+                  type: "bubble",
+                  header: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                      {
+                        type: "text",
+                        text: "⚙️ R&D Project Engineering",
+                        weight: "bold",
+                        color: "#182034",
+                        size: "xl"
+                      }
+                    ]
+                  },
+                  body: {
+                    type: "box",
+                    layout: "vertical",
+                    spacing: "md",
+                    contents: [
+                      {
+                        type: "text",
+                        text: projectData.projectName,
+                        weight: "bold",
+                        size: "lg",
+                        wrap: true,
+                        color: "#182034"
+                      },
+                      {
+                        type: "text",
+                        text: `Status: ⏳ Awaiting Your Input`,
+                        size: "sm",
+                        color: "#1a2740",
+                        weight: "bold",
+                        margin: "md"
+                      },
+                      {
+                        type: "text",
+                        text: `Approved by: ${approverUser.name} ${approverUser.surname}`,
+                        size: "sm",
+                        color: "#1a5c3a",
+                        weight: "bold",
+                        margin: "md"
+                      },
+                      {
+                        type: "separator",
+                        margin: "md"
+                      },
+                      {
+                        type: "text",
+                        text: `Stage: Engineering Review\n\nPlease complete the engineering section and provide cost analysis.`,
+                        size: "sm",
+                        color: "#666666",
+                        wrap: true,
+                        margin: "md"
+                      }
+                    ]
+                  },
+                  footer: {
+                    type: "box",
+                    layout: "vertical",
+                    spacing: "sm",
+                    contents: [
+                      {
+                        type: "button",
+                        action: {
+                          type: "uri",
+                          label: "Fill Engineering Section",
+                          uri: "https://rmcmemorandum.onrender.com/"
+                        },
+                        style: "primary",
+                        color: "#1a2740"
+                      }
+                    ]
+                  }
+                }
+              }
+
+              for (const followerId of engineerFollowerIds) {
+                try {
+                  await client.pushMessage(followerId, lineMessage)
+                } catch (lineErr) {
+                  // Silent error
+                }
+              }
+            }
+          }
+        } catch (lineErr) {
+          // Silent error
+        }
+      }
+
+      addLog('info', 'rd_project_marketing_approved', {
+        memoId,
+        projectName: projectData.projectName,
+        approvedByName: `${approverUser.name} ${approverUser.surname}`,
+        docNumber: projectData.docNumber,
+        nextStage: 'engineering_pending'
+      })
+
+      return res.json({
+        status: "R&D Project approved - routed to engineer",
+        memoId,
+        nextStage: 'engineering_pending',
+        nextApprover: `${engineer?.name} ${engineer?.surname}`
+      })
+    }
+
+    if (projectData.stage === 'final_approval') {
+      // Final approval - project is approved
+      const engineer = await firebase_get(`users/${engineerUserId}`)
+      
+      // Extract base project ID from final memoId (remove _final_XXX suffix)
+      const baseProjectId = memoId.split('_final_')[0]
+
+      // Find the ORIGINAL initiator from original sent_memos
+      let originalInitiatorUserId = projectData.initiatorUserId
+      const allUsers = await firebase_get('users')
+      if (allUsers && typeof allUsers === 'object') {
+        for (const [userId, userObj] of Object.entries(allUsers)) {
+          const sentMemos = await firebase_get(`sent_memos/${userId}`)
+          if (sentMemos && sentMemos[baseProjectId] && sentMemos[baseProjectId].isRDProject) {
+            originalInitiatorUserId = userId
+            break
+          }
+        }
+      }
+
+      const initiator = await firebase_get(`users/${originalInitiatorUserId}`)
+
+      // Update the final approval memo in received_memos for approver (mark as approved)
+      const approvedFinalMemo = {
+        memoId: baseProjectId,
+        type: 'R&D Project',
+        title: `R&D Project: ${projectData.projectName}`,
+        content: memo.content,  // Complete data with engineering
+        projectId: baseProjectId,
+        stage: 'final_approval',
+        senderId: originalInitiatorUserId,
+        senderName: initiator ? `${initiator.name} ${initiator.surname}` : 'Unknown',
+        senderUserId: originalInitiatorUserId,
+        senderObject: initiator ? {
+          userId: originalInitiatorUserId,
+          name: initiator.name,
+          surname: initiator.surname,
+          username: initiator.username,
+          department: initiator.department,
+          department2: initiator.department2
+        } : null,
+        recipientId: approverUserId,
+        recipientIds: [approverUserId],
+        recipientName: `${approverUser.name} ${approverUser.surname}`,
+        recipientObjects: [{
+          systemUserId: approverUserId,
+          name: `${approverUser.name} ${approverUser.surname}`,
+          department: approverUser.department,
+          department2: approverUser.department2
+        }],
+        sentAt: new Date().toISOString(),
+        status: 'completed',
+        docNumber: projectData.docNumber || '',
+        isRDProject: true,
+        approvalType: 'final',
+        approvedBy: approverId,
+        approvedByName: `${approverUser.name} ${approverUser.surname}`,
+        approvedAt: new Date().toISOString(),
+        submittedAt: memo.submittedAt || new Date().toISOString(),
+        submittedBy: memo.submittedBy,
+        submittedByName: memo.submittedByName,
+        notes: notes || ''
+      }
+      await firebase_set(`received_memos/${approverId}/${baseProjectId}`, approvedFinalMemo)
+
+      // UPDATE SENT_MEMOS FOR ORIGINAL INITIATOR with the final completed version (with all engineering data)
+      // Fetch original memo from initiator's sent_memos to preserve sender info
+      const originalInitiatorMemo = await firebase_get(`sent_memos/${originalInitiatorUserId}/${baseProjectId}`)
+      
+      // Rebuild final memo with all data and correct sender info
+      const finalCompletedMemoForInitiator = {
+        memoId: baseProjectId,
+        type: 'R&D Project',
+        title: `R&D Project: ${projectData.projectName}`,
+        content: memo.content,  // This has all the engineering data merged
+        projectId: baseProjectId,
+        stage: 'final_approval',
+        senderId: originalInitiatorUserId,  // Keep original initiator as sender
+        senderName: initiator ? `${initiator.name} ${initiator.surname}` : 'Unknown',
+        senderUserId: originalInitiatorUserId,
+        senderObject: initiator ? {
+          userId: originalInitiatorUserId,
+          name: initiator.name,
+          surname: initiator.surname,
+          username: initiator.username,
+          department: initiator.department,
+          department2: initiator.department2
+        } : null,
+        recipientId: approverUserId,
+        recipientName: approverUser ? `${approverUser.name} ${approverUser.surname}` : 'Approver',
+        recipientIds: [approverUserId],
+        recipientObjects: [{
+          systemUserId: approverUserId,
+          name: approverUser ? `${approverUser.name} ${approverUser.surname}` : 'Approver',
+          department: approverUser?.department || '',
+          department2: approverUser?.department2 || ''
+        }],
+        sentAt: originalInitiatorMemo?.sentAt || new Date().toISOString(),
+        status: 'completed',
+        docNumber: originalInitiatorMemo?.docNumber || memo.docNumber || '',
+        isRDProject: true,
+        approvalType: 'final',
+        approvedBy: approverId,
+        approvedByName: `${approverUser.name} ${approverUser.surname}`,
+        approvedAt: new Date().toISOString(),
+        submittedAt: memo.submittedAt || new Date().toISOString(),
+        submittedBy: memo.submittedBy,
+        submittedByName: memo.submittedByName,
+        notes: notes || ''
+      }
+      await firebase_set(`sent_memos/${originalInitiatorUserId}/${baseProjectId}`, finalCompletedMemoForInitiator)
+
+      // ALSO SEND FINAL COMPLETED MEMO TO ENGINEER (1) - in their received_memos
+      const completedMemoForEngineer = {
+        memoId: baseProjectId,
+        type: 'R&D Project',
+        title: `R&D Project: ${projectData.projectName}`,
+        content: memo.content,  // Complete data with engineering
+        projectId: baseProjectId,
+        stage: 'final_approval',
+        senderId: originalInitiatorUserId,
+        senderName: initiator ? `${initiator.name} ${initiator.surname}` : 'Unknown',
+        senderUserId: originalInitiatorUserId,
+        senderObject: initiator ? {
+          userId: originalInitiatorUserId,
+          name: initiator.name,
+          surname: initiator.surname,
+          username: initiator.username,
+          department: initiator.department,
+          department2: initiator.department2
+        } : null,
+        recipientId: engineerUserId,
+        recipientIds: [engineerUserId],
+        recipientName: engineer ? `${engineer.name} ${engineer.surname}` : 'Unknown',
+        recipientObjects: [{
+          systemUserId: engineerUserId,
+          name: engineer ? `${engineer.name} ${engineer.surname}` : 'Unknown',
+          department: engineer?.department || '',
+          department2: engineer?.department2 || ''
+        }],
+        sentAt: new Date().toISOString(),
+        status: 'completed',
+        docNumber: projectData.docNumber || '',
+        isRDProject: true,
+        approvalType: 'final',
+        approvedBy: approverId,
+        approvedByName: `${approverUser.name} ${approverUser.surname}`,
+        approvedAt: new Date().toISOString(),
+        submittedAt: memo.submittedAt || new Date().toISOString(),
+        submittedBy: memo.submittedBy,
+        submittedByName: memo.submittedByName,
+        notes: notes || ''
+      }
+      await firebase_set(`received_memos/${engineerUserId}/${baseProjectId}`, completedMemoForEngineer)
+
+      // Delete intermediate memos (engineering_pending) from engineer's received_memos
+      // Find and delete engineering_pending memo
+      const engineerReceivedMemos = await firebase_get(`received_memos/${engineerUserId}`)
+      if (engineerReceivedMemos && typeof engineerReceivedMemos === 'object') {
+        for (let memoIdKey in engineerReceivedMemos) {
+          if (memoIdKey.includes('_engineering_')) {
+            await firebase_delete(`received_memos/${engineerUserId}/${memoIdKey}`)
+          }
+        }
+      }
+
+      // Also delete old memos from approver's received_memos if they exist (marketing versions)
+      const approverReceivedMemos = await firebase_get(`received_memos/${approverId}`)
+      if (approverReceivedMemos && typeof approverReceivedMemos === 'object') {
+        for (let memoIdKey in approverReceivedMemos) {
+          // Delete intermediate versions like marketing_pending or final_pending, keep only base version
+          if (memoIdKey.includes(baseProjectId) && (memoIdKey.includes('_final_') || memoIdKey.includes('_engineering_'))) {
+            await firebase_delete(`received_memos/${approverId}/${memoIdKey}`)
+          }
+        }
+      }
+
+      // Also delete marketing_pending memo from initiator's sent_memos if exists
+      const initiatorSentMemos = await firebase_get(`sent_memos/${originalInitiatorUserId}`)
+      if (initiatorSentMemos && typeof initiatorSentMemos === 'object') {
+        for (let memoIdKey in initiatorSentMemos) {
+          // Delete old intermediate versions, keep only final base version
+          if (memoIdKey.includes(baseProjectId) && memoIdKey !== baseProjectId && (memoIdKey.includes('_final_') || memoIdKey.includes('_engineering_'))) {
+            await firebase_delete(`sent_memos/${originalInitiatorUserId}/${memoIdKey}`)
+          }
+        }
+      }
+
+      // IMPORTANT: Delete engineer's sent_memos entry if it exists (engineer should NOT have sent_memos)
+      const engineerSentMemos = await firebase_get(`sent_memos/${engineerUserId}`)
+      if (engineerSentMemos && engineerSentMemos[baseProjectId]) {
+        await firebase_delete(`sent_memos/${engineerUserId}/${baseProjectId}`)
+      }
+
+      // Notify initiator of completion
+      if (initiator) {
+        const notification = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          title: 'R&D Project Completed',
+          message: `R&D project "${projectData.projectName}" has been approved by ${approverUser.name} ${approverUser.surname} and is complete.`,
+          type: 'rdproject_completed',
+          read: false,
+          timestamp: new Date().toISOString(),
+          memoId: baseProjectId,
+          stage: 'completed',
+          approvedByName: `${approverUser.name} ${approverUser.surname}`
+        }
+        await firebase_set(`notifications/${originalInitiatorUserId}/${notification.id}`, notification)
+      }
+
+      if (engineer) {
+        const notification = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          title: 'R&D Project Approved',
+          message: `Your R&D project "${projectData.projectName}" has been approved and is now complete.`,
+          type: 'rdproject_approved',
+          read: false,
+          timestamp: new Date().toISOString(),
+          memoId: baseProjectId,
+          stage: 'completed',
+          approvedByName: `${approverUser.name} ${approverUser.surname}`
+        }
+        await firebase_set(`notifications/${engineerUserId}/${notification.id}`, notification)
+      }
+
+      // Send LINE messages to both initiator and engineer
+      try {
+        if (initiator && initiator.linkedFollowers) {
+          const initiatorFollowerIds = Object.keys(initiator.linkedFollowers)
+          if (initiatorFollowerIds.length > 0) {
+            const lineMessage = {
+              type: "flex",
+              altText: `R&D Project Approved: ${projectData.projectName}`,
+              contents: {
+                type: "bubble",
+                header: {
+                  type: "box",
+                  layout: "vertical",
+                  contents: [
+                    {
+                      type: "text",
+                      text: "✅ R&D Project Approved",
+                      weight: "bold",
+                      color: "#1a5c3a",
+                      size: "xl"
+                    }
+                  ]
+                },
+                body: {
+                  type: "box",
+                  layout: "vertical",
+                  spacing: "md",
+                  contents: [
+                    {
+                      type: "text",
+                      text: projectData.projectName,
+                      weight: "bold",
+                      size: "lg",
+                      wrap: true,
+                      color: "#182034"
+                    },
+                    {
+                      type: "text",
+                      text: `Approved by: ${approverUser.name} ${approverUser.surname}`,
+                      size: "sm",
+                      color: "#1a5c3a",
+                      weight: "bold",
+                      margin: "md"
+                    },
+                    {
+                      type: "separator",
+                      margin: "md"
+                    },
+                    {
+                      type: "text",
+                      text: `Your R&D project has been successfully approved and is ready for implementation.`,
+                      size: "sm",
+                      color: "#666666",
+                      wrap: true,
+                      margin: "md"
+                    }
+                  ]
+                },
+                footer: {
+                  type: "box",
+                  layout: "vertical",
+                  spacing: "sm",
+                  contents: [
+                    {
+                      type: "button",
+                      action: {
+                        type: "uri",
+                        label: "View Project Details",
+                        uri: "https://rmcmemorandum.onrender.com/"
+                      },
+                      style: "primary",
+                      color: "#1a5c3a"
+                    }
+                  ]
+                }
+              }
+            }
+
+            for (const followerId of initiatorFollowerIds) {
+              try {
+                await client.pushMessage(followerId, lineMessage)
+              } catch (lineErr) {
+                // Silent error
+              }
+            }
+          }
+        }
+
+        if (engineer && engineer.linkedFollowers) {
+          const engineerFollowerIds = Object.keys(engineer.linkedFollowers)
+          if (engineerFollowerIds.length > 0) {
+            const lineMessage = {
+              type: "flex",
+              altText: `R&D Project Completed: ${projectData.projectName}`,
+              contents: {
+                type: "bubble",
+                header: {
+                  type: "box",
+                  layout: "vertical",
+                  contents: [
+                    {
+                      type: "text",
+                      text: "✅ R&D Project Completed",
+                      weight: "bold",
+                      color: "#1a5c3a",
+                      size: "xl"
+                    }
+                  ]
+                },
+                body: {
+                  type: "box",
+                  layout: "vertical",
+                  spacing: "md",
+                  contents: [
+                    {
+                      type: "text",
+                      text: projectData.projectName,
+                      weight: "bold",
+                      size: "lg",
+                      wrap: true,
+                      color: "#182034"
+                    },
+                    {
+                      type: "text",
+                      text: `Final Approved by: ${approverUser.name} ${approverUser.surname}`,
+                      size: "sm",
+                      color: "#1a5c3a",
+                      weight: "bold",
+                      margin: "md"
+                    },
+                    {
+                      type: "separator",
+                      margin: "md"
+                    },
+                    {
+                      type: "text",
+                      text: `R&D project has been completed with your engineering input and has received final approval.`,
+                      size: "sm",
+                      color: "#666666",
+                      wrap: true,
+                      margin: "md"
+                    }
+                  ]
+                },
+                footer: {
+                  type: "box",
+                  layout: "vertical",
+                  spacing: "sm",
+                  contents: [
+                    {
+                      type: "button",
+                      action: {
+                        type: "uri",
+                        label: "View Project Details",
+                        uri: "https://rmcmemorandum.onrender.com/"
+                      },
+                      style: "primary",
+                      color: "#1a5c3a"
+                    }
+                  ]
+                }
+              }
+            }
+
+            for (const followerId of engineerFollowerIds) {
+              try {
+                await client.pushMessage(followerId, lineMessage)
+              } catch (lineErr) {
+                // Silent error
+              }
+            }
+          }
+        }
+      } catch (lineErr) {
+        // Silent error - LINE notification not critical
+      }
+
+      addLog('info', 'rd_project_completed', {
+        memoId,
+        projectName: projectData.projectName,
+        approvedByName: `${approverUser.name} ${approverUser.surname}`,
+        docNumber: projectData.docNumber,
+        stage: 'completed'
+      })
+
+      return res.json({
+        status: "R&D Project approved and completed",
+        memoId,
+        stage: 'completed'
+      })
+    }
+
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 const PORT = process.env.PORT || 3000
 
 // Health check endpoint
@@ -4697,3 +7907,4 @@ app.listen(PORT, () => {
   console.log(`🗄️  Firebase Database: ${FIREBASE_DB_URL}`)
   console.log(`${'='.repeat(60)}\n`)
 })
+
