@@ -4012,6 +4012,44 @@
                                 data-translate="enterTerms" placeholder="Enter purchase/sale terms..."></textarea>
                         </div>
 
+                        <!-- Image Upload Field -->
+                        <div class="field" style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px;">
+                            <label data-translate="attachImage"><span class="material-symbols-outlined"
+                                    style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
+                                Image (Optional)</label>
+                            <div class="image-upload-wrapper">
+                                <input type="file" id="rdProjectImageInput" accept="image/*" style="display: none;"
+                                    onchange="handleRDProjectImageUpload(event)">
+                                <button type="button" class="image-upload-btn"
+                                    onclick="document.getElementById('rdProjectImageInput').click()"
+                                    style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                                    <span class="material-symbols-outlined">upload_file</span>
+                                    <span id="rdProjectUploadBtnText" data-translate="clickToUpload">Click to upload or drag
+                                        image here</span>
+                                </button>
+                                <!-- Image Preview -->
+                                <div id="rdProjectImagePreview" class="image-preview-container"
+                                    style="display: none; margin-top: 12px;">
+                                    <div style="position: relative; display: inline-block;">
+                                        <img id="rdProjectImageThumb" src="" alt="Preview"
+                                            style="max-width: 200px; max-height: 200px; border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <button type="button" class="image-remove-btn" onclick="removeRDProjectImage()"
+                                            style="position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s ease;">
+                                            <span class="material-symbols-outlined"
+                                                style="font-size: 16px;">close</span>
+                                        </button>
+                                    </div>
+                                    <div id="rdProjectUploadProgress" style="margin-top: 8px; display: none;">
+                                        <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                            Uploading...</div>
+                                        <div class="progress-bar-wrap show">
+                                            <div class="progress-bar" id="rdProjectUploadProgressBar" style="width: 0%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -4089,6 +4127,7 @@
                     </div>
                 </div>
             </div>
+     
 
             <!-- ── RAW MATERIAL REQUEST VIEW ───────────────────── -->
             <div id="view-raw-material-request" class="view" style="display:none;">
@@ -4213,6 +4252,44 @@
                             <label data-translate="materialDescription">Additional Details</label>
                             <textarea id="rawMatDescription" rows="3" placeholder="Enter additional details..." data-translate="enterDescription"></textarea>
                         </div>
+
+                        <!-- Image Upload Field -->
+                        <div class="field" style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px;">
+                            <label data-translate="attachImage"><span class="material-symbols-outlined"
+                                    style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
+                                Image (Optional)</label>
+                            <div class="image-upload-wrapper">
+                                <input type="file" id="rawMatImageInput" accept="image/*" style="display: none;"
+                                    onchange="handleRawMatImageUpload(event)">
+                                <button type="button" class="image-upload-btn"
+                                    onclick="document.getElementById('rawMatImageInput').click()"
+                                    style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                                    <span class="material-symbols-outlined">upload_file</span>
+                                    <span id="rawMatUploadBtnText" data-translate="clickToUpload">Click to upload or drag
+                                        image here</span>
+                                </button>
+                                <!-- Image Preview -->
+                                <div id="rawMatImagePreview" class="image-preview-container"
+                                    style="display: none; margin-top: 12px;">
+                                    <div style="position: relative; display: inline-block;">
+                                        <img id="rawMatImageThumb" src="" alt="Preview"
+                                            style="max-width: 200px; max-height: 200px; border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <button type="button" class="image-remove-btn" onclick="removeRawMatImage()"
+                                            style="position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s ease;">
+                                            <span class="material-symbols-outlined"
+                                                style="font-size: 16px;">close</span>
+                                        </button>
+                                    </div>
+                                    <div id="rawMatUploadProgress" style="margin-top: 8px; display: none;">
+                                        <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                            Uploading...</div>
+                                        <div class="progress-bar-wrap show">
+                                            <div class="progress-bar" id="rawMatUploadProgressBar" style="width: 0%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -4237,7 +4314,7 @@
                     </div>
                 </div>
             </div>
-
+        <!--prompt: เพิ่มแนบไฟล์รูป สำหรับ rdproject , raw-material (เหมือนกับ memo ทั่วไป)-->
 
 
             <!-- ── SENT MEMOS VIEW ────────────────── -->
@@ -5477,7 +5554,7 @@
 
                 <!-- Image Display Section -->
                 <div class="memo-detail-field" id="memoDetailImageField" style="display: none;">
-                    <div id="memoDetailImageField" class="memo-detail-label" data-translate="attachedImage">Attached Image</div>
+                    <div class="memo-detail-label" data-translate="attachedImage">Attached Image</div>
                     <div style="margin-top: 8px;">
                         <img id="memoDetailImage" src="" alt="Memo attachment"
                             style="max-width: 100%; max-height: 250px; display:flex; margin:0 auto; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer; transition: transform 0.2s ease;"
@@ -10870,7 +10947,14 @@
                     monthlyQuantity,
                     salesPrice: unitSalePrice,
                     revenue: monthlySalesRevenue,
-                    terms: purchaseSaleTerms
+                    terms: purchaseSaleTerms,
+                    rawMaterialCost,
+                    otherCost,
+                    productionCost,
+                    totalCost,
+                    moq,
+                    breakEvenPoint,
+                    imageUrl: rdProjectImageUrl
                 }
 
                 const response = await fetch('/api/rdproject', {
@@ -11058,6 +11142,9 @@
             if (firstRadio) firstRadio.checked = true
             
             document.getElementById('rawMatPurposeOtherField').style.display = 'none'
+            
+            // Clear image and upload state
+            removeRawMatImage()
             
             updateTypeCheckboxStyle()
             showStatus('statusRawMat', '', '')
@@ -11338,7 +11425,8 @@
                     lot: getElementValue('rawMatLot'),
                     price: getElementValue('rawMatPrice'),
                     moq: getElementValue('rawMatMOQ'),
-                    description: getElementValue('rawMatDescription')
+                    description: getElementValue('rawMatDescription'),
+                    imageUrl: rawMatImageUrl
                 }
                 
                 const res = await fetch('/api/rawmat', {
@@ -11441,6 +11529,9 @@
             setElementValue('rdTotalCost', '')
             setElementValue('rdMOQ', '')
             setElementValue('rdBreakEvenPoint', '')
+            
+            // Clear image and upload state
+            removeRDProjectImage()
             
             // Clear status message
             removeElementClass('statusRDProject', 'show')
@@ -15003,13 +15094,13 @@ function printMemoDetail() {
                 </tr>`
         }
 
-        const imageHTML = memo.imageUrl
-            ? `<div class="section-block"><div class="section-label">เอกสารแนบ</div><img src="${escHtml(memo.imageUrl)}" class="memo-image" onerror="this.parentElement.style.display='none'" /></div>`
-            : ''
-
         // Check if this is an R&D Project memo or Raw Material Request
         const isRawMat = (memo.isRawMaterialRequest || memo.type === 'Raw Material Request') && typeof memo.content === 'object' && memo.content !== null
         const isRDProject = typeof memo.content === 'object' && memo.content !== null && !isRawMat
+
+        const imageHTML = (memo.imageUrl && !isRDProject && !isRawMat)
+            ? `<div class="section-block"><div class="section-label">เอกสารแนบ</div><img src="${escHtml(memo.imageUrl)}" class="memo-image" onerror="this.parentElement.style.display='none'" /></div>`
+            : ''
 
         // --- Signature footer block ---
         let approvalStatus = ''
@@ -17869,6 +17960,8 @@ function printMemoDetail() {
         };
 
         let memoImageUrl = null;
+        let rdProjectImageUrl = null;
+        let rawMatImageUrl = null;
 
         // Handle Image Upload
         async function handleImageUpload(event) {
@@ -17955,6 +18048,170 @@ function printMemoDetail() {
             const progress = document.getElementById('uploadProgress');
             if (progress) progress.style.display = 'none';
             const progressBar = document.getElementById('uploadProgressBar');
+            if (progressBar) progressBar.style.width = '0%';
+        }
+
+        // Handle R&D Project Image Upload
+        async function handleRDProjectImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showStatus('statusRDProject', 'Please select a valid image file', 'error');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                showStatus('statusRDProject', 'Image size must be less than 5MB', 'error');
+                return;
+            }
+
+            document.getElementById('rdProjectUploadProgress').style.display = 'block';
+            document.getElementById('rdProjectUploadProgressBar').style.width = '0%';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+                formData.append('folder', CLOUDINARY_CONFIG.folder);
+                formData.append('resource_type', 'auto');
+
+                const xhr = new XMLHttpRequest();
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        document.getElementById('rdProjectUploadProgressBar').style.width = percentComplete + '%';
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        rdProjectImageUrl = response.secure_url;
+
+                        const previewContainer = document.getElementById('rdProjectImagePreview');
+                        const previewImage = document.getElementById('rdProjectImageThumb');
+                        previewImage.src = rdProjectImageUrl;
+                        previewContainer.style.display = 'block';
+
+                        setTimeout(() => {
+                            document.getElementById('rdProjectUploadProgress').style.display = 'none';
+                            document.getElementById('rdProjectUploadProgressBar').style.width = '0%';
+                        }, 500);
+
+                        showStatus('statusRDProject', 'Image uploaded successfully', 'success');
+                    } else {
+                        showStatus('statusRDProject', 'Image upload failed', 'error');
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    showStatus('statusRDProject', 'Image upload error', 'error');
+                    document.getElementById('rdProjectUploadProgress').style.display = 'none';
+                });
+
+                xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
+                xhr.send(formData);
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                showStatus('statusRDProject', 'Error uploading image', 'error');
+                document.getElementById('rdProjectUploadProgress').style.display = 'none';
+            }
+        }
+
+        function removeRDProjectImage() {
+            rdProjectImageUrl = null;
+            const inputElement = document.getElementById('rdProjectImageInput');
+            if (inputElement) inputElement.value = '';
+            const previewContainer = document.getElementById('rdProjectImagePreview');
+            if (previewContainer) previewContainer.style.display = 'none';
+            const progress = document.getElementById('rdProjectUploadProgress');
+            if (progress) progress.style.display = 'none';
+            const progressBar = document.getElementById('rdProjectUploadProgressBar');
+            if (progressBar) progressBar.style.width = '0%';
+        }
+
+        // Handle Raw Material Image Upload
+        async function handleRawMatImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showStatus('statusRawMat', 'Please select a valid image file', 'error');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                showStatus('statusRawMat', 'Image size must be less than 5MB', 'error');
+                return;
+            }
+
+            document.getElementById('rawMatUploadProgress').style.display = 'block';
+            document.getElementById('rawMatUploadProgressBar').style.width = '0%';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+                formData.append('folder', CLOUDINARY_CONFIG.folder);
+                formData.append('resource_type', 'auto');
+
+                const xhr = new XMLHttpRequest();
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        document.getElementById('rawMatUploadProgressBar').style.width = percentComplete + '%';
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        rawMatImageUrl = response.secure_url;
+
+                        const previewContainer = document.getElementById('rawMatImagePreview');
+                        const previewImage = document.getElementById('rawMatImageThumb');
+                        previewImage.src = rawMatImageUrl;
+                        previewContainer.style.display = 'block';
+
+                        setTimeout(() => {
+                            document.getElementById('rawMatUploadProgress').style.display = 'none';
+                            document.getElementById('rawMatUploadProgressBar').style.width = '0%';
+                        }, 500);
+
+                        showStatus('statusRawMat', 'Image uploaded successfully', 'success');
+                    } else {
+                        showStatus('statusRawMat', 'Image upload failed', 'error');
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    showStatus('statusRawMat', 'Image upload error', 'error');
+                    document.getElementById('rawMatUploadProgress').style.display = 'none';
+                });
+
+                xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
+                xhr.send(formData);
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                showStatus('statusRawMat', 'Error uploading image', 'error');
+                document.getElementById('rawMatUploadProgress').style.display = 'none';
+            }
+        }
+
+        function removeRawMatImage() {
+            rawMatImageUrl = null;
+            const inputElement = document.getElementById('rawMatImageInput');
+            if (inputElement) inputElement.value = '';
+            const previewContainer = document.getElementById('rawMatImagePreview');
+            if (previewContainer) previewContainer.style.display = 'none';
+            const progress = document.getElementById('rawMatUploadProgress');
+            if (progress) progress.style.display = 'none';
+            const progressBar = document.getElementById('rawMatUploadProgressBar');
             if (progressBar) progressBar.style.width = '0%';
         }
 

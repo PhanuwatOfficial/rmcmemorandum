@@ -2555,6 +2555,7 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
           const memo = adminReceivedMemos[memoId]
           // Include R&D project memos in final_approval stage
           if (memo.status === 'pending_approval' && memo.isRDProject && memo.stage === 'final_approval') {
+            
             pendingMemos.push({
               ...memo,
               senderObject: {
@@ -5665,7 +5666,7 @@ app.post("/api/rdproject", verifyToken, async (req, res) => {
 
     // Extract R&D project form data from request
     const { projectNumber, projectName, division, purpose, specification, conditions, shopName,
-            productSample, targetCustomer, customerAddress, monthlyQuantity, salesPrice, revenue, terms } = req.body
+            productSample, targetCustomer, customerAddress, monthlyQuantity, salesPrice, revenue, terms, imageUrl } = req.body
 
     if (!projectName) {
       return res.status(400).json({ error: "Project name is required" })
@@ -5724,7 +5725,8 @@ app.post("/api/rdproject", verifyToken, async (req, res) => {
       status: 'pending_approval',
       docNumber: projectNumber || '',
       isRDProject: true,
-      approvalType: 'marketing'
+      approvalType: 'marketing',
+      imageUrl: imageUrl || ''
     }
 
     await firebase_set(`sent_memos/${initiatorUserId}/${memoId}`, sentMemoData)
@@ -5761,7 +5763,8 @@ app.post("/api/rdproject", verifyToken, async (req, res) => {
       status: 'pending_approval',
       docNumber: projectNumber || '',
       isRDProject: true,
-      approvalType: 'marketing'
+      approvalType: 'marketing',
+      imageUrl: imageUrl || ''
     }
 
     await firebase_set(`received_memos/${approverUserId}/${memoId}`, receivedMemoData)
@@ -5948,7 +5951,7 @@ app.post("/api/rawmat", verifyToken, async (req, res) => {
 
     // Extract raw material request form data
     const { documentNo, projectName, purpose, purposeOther, supplierName, supplierContact,
-            materialName, quantity, lot, price, moq, description } = req.body
+            materialName, quantity, lot, price, moq, description, imageUrl } = req.body
 
     if (!projectName || !supplierName || !materialName) {
       return res.status(400).json({ error: "Project name, supplier name, and material name are required" })
@@ -6015,7 +6018,8 @@ app.post("/api/rawmat", verifyToken, async (req, res) => {
       approverName: rawMatApproverName,
       recipients: [engineerId],
       recipientNames: [engineerName],
-      recipientObjects: [engineerRecipient]
+      recipientObjects: [engineerRecipient],
+      imageUrl: imageUrl || ''
     }
 
     // Store in sent_memos for initiator
@@ -7087,7 +7091,8 @@ app.post("/api/rdproject/:projectId/approve", verifyToken, async (req, res) => {
         approvalType: 'final',
         submittedAt: new Date().toISOString(),
         submittedBy: approverId,
-        submittedByName: `${approverUser.name} ${approverUser.surname}`
+        submittedByName: `${approverUser.name} ${approverUser.surname}`,
+        imageUrl: memo.imageUrl || ''
       }
       await firebase_set(`received_memos/${approverUserId}/${finalApprovalMemoId}`, finalApprovalMemoData)
 
@@ -7336,7 +7341,8 @@ app.post("/api/rdproject/:projectId/approve", verifyToken, async (req, res) => {
         status: 'pending_approval',
         docNumber: memo.docNumber || '',
         isRDProject: true,
-        approvalType: 'engineering'
+        approvalType: 'engineering',
+        imageUrl: memo.imageUrl || ''
       }
       await firebase_set(`received_memos/${engineerUserId}/${engineeringMemoId}`, engineeringMemoData)
 
@@ -7532,7 +7538,8 @@ app.post("/api/rdproject/:projectId/approve", verifyToken, async (req, res) => {
         submittedAt: memo.submittedAt || new Date().toISOString(),
         submittedBy: memo.submittedBy,
         submittedByName: memo.submittedByName,
-        notes: notes || ''
+        notes: notes || '',
+        imageUrl: memo.imageUrl || ''
       }
       await firebase_set(`received_memos/${approverId}/${baseProjectId}`, approvedFinalMemo)
 
@@ -7579,7 +7586,8 @@ app.post("/api/rdproject/:projectId/approve", verifyToken, async (req, res) => {
         submittedAt: memo.submittedAt || new Date().toISOString(),
         submittedBy: memo.submittedBy,
         submittedByName: memo.submittedByName,
-        notes: notes || ''
+        notes: notes || '',
+        imageUrl: originalInitiatorMemo?.imageUrl || memo.imageUrl || ''
       }
       await firebase_set(`sent_memos/${originalInitiatorUserId}/${baseProjectId}`, finalCompletedMemoForInitiator)
 
@@ -7612,9 +7620,6 @@ app.post("/api/rdproject/:projectId/approve", verifyToken, async (req, res) => {
           department2: engineer?.department2 || ''
         }],
         sentAt: new Date().toISOString(),
-        status: 'completed',
-        docNumber: projectData.docNumber || '',
-        isRDProject: true,
         approvalType: 'final',
         approvedBy: approverId,
         approvedByName: `${approverUser.name} ${approverUser.surname}`,
