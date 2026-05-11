@@ -3886,7 +3886,7 @@
                                 <label class="memo-type-label">
                                     <input type="radio" name="rd-purpose-radio" class="memo-type-checkbox"
                                         value="เปิดผลิตภัณฑ์ใหม่ของบริษัทฯ" style="cursor: pointer; accent-color: var(--accent);"
-                                        onchange="updateRDPurposeStyle()" checked>
+                                        onchange="updateRDPurposeStyle()">
                                     <span data-translate="rdPurposeCompanyProduct">เปิดผลิตภัณฑ์ใหม่ของบริษัทฯ</span>
                                 </label>
                                 <label class="memo-type-label">
@@ -3910,7 +3910,7 @@
                                 <label class="memo-type-label">
                                     <input type="radio" name="rd-purpose-radio" class="memo-type-checkbox"
                                         value="อื่นๆ" style="cursor: pointer; accent-color: var(--accent);"
-                                        onchange="updateRDPurposeStyle()">
+                                        onchange="updateRDPurposeStyle()" checked>
                                     <span data-translate="rdPurposeOtherOption">อื่นๆ</span>
                                 </label>
                             </div>
@@ -4180,7 +4180,7 @@
                             <label data-translate="purpose">Purpose / Objective</label>
                             <div class="memo-type-container">
                                 <label class="memo-type-label">
-                                    <input type="radio" name="rawmat-purpose-radio" class="memo-type-checkbox" value="เปิดวัตถุดิบใหม่ของบริษัทฯ" style="cursor: pointer; accent-color: var(--accent);" onchange="updateRawMatPurposeStyle()" checked>
+                                    <input type="radio" name="rawmat-purpose-radio" class="memo-type-checkbox" value="เปิดวัตถุดิบใหม่ของบริษัทฯ" style="cursor: pointer; accent-color: var(--accent);" onchange="updateRawMatPurposeStyle()">
                                     <span data-translate="rawMatPurposeNew">เปิดวัตถุดิบใหม่ของบริษัทฯ</span>
                                 </label>
                                 <label class="memo-type-label">
@@ -4192,7 +4192,7 @@
                                     <span data-translate="rawMatPurposeTest">ทดลองวัตถุดิบ</span>
                                 </label>
                                 <label class="memo-type-label">
-                                    <input type="radio" name="rawmat-purpose-radio" class="memo-type-checkbox" value="อื่นๆ" style="cursor: pointer; accent-color: var(--accent);" onchange="updateRawMatPurposeStyle()">
+                                    <input type="radio" name="rawmat-purpose-radio" class="memo-type-checkbox" value="อื่นๆ" style="cursor: pointer; accent-color: var(--accent);" onchange="updateRawMatPurposeStyle()" checked>
                                     <span data-translate="rawMatPurposeOther">อื่นๆ</span>
                                 </label>
                             </div>
@@ -10735,9 +10735,9 @@
                     const otherField = document.getElementById('rdPurposeOtherField')
                     if (otherField) otherField.style.display = 'block'
                 } else {
-                    // Default to first option
-                    const firstRadio = document.querySelector('input[name="rd-purpose-radio"]')
-                    if (firstRadio) firstRadio.checked = true
+                    // Default to "อื่นๆ" option
+                    const defaultRadio = document.querySelector('input[name="rd-purpose-radio"][value="อื่นๆ"]')
+                    if (defaultRadio) defaultRadio.checked = true
                     const otherField = document.getElementById('rdPurposeOtherField')
                     if (otherField) otherField.style.display = 'none'
                 }
@@ -11396,14 +11396,12 @@
             try {
                 showStatus('statusRawMat', 'loading', 'Submitting raw material request...')
                 
-                const purpose = document.querySelector('input[name="rawmat-purpose-radio"]:checked')?.value || 'เปิดวัตถุดิบใหม่ของบริษัทฯ'
-                let purposeOther = ''
-                if (purpose === 'อื่นๆ') {
-                    purposeOther = getElementValue('rawMatPurposeOtherText')
-                    if (!purposeOther) {
-                        showStatus('statusRawMat', 'error', 'Please specify the purpose')
-                        return
-                    }
+                const purposeRadio = document.querySelector('input[name="rawmat-purpose-radio"]:checked')?.value || 'เปิดวัตถุดิบใหม่ของบริษัทฯ'
+                const purpose = purposeRadio === 'อื่นๆ' ? getElementValue('rawMatPurposeOtherText') : purposeRadio
+                
+                if (purposeRadio === 'อื่นๆ' && !purpose) {
+                    showStatus('statusRawMat', 'error', 'Please specify the purpose')
+                    return
                 }
                 
                 let docNo = getElementValue('rawMatDocNo')
@@ -11417,7 +11415,6 @@
                     documentNo: docNo,
                     projectName: projectName,
                     purpose: purpose,
-                    purposeOther: purposeOther,
                     supplierName: supplierName,
                     supplierContact: getElementValue('rawMatSupplierContact'),
                     materialName: materialName,
@@ -11491,12 +11488,15 @@
             }
             setElementValue('rdProjectName', '')
             setElementValue('rdDivision', '')
-            // Reset purpose radio to first option
-            const firstPurposeRadio = document.querySelector('input[name="rd-purpose-radio"]')
+            // Reset purpose radio to "อื่นๆ" option
+            const firstPurposeRadio = document.querySelector('input[name="rd-purpose-radio"][value="อื่นๆ"]')
             if (firstPurposeRadio) firstPurposeRadio.checked = true
             setElementValue('rdPurposeOther', '')
             const rdPurposeOtherField = document.getElementById('rdPurposeOtherField')
             if (rdPurposeOtherField) rdPurposeOtherField.style.display = 'none'
+            
+            // Update purpose field visibility
+            updateRDPurposeStyle()
             
             // Marketing Section
             setElementValue('rdSpecification', '')

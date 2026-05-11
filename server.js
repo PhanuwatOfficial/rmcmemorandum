@@ -5950,7 +5950,7 @@ app.post("/api/rawmat", verifyToken, async (req, res) => {
     }
 
     // Extract raw material request form data
-    const { documentNo, projectName, purpose, purposeOther, supplierName, supplierContact,
+    const { documentNo, projectName, purpose, supplierName, supplierContact,
             materialName, quantity, lot, price, moq, description, imageUrl } = req.body
 
     if (!projectName || !supplierName || !materialName) {
@@ -5984,7 +5984,6 @@ app.post("/api/rawmat", verifyToken, async (req, res) => {
       }),
       'Project Name': projectName,
       'Purpose': purpose || '—',
-      'Purpose Other': purposeOther || '—',
       'Supplier Name': supplierName || '—',
       'Supplier Contact': supplierContact || '—',
       'Material Name': materialName || '—',
