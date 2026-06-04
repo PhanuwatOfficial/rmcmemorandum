@@ -422,4 +422,27 @@ MD S -> S,EN
     simple memo✓
     rdproject
     rawmat
+
+01/06
+-แก้ไขเมื่อ first approver อนุมัติแล้ว ยังแสดงสถานะให้อนุมัติได้อีก (ใน tab "เมมโมที่ได้รับ" ขึ้นว่ารออนุมัติแล้ว แต่ใน tab "อนุมัติเมมโม" ยังขึ้นรายการให้อนุมัติ)(ต้องให้ second approver อนุมัติ)  ✓ 
+-ให้ผู้ที่กำหนดใน rd_project_roles ให้แสดงผล tab "อนุมัติเมมโม" (sidebar) ✓ 
+-เมื่อ first approver อนุมัติ จะขึ้นสถานะว่า "รอการอนุมัติ" แต่เกิดบัคเมื่อ rawMatApprover (second/last approver) อนุมัติแล้ว
+ใน memo ของ first approver ยังแสดงผลเป็น "รอการอนุมัติ" อยู่ ต้องเปลี่ยนสถานะเป็น "อนุมัติ" ✓ 
+-rawmat แก้บัคเมื่อกดรับทราบของผู้รับ (engineer) ผู้ส่งขึ้น1/1 แต่ของ approver ไม่แสดงผล ✓
+-แก้ไขบัคผู้รับ rawmat memo (engineer) กดปุ่มรับทราบแล้ว ปุ่มรับทราบยังอยู่ไม่หายไป (น่าจะเป็นเพราะตอนนี้ engineer role="admin" แต่พอเปลี่ยน engineer เป็น role = user จะแสดงผล "รับทราบแล้ว" ปกติ)✓
+-rawmat test ตรงแจ้งเตือน (แก้ไข notificationList ของผู้ที่ทำการส่ง rawmat memo) ✓ 
+-test การแจ้งเตือน line ทุก row (raw matt) first approver✓ / last approver ✓ / engineer ✓ / creater (approved succesfuly)✓  
+-แก้ไขลายเซ็น rawmat (ผู้ส่ง , ผู้อนุมัติ (1) , ผู้อนุมัติ (2) (วิศวกร,ผู้รับไม่ต้อง)) ✓
+-แก้ไข text addlog rawmatt ✓
+-แก้ไขคำในแชท line notification rawmat (✓ Ready for Second Approval) ✓
+-บัคส่ง memo หลายคน (ส่ง recipent link,unlink ใน docid เดียวกัน จะกลายเป็น seperate) ✓
+-เพิ่มตอบกลับเมื่อคลิก acknowledge (feedback) ✓
+
+ทำการ test ทุก memo type (memo ปกติ ✓ / rawmat memo ✓ / rdproject memo)
+-บัค feedback ไปแสดงผลใน overlay modal อื่นด้วย
+
+
+
+
+
 */

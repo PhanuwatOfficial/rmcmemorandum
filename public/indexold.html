@@ -1,4 +1,3 @@
-﻿
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5277,47 +5276,17 @@
                             </div>
                         </div>
 
-                        <!-- Raw Material First Approver (Sequential) -->
-                        <div class="section-card" style="max-width: 100%; margin-bottom: 20px;">
-                            <div class="section-header">
-                                <div class="section-title">
-                                    <span class="material-symbols-outlined">person</span>
-                                    <span data-translate="rawMaterialFirstApproverTitle">Raw Material First Approver</span>
-                                </div>
-                            </div>
-                            <div class="section-body">
-                                <div class="field">
-                                    <label data-translate="selectFirstApprover">Select First Approver User</label>
-                                    <select id="rawMatFirstApproverId">
-                                        <option value="">-- Select user --</option>
-                                    </select>
-                                </div>
-                                <div id="currentRawMatFirstApprover" style="padding: 12px; background: rgba(26, 58, 107, 0.02); border: 1px solid rgba(26, 58, 107, 0.2); border-radius: var(--radius); margin-bottom: 16px; display: none;">
-                                    <span style="font-weight: 600; color: var(--blue);" data-translate="currentFirstApproverLabel">First Approver: </span>
-                                    <span id="currentRawMatFirstApproverName"></span>
-                                </div>
-                                <button class="btn btn-primary" onclick="setRawMaterialFirstApprover()">
-                                    <span class="material-symbols-outlined">check</span>
-                                    <span data-translate="setAsFirstApprover">Set as First Approver</span>
-                                </button>
-                                <div class="status-msg" id="statusRawMatFirstApprover">
-                                    <span class="material-symbols-outlined"></span>
-                                    <span class="msg-text"></span>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Raw Material Approver -->
                         <div class="section-card" style="max-width: 100%; margin-bottom: 20px;">
                             <div class="section-header">
                                 <div class="section-title">
                                     <span class="material-symbols-outlined">inventory_2</span>
-                                    <span data-translate="rawMaterialSecondApproverTitle">Raw Material Second Approver</span>
+                                    <span data-translate="rawMaterialApproverTitle">Raw Material Approver</span>
                                 </div>
                             </div>
                             <div class="section-body">
                                 <div class="field">
-                                    <label data-translate="selectSecondApprover">Select Second Approver</label>
+                                    <label data-translate="selectApproverUser">Select Approver User</label>
                                     <select id="rawMatApproverId">
                                         <option value="">-- Select user --</option>
                                     </select>
@@ -5336,8 +5305,6 @@
                                 </div>
                             </div>
                         </div>
-
-               
 
                         <!-- R&D Project Engineer -->
                         <div class="section-card" style="max-width: 100%;">
@@ -5643,17 +5610,7 @@
                             >
                             —</div>
                     </div>
-
-                    <!-- Feedback Section (shown when there are acknowledgment feedback) -->
-                    <div id="memoFeedbackSection"
-                        style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.08);">
-                        <div class="memo-detail-label"
-                            style="font-size: 12px; margin-bottom: 8px; color: var(--accent-2); font-weight: 600; display: flex; align-items: center; gap: 6px;"
-                            data-translate="receivedFeedback"><span class="material-symbols-outlined">comment</span>Received Feedback</div>
-                        <div id="memoFeedbackContent" style="font-size: 13px; line-height: 1.6;"></div>
-                    </div>
                 </div>
-
 
                 <!-- Approver Action Section (shown when user is an authorized approver and memo is pending) -->
                 <div id="memoApprovalActionsSection"
@@ -5852,20 +5809,6 @@
                 </button>
             </div>
         </div>
-    </div>
-
-    <!-- Acknowledge Feedback Modal -->
-    <div id="acknowledgeFeedbackModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
-      <div style="background: white; border-radius: 8px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.15); border: 1px solid var(--border);">
-        <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #1a2740;">รับทราบเมมโมแล้ว</h3>
-        <p style="margin: 0 0 16px; font-size: 13px; color: #5a6a80;">ท่านสามารถเพิ่มข้อเสนอแนะหรือความคิดเห็น (ไม่บังคับ)</p>
-        <textarea id="feedbackTextarea" placeholder="พิมพ์ข้อเสนอแนะ ความคิดเห็น หรือคำแนะนำของคุณ..." style="width: 100%; min-height: 120px; padding: 10px; border: 1px solid #d0d8e8; border-radius: 4px; font-family: &quot;Noto Sans Thai&quot;, sans-serif; font-size: 13px; resize: vertical; box-sizing: border-box;"></textarea>
-        <div style="margin-top: 8px; font-size: 12px; color: #8a97aa; text-align: right;"><span id="feedbackCharCount">0</span>/500 ตัวอักษร</div>
-        <div style="margin-top: 20px; display: flex; gap: 8px; justify-content: flex-end;">
-          <button onclick="closeFeedbackModal()" style="padding: 8px 16px; border: 1px solid #d0d8e8; background: white; color: #5a6a80; border-radius: 4px; cursor: pointer; font-weight: 500; font-family: &quot;Noto Sans Thai&quot;, sans-serif; transition: all 0.2s;">ยกเลิก</button>
-          <button onclick="submitFeedbackAcknowledge()" style="padding: 8px 16px; background: #1a2740; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-family: &quot;Noto Sans Thai&quot;, sans-serif; transition: all 0.2s;">รับทราบ & ส่งข้อเสนอแนะ</button>
-        </div>
-      </div>
     </div>
 
     <script>
@@ -6264,23 +6207,7 @@
 
                 // Determine click handler - if we have memo, use it; otherwise use memoId
                 let clickHandler = 'markNotificationAsRead()'
-                if (notif.navigateTo === 'dashboard') {
-                    // For notifications that should navigate to dashboard and show memo detail
-                    if (notif.memoObject) {
-                        const memoJson = escHtml(JSON.stringify(notif.memoObject)).replace(/"/g, '&quot;')
-                        clickHandler = `showView('dashboard'); openMemoDetail(${memoJson})`
-                    } else {
-                        clickHandler = `showView('dashboard')`
-                    }
-                } else if (notif.navigateTo === 'pending-approvals') {
-                    // For notifications that should navigate to pending-approvals and show memo detail
-                    if (notif.memoObject) {
-                        const memoJson = escHtml(JSON.stringify(notif.memoObject)).replace(/"/g, '&quot;')
-                        clickHandler = `showView('pending-approvals'); loadPendingApprovals(); openMemoDetail(${memoJson})`
-                    } else {
-                        clickHandler = `showView('pending-approvals'); loadPendingApprovals()`
-                    }
-                } else if (notif.type === 'user_registration') {
+                if (notif.type === 'user_registration') {
                     // For new user registration notifications, navigate to view-followers
                     clickHandler = `showView('followers')`
                 } else if (notif.type === 'cc') {
@@ -6641,11 +6568,7 @@
                 logRDProjectEngineeringSubmitted: "ส่ง R&D Project (Engineering)",
                 logRDProjectRejected: "ปฏิเสธ R&D Project",
                 logRDProjectCompleted: "อนุมัติ R&D Project (final)",
-                logRawmatCreatedSuccessfully: "สร้างคำขอเปิดวัตถุดิบสำเร็จ",
-                logRawmatSubmittedForApproval: "ส่งคำขอเปิดวัตถุดิบเพื่ออนุมัติ",
-                logRawmatSubmissionFailed: "ล้มเหลวในการส่งคำขอวัตถุดิบ",
-                logRawmatApproved: "อนุมัติคำขอเปิดวัตถุดิบ",
-                logRawmatRejected: "ปฏิเสธคำขอเปิดวัตถุดิบ",
+                logRawmatCreatedSuccessfully: "สร้างคำขอวัตถุดิบสำเร็จ",
                 logFollowerLinked: "เชื่อมโยงผู้ติดตาม",
                 logFollowerUnlinked: "ยกเลิกเชื่อมโยงผู้ติดตาม",
                 logDepartmentAdded: "เพิ่มฝ่าย",
@@ -6739,7 +6662,6 @@
                 acknowledged: "รับทราบแล้ว",
                 memoAcknowledgedSuccessfully: "รับทราบเมมโมแล้ว",
                 errorAcknowledgingMemo: "เกิดข้อผิดพลาดในการรับทราบเมมโม",
-                receivedFeedback: "ข้อเสนอแนะที่ได้รับ",
                 success: "✓ สำเร็จ",
                 error: "ข้อผิดพลาด",
                 alert: "แจ้งเตือน",
@@ -6890,16 +6812,9 @@
                 setAsEngineer: "กำหนดเป็นวิศวกร",
                 sentToEngineer: "ส่งไปยังวิศวกร: ",
                 noEngineerAssigned: "ยังไม่มีวิศวกร R&D ที่ได้รับมอบหมาย",
-                rawMaterialFirstApproverTitle: "ผู้อนุมัติคนที่ 1",
-                rawMaterialSecondApproverTitle: "ผู้อนุมัติคนที่ 2",
                 rawMaterialApproverTitle: "ผู้อนุมัติเปิดวัตถุดิบ",
                 currentRawMatApproverLabel: "ผู้อนุมัติปัจจุบัน: ",
-                approvers: "ผู้อนุมัติ",
-                selectFirstApprover: "เลือกผู้อนุมัติคนที่ 1",
-                currentFirstApproverLabel: "ผู้อนุมัติคนที่ 1: ",
-                selectSecondApprover: "เลือกผู้อนุมัติคนที่ 2",
-                currentSecondApproverLabel: "ผู้อนุมัติคนที่ 2: ",
-                selectFirstApproverFirst: "เลือกผู้อนุมัติคนที่ 1 ก่อน",
+                clickUploadDragDrop: "คลิกเพื่ออัปโหลดหรือลากแล่วปล่อย",
                 imageLimitations: "(PNG, JPG ขนาดไม่เกิน 5MB)",
                 sendToAdditionalRecipients: "ส่งเมมโมนี้ให้ผู้รับเพิ่มเติม",
                 signatureUpload: "อัปโหลดลายเซ็นต์",
@@ -7171,10 +7086,6 @@
                 logRDProjectRejected: "Rejected R&D Project",
                 logRDProjectCompleted: "Completed R&D Project",
                 logRawmatCreatedSuccessfully: "Raw Material Request Created Successfully",
-                logRawmatSubmittedForApproval: "Submitted Raw Material Request for Approval",
-                logRawmatSubmissionFailed: "Failed to Submit Raw Material Request",
-                logRawmatApproved: "Approved Raw Material Request",
-                logRawmatRejected: "Rejected Raw Material Request",
                 logFollowerLinked: "Follower Linked",
                 logFollowerUnlinked: "Follower Unlinked",
                 logDepartmentAdded: "Department Added",
@@ -7268,7 +7179,6 @@
                 acknowledged: "Acknowledged",
                 memoAcknowledgedSuccessfully: "Memo acknowledged successfully",
                 errorAcknowledgingMemo: "Error acknowledging memo",
-                receivedFeedback: "Received Feedback",
                 success: "✓ Success",
                 error: "Error",
                 "dept_บริหาร": "Administration",
@@ -7446,16 +7356,8 @@
                 setAsEngineer: "Set as Engineer",
                 sentToEngineer: "Sent to R&D Engineer: ",
                 noEngineerAssigned: "No R&D Engineer assigned yet",
-                rawMaterialFirstApproverTitle: "Raw Material First Approver",
-                rawMaterialSecondApproverTitle: "Raw Material Second Approver",
                 rawMaterialApproverTitle: "Raw Material Approver",
                 currentRawMatApproverLabel: "Current Approver: ",
-                approvers: "Approvers",
-                selectFirstApprover: "Select First Approver",
-                currentFirstApproverLabel: "First Approver: ",
-                selectSecondApprover: "Select Second Approver",
-                currentSecondApproverLabel: "Second Approver: ",
-                selectFirstApproverFirst: "Select first approver first",
                 clickUploadDragDrop: "Click to upload or drag and drop",
                 imageLimitations: "(PNG, JPG up to 5MB)"
             }
@@ -7612,10 +7514,6 @@
             'rd_project_rejected': 'logRDProjectRejected',
             'rd_project_completed': 'logRDProjectCompleted',
             'rawmat_memo_created_successfully': 'logRawmatCreatedSuccessfully',
-            'rawmat_memo_submitted_for_approval': 'logRawmatSubmittedForApproval',
-            'rawmat_memo_submission_failed': 'logRawmatSubmissionFailed',
-            'rawmat_memo_approved': 'logRawmatApproved',
-            'rawmat_memo_rejected': 'logRawmatRejected',
             'new followers': 'logNewFollowers',
             'user deleted': 'logUserDeleted',
             'send memo (pending approval)': 'logSendMemoPendingApproval'
@@ -8399,26 +8297,11 @@
                     console.warn('Could not check R&D Project approver status:', err)
                 }
 
-                // Try to check Raw Material approver status from server
-                let isRawMatApprover = false
-                try {
-                    const res = await fetch('/user/is-rawmat-approver', {
-                        headers: { 'Authorization': `Bearer ${authToken}` }
-                    })
-                    if (res.ok) {
-                        const data = await res.json()
-                        isRawMatApprover = data.isRawMatApprover || false
-                    }
-                } catch (err) {
-                    // If fetch fails, continue without this check
-                    console.warn('Could not check Raw Material approver status:', err)
-                }
-
                 const navItem = document.getElementById('navPendingApprovals')
                 const mobileNavItem = document.querySelector('.mobile-bottom-nav-item[data-view="pending-approvals"]')
 
-                // Show pending approvals tab if user is a memo approver OR an R&D Project approver OR a Raw Material approver OR is an admin
-                const isApproverOrAdmin = isApprover || isRDProjectApprover || isRawMatApprover || isAdmin
+                // Show pending approvals tab if user is a memo approver OR an R&D Project approver OR is an admin
+                const isApproverOrAdmin = isApprover || isRDProjectApprover || isAdmin
 
                 if (isApproverOrAdmin) {
                     // console.log('✅ User is an approver or admin - showing Pending Approvals tab')
@@ -11253,7 +11136,6 @@
             setElementValue('rawMatMOQ', '')
             setElementValue('rawMatDescription', '')
             setElementValue('rawMatPurposeOtherText', '')
-            // Note: Approver IDs are no longer selected in the form; they're configured in admin modal
             
             // Reset purpose radio to first option
             const firstRadio = document.querySelector('input[name="rawmat-purpose-radio"]')
@@ -11496,7 +11378,6 @@
             return Array.from(selectedItems).map(item => item.getAttribute('data-user-id')).filter(Boolean)
         }
 
-        // ── Load Raw Material Approvers For Form ──────────
         async function submitRawMaterialRequest() {
             const getElementValue = (id) => {
                 const el = document.getElementById(id)
@@ -11543,7 +11424,6 @@
                     moq: getElementValue('rawMatMOQ'),
                     description: getElementValue('rawMatDescription'),
                     imageUrl: rawMatImageUrl
-                    // Approvers are now fetched from admin-configured roles on the server
                 }
                 
                 const res = await fetch('/api/rawmat', {
@@ -11685,13 +11565,11 @@
                 const approverSelect = document.getElementById('rdProjectApproverId')
                 const engineerSelect = document.getElementById('rdProjectEngineerId')
                 const rawMatApproverSelect = document.getElementById('rawMatApproverId')
-                const rawMatFirstApproverSelect = document.getElementById('rawMatFirstApproverId')
                 
                 // Clear and rebuild
                 approverSelect.innerHTML = '<option value="">-- Select Approver --</option>'
                 engineerSelect.innerHTML = '<option value="">-- Select Engineer --</option>'
                 rawMatApproverSelect.innerHTML = '<option value="">-- Select Approver --</option>'
-                rawMatFirstApproverSelect.innerHTML = '<option value="">-- Select user --</option>'
                 
                 users.forEach(user => {
                     if (user.username === 'RMCadmin') return // Skip admin
@@ -11700,7 +11578,6 @@
                     approverSelect.innerHTML += optionHtml
                     engineerSelect.innerHTML += optionHtml
                     rawMatApproverSelect.innerHTML += optionHtml
-                    rawMatFirstApproverSelect.innerHTML += optionHtml
                 })
 
                 // Load current roles from API
@@ -11728,17 +11605,6 @@
                         currentRawMatApproverDiv.style.display = 'block'
                         const nameEl = document.getElementById('currentRawMatApproverName')
                         if (nameEl) nameEl.textContent = roles.rawMatApproverName || 'Unknown'
-                    }
-                }
-
-                // Display current raw material first approver
-                if (roles.rawMatFirstApproverId) {
-                    rawMatFirstApproverSelect.value = roles.rawMatFirstApproverId
-                    const currentRawMatFirstApproverDiv = document.getElementById('currentRawMatFirstApprover')
-                    if (currentRawMatFirstApproverDiv) {
-                        currentRawMatFirstApproverDiv.style.display = 'block'
-                        const nameEl = document.getElementById('currentRawMatFirstApproverName')
-                        if (nameEl) nameEl.textContent = roles.rawMatFirstApproverName || 'Unknown'
                     }
                 }
 
@@ -11861,39 +11727,6 @@
                 setStatus('statusRawMatApprover', 'error', 'error', err.message)
             }
         }
-
-        async function setRawMaterialFirstApprover() {
-            const rawMatFirstApproverId = document.getElementById('rawMatFirstApproverId').value
-            
-            if (!rawMatFirstApproverId) {
-                setStatus('statusRawMatFirstApprover', 'error', 'error', 'Please select a first approver')
-                return
-            }
-
-            try {
-                setStatus('statusRawMatFirstApprover', 'info', 'hourglass_empty', 'Saving...')
-                const res = await fetch('/api/rdproject/roles/set', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ rawMatFirstApproverId })
-                })
-
-                if (res.ok) {
-                    setStatus('statusRawMatFirstApprover', 'success', 'check_circle', 'First Approver set successfully!')
-                    setTimeout(() => loadRDProjectRoles(), 500)
-                } else {
-                    const error = await res.json()
-                    setStatus('statusRawMatFirstApprover', 'error', 'error', error.error || 'Failed to set first approver')
-                }
-            } catch (err) {
-                setStatus('statusRawMatFirstApprover', 'error', 'error', err.message)
-            }
-        }
-
-
 
         // ────────────────────────────────────────────────────────────────────────────────────────
         // Search/Filter System - Global Variables & Functions (Context-Aware)
@@ -12158,9 +11991,6 @@
                 let statusBadge = '<span class="badge" style="background: var(--green-bg); color: var(--green);">ส่งแล้ว</span>'
                 if (memo.status === 'pending_approval') {
                     statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber);">รอการอนุมัติ</span>'
-                } else if (memo.status === 'awaiting_second_approval') {
-                    // First approver approved, awaiting second approver
-                    statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber);">รอการอนุมัติ</span>'
                 } else if (memo.status === 'approved' || memo.status === 'acknowledged') {
                     statusBadge = '<span class="badge" style="background: var(--green-bg); color: var(--green);">อนุมัติ</span>'
                 } else if (memo.status === 'rejected') {
@@ -12174,30 +12004,24 @@
 
                 // Count acknowledgments (support CC memo and rawmat)
                 let acknowledgedInfo = ''
-                let feedbackCountBadge = ''
                 if (memo.isCC) {
                     const ccAck = typeof memo.ccAcknowledgedCount === 'number' ? memo.ccAcknowledgedCount : 0
                     const ccTotal = typeof memo.ccTotalRecipients === 'number' ? memo.ccTotalRecipients : (memo.ccRecipientIds ? memo.ccRecipientIds.length : 0)
                     if (ccTotal > 0) {
-                        const feedbackCount = memo.acknowledgmentFeedback ? Object.keys(memo.acknowledgmentFeedback).length : 0
-                        const feedbackIcon = feedbackCount > 0 ? `<span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-left: 10px;">comment</span>` : ''
-                        acknowledgedInfo = `<span style="font-size: 11px; color: var(--green);">✓ ${ccAck}/${ccTotal} อ่านแล้ว${feedbackIcon}</span>`
+                        acknowledgedInfo = `<span style="font-size: 11px; color: var(--green);">✓ ${ccAck}/${ccTotal} อ่านแล้ว</span>`
                     }
                 } else if (memo.isRawMaterialRequest) {
+                    // Count acknowledgments for rawmat memos
                     const acknowledgmentCount = memo.acknowledgments ? Object.keys(memo.acknowledgments).length : 0
                     const recipientCount = memo.recipients ? memo.recipients.length : 0
                     if (recipientCount > 0) {
-                        const feedbackCount = memo.acknowledgmentFeedback ? Object.keys(memo.acknowledgmentFeedback).length : 0
-                        const feedbackIcon = feedbackCount > 0 ? `<span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-left: 10px;">comment</span>` : ''
-                        acknowledgedInfo = `<span style="font-size: 11px; color: var(--green);">✓ ${acknowledgmentCount}/${recipientCount} อ่านแล้ว${feedbackIcon}</span>`
+                        acknowledgedInfo = `<span style="font-size: 11px; color: var(--green);">✓ ${acknowledgmentCount}/${recipientCount} อ่านแล้ว</span>`
                     }
                 } else {
                     const acknowledgmentCount = memo.acknowledgments ? Object.keys(memo.acknowledgments).length : 0
                     const recipientCount = memo.recipientIds ? memo.recipientIds.length : (memo.recipientId ? 1 : 0)
                     if (recipientCount > 0) {
-                        const feedbackCount = memo.acknowledgmentFeedback ? Object.keys(memo.acknowledgmentFeedback).length : 0
-                        const feedbackIcon = feedbackCount > 0 ? `<span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-left: 10px;">comment</span>` : ''
-                        acknowledgedInfo = `<span style="font-size: 11px; color: var(--green);">✓ ${acknowledgmentCount}/${recipientCount} อ่านแล้ว${feedbackIcon}</span>`
+                        acknowledgedInfo = `<span style="font-size: 11px; color: var(--green);">✓ ${acknowledgmentCount}/${recipientCount} อ่านแล้ว</span>`
                     }
                 }
 
@@ -12346,9 +12170,6 @@
                     } else {
                         statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber);">รอการอนุมัติ</span>'
                     }
-                } else if (memo.status === 'awaiting_second_approval') {
-                    // First approver approved, awaiting second approver
-                    statusBadge = '<span class="badge" style="background: var(--amber-bg); color: var(--amber);">รอการอนุมัติ</span>'
                 } else if (memo.status === 'approved' || memo.status === 'acknowledged') {
                     // For rawmat: check if current user is the approver
                     const isCurrentUserApprover = memo.isRawMaterialRequest && memo.approverId === currentUser?.userId
@@ -12378,21 +12199,16 @@
                 
                 let showAcknowledgeButton = false
                 if (currentUser && currentUser.role === 'admin') {
-                    // For admin: only show if they are a recipient of the memo, NOT if they approved/rejected it, and NOT if already acknowledged
+                    // For admin: only show if they are a recipient of the memo, NOT if they approved/rejected it
                     // For rawmat: use memo.recipients, for others: use memo.recipientIds
                     const memoRecipientIds = memo.isRawMaterialRequest ? (memo.recipients || []) : (memo.recipientIds || [])
                     const isApproverOrRejector = memo.isApprovedByCurrentUser || memo.isRejectedByCurrentUser
-                    // For rawmat, also check acknowledgments object; for regular memo, check acknowledged flag
-                    const alreadyAcknowledged = memo.acknowledged === true || (memo.acknowledgments && memo.acknowledgments[currentUser.userId] && memo.acknowledgments[currentUser.userId].acknowledged === true)
-                    console.log(`[DEBUG] Memo ${memo.memoId} - acknowledged: ${memo.acknowledged}, isRawMat: ${memo.isRawMaterialRequest}, alreadyAcknowledged: ${alreadyAcknowledged}, acknowledged obj has user: ${memo.acknowledgments && !!memo.acknowledgments[currentUser.userId]}`)
-                    showAcknowledgeButton = hasValidStatus && memoRecipientIds.includes(currentUser.userId) && !isApproverOrRejector && !alreadyAcknowledged
+                    showAcknowledgeButton = hasValidStatus && memoRecipientIds.includes(currentUser.userId) && !isApproverOrRejector
                 } else if (currentUser) {
-                    // For regular users: check if they are a recipient AND don't show if they approved/rejected or already acknowledged
+                    // For regular users: check if they are a recipient AND don't show if they approved/rejected
                     const memoRecipientIds = memo.isRawMaterialRequest ? (memo.recipients || []) : (memo.recipientIds || [])
                     const isApproverOrRejector = memo.isApprovedByCurrentUser || memo.isRejectedByCurrentUser
-                    // For rawmat, also check acknowledgments object; for regular memo, check acknowledged flag
-                    const alreadyAcknowledged = memo.acknowledged === true || (memo.acknowledgments && memo.acknowledgments[currentUser.userId] && memo.acknowledgments[currentUser.userId].acknowledged === true)
-                    showAcknowledgeButton = hasValidStatus && memoRecipientIds.includes(currentUser.userId) && !isApproverOrRejector && !alreadyAcknowledged
+                    showAcknowledgeButton = hasValidStatus && memoRecipientIds.includes(currentUser.userId) && !isApproverOrRejector
                 }
 
                 // Count acknowledgments (for admin view showing acknowledgment status)
@@ -12423,12 +12239,7 @@
                 }
                 
                 // Show acknowledged info for ALL memo statuses (if there are recipients)
-                let acknowledgedInfo = ''
-                if (recipientCount > 0) {
-                    const feedbackCount = memo.acknowledgmentFeedback ? Object.keys(memo.acknowledgmentFeedback).length : 0
-                    const feedbackIcon = feedbackCount > 0 ? `<span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; margin-left: 10px;">comment</span>` : ''
-                    acknowledgedInfo = `<span style="font-size: 11px; color: var(--green);">✓ ${acknowledgmentCount}/${recipientCount} อ่านแล้ว${feedbackIcon}</span>`
-                }
+                const acknowledgedInfo = (recipientCount > 0) ? `<span style="font-size: 11px; color: var(--green);">✓ ${acknowledgmentCount}/${recipientCount} อ่านแล้ว</span>` : '';
 
                 // Build acknowledge button HTML only if current user should see it
                 let acknowledgeButtonHtml = ''
@@ -12436,8 +12247,6 @@
                     // For CC memos, use memoKey and ccSenderId; for regular memos, use memoId and senderUserId
                     const ackMemoId = memo.isCC ? memo.memoKey : memo.memoId
                     const ackSenderId = memo.isCC ? memo.ccSenderId : (memo.senderUserId || memo.senderId || '')
-                    
-                    console.log(`[BUTTON] Memo ${ackMemoId} - showAcknowledgeButton=true, memo.acknowledged=${memo.acknowledged}`)
                     
                     // Show active acknowledge button for recipients
                     if (memo.acknowledged) {
@@ -12448,7 +12257,7 @@
               </button>`
                     } else {
                         // Not yet acknowledged - prominent color
-                        acknowledgeButtonHtml = `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); openFeedbackModal('${ackMemoId}', '${ackSenderId}')" style="font-weight: 600;" title="Mark as acknowledged">
+                        acknowledgeButtonHtml = `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); acknowledgeMemo('${ackMemoId}', '${ackSenderId}')" style="font-weight: 600;" title="Mark as acknowledged">
                 <span class="material-symbols-outlined" style="font-size: 14px;">done</span>
                 <span data-translate="acknowledge">Acknowledge</span>
               </button>`
@@ -13189,92 +12998,6 @@
                     }
                 }
 
-                // เพิ่มรายละเอียด Raw Material Request Submitted for Approval ใน log.message
-                if (
-                    messageKey &&
-                    messageKey.toLowerCase() === 'rawmat_memo_submitted_for_approval' &&
-                    log.data && (log.data.initiatorName || log.data.materialName || log.data.documentNo || log.data.firstApproverName)
-                ) {
-                    message = 'rawmat_memo_submitted_for_approval';
-                    if (log.data.materialName) message += ` "${log.data.materialName}"`;
-                    if (log.data.documentNo) message += ` ${log.data.documentNo}`;
-                    if (log.data.initiatorName) {
-                        const byText = translations[currentLanguage]['by'] || 'by';
-                        message += ` ${byText} ${log.data.initiatorName}`;
-                    }
-                    if (log.data.firstApproverName) {
-                        const toText = translations[currentLanguage]['to'] || 'to';
-                        message += ` ${toText} ${log.data.firstApproverName}`;
-                    }
-                    displayMessage = getMessageDisplay('rawmat_memo_submitted_for_approval');
-                    if (log.data.materialName) displayMessage += ` "${log.data.materialName}"`;
-                    if (log.data.documentNo) displayMessage += ` ${log.data.documentNo}`;
-                    if (log.data.initiatorName) {
-                        const byText = translations[currentLanguage]['by'] || 'by';
-                        displayMessage += ` ${byText} ${log.data.initiatorName}`;
-                    }
-                    if (log.data.firstApproverName) {
-                        const toText = translations[currentLanguage]['to'] || 'to';
-                        displayMessage += ` ${toText} ${log.data.firstApproverName}`;
-                    }
-                }
-
-                // เพิ่มรายละเอียด Raw Material Request Approved ใน log.message
-                if (
-                    messageKey &&
-                    messageKey.toLowerCase() === 'rawmat_memo_approved' &&
-                    log.data && (log.data.approverName || log.data.materialName || log.data.engineerName)
-                ) {
-                    message = 'rawmat_memo_approved';
-                    if (log.data.materialName) message += ` "${log.data.materialName}"`;
-                    if (log.data.approverName) {
-                        const byText = translations[currentLanguage]['by'] || 'by';
-                        message += ` ${byText} ${log.data.approverName}`;
-                    }
-                    if (log.data.engineerName) {
-                        const toText = translations[currentLanguage]['to'] || 'to';
-                        message += ` ${toText} ${log.data.engineerName}`;
-                    }
-                    displayMessage = getMessageDisplay('rawmat_memo_approved');
-                    if (log.data.materialName) displayMessage += ` "${log.data.materialName}"`;
-                    if (log.data.approverName) {
-                        const byText = translations[currentLanguage]['by'] || 'by';
-                        displayMessage += ` ${byText} ${log.data.approverName}`;
-                    }
-                    if (log.data.engineerName) {
-                        const toText = translations[currentLanguage]['to'] || 'to';
-                        displayMessage += ` ${toText} ${log.data.engineerName}`;
-                    }
-                }
-
-                // เพิ่มรายละเอียด Raw Material Request Rejected ใน log.message
-                if (
-                    messageKey &&
-                    messageKey.toLowerCase() === 'rawmat_memo_rejected' &&
-                    log.data && (log.data.approverName || log.data.materialName)
-                ) {
-                    message = 'rawmat_memo_rejected';
-                    if (log.data.materialName) message += ` "${log.data.materialName}"`;
-                    if (log.data.approverName) {
-                        const byText = translations[currentLanguage]['by'] || 'by';
-                        message += ` ${byText} ${log.data.approverName}`;
-                    }
-                    if (log.data.reason) {
-                        const reasonText = translations[currentLanguage]['reason'] || 'Reason';
-                        message += ` (${reasonText}: ${log.data.reason})`;
-                    }
-                    displayMessage = getMessageDisplay('rawmat_memo_rejected');
-                    if (log.data.materialName) displayMessage += ` "${log.data.materialName}"`;
-                    if (log.data.approverName) {
-                        const byText = translations[currentLanguage]['by'] || 'by';
-                        displayMessage += ` ${byText} ${log.data.approverName}`;
-                    }
-                    if (log.data.reason) {
-                        const reasonText = translations[currentLanguage]['reason'] || 'Reason';
-                        displayMessage += ` (${reasonText}: ${log.data.reason})`;
-                    }
-                }
-
                 // เพิ่มรายละเอียด Raw Material Request Creation ใน log.message
                 if (
                     messageKey &&
@@ -13997,10 +13720,6 @@
             document.getElementById('memoApprovalStatusSection').style.display = 'none'
             document.getElementById('memoApprovalActionsSection').style.display = 'none'
             document.getElementById('memoRejectionInputSection').style.display = 'none'
-            
-            // Reset feedback section to prevent showing old feedback from previous memo
-            document.getElementById('memoFeedbackSection').style.display = 'none'
-            document.getElementById('memoFeedbackContent').innerHTML = ''
 
             // Show approval status based on memo status
             if (memo.status === 'pending_approval' || memo.status === 'pending_engineering') {
@@ -14031,186 +13750,17 @@
                     }
                 }
             }
-            // Show approval status if memo is approved, completed (R&D Project), rejected, or acknowledged
-            else if (memo.status === 'approved' || memo.status === 'completed' || memo.status === 'rejected' || memo.status === 'acknowledged') {
+            // Show approval status if memo is approved or rejected
+            else if (memo.status === 'approved' || memo.status === 'rejected') {
                 document.getElementById('memoApprovalStatusSection').style.display = 'block'
 
-                if (memo.status === 'approved' || memo.status === 'completed' || memo.status === 'acknowledged') {
+                if (memo.status === 'approved') {
                     document.getElementById('memoStatusIcon').textContent = 'check_circle'
                     document.getElementById('memoStatusIcon').style.color = 'var(--green)'
                     document.getElementById('memoStatusText').textContent = translations[currentLanguage]['approve'] || 'Approved'
-                    
-                    // For raw material requests with both approvals (acknowledged status), show both approvers
-                    let approverDisplay = ''
-                    if (memo.status === 'acknowledged' && (memo.firstApprovedByName || memo.secondApprovedByName)) {
-                        // Raw material request with two-stage approval
-                        const firstApprover = memo.firstApprovedByName || 'Unknown'
-                        const secondApprover = memo.secondApprovedByName || 'Unknown'
-                        approverDisplay = `${secondApprover}`
-                        document.getElementById('memoApprovalBy').textContent = approverDisplay
-                        
-                        // Show both approval dates
-                        let dateDisplay = ''
-                        if (memo.secondApprovalAt) {
-                            const secondDate = new Date(memo.secondApprovalAt)
-                            dateDisplay = secondDate.toLocaleString('th-TH')
-                        } else if (memo.approvedAt) {
-                            const approvalDate = new Date(memo.approvedAt)
-                            dateDisplay = approvalDate.toLocaleString('th-TH')
-                        }
-                        document.getElementById('memoApprovalDateTime').textContent = dateDisplay || (translations[currentLanguage]['unknown'] || 'Unknown')
-                    } else {
-                        // Regular memo or R&D project approval
-                        const approverName = memo.secondApprovedByName || memo.approvedByName || (translations[currentLanguage]['unknown'] || 'Unknown')
-                        const approvalDateValue = memo.secondApprovalAt || memo.approvedAt
-                        
-                        document.getElementById('memoApprovalBy').textContent = approverName
-                        if (approvalDateValue) {
-                            const approvalDate = new Date(approvalDateValue)
-                            document.getElementById('memoApprovalDateTime').textContent = approvalDate.toLocaleString('th-TH')
-                        } else {
-                            document.getElementById('memoApprovalDateTime').textContent = (translations[currentLanguage]['unknown'] || 'Unknown')
-                        }
-                    }
-                    document.getElementById('memoRejectionReasonSection').style.display = 'none'
-
-                    // Display feedback if any (for approved/acknowledged memos)
-                    // Check if current user is sender, first approver, or second approver
-                    const isSender = currentUser && (memo.senderUserId === currentUser.userId || memo.senderId === currentUser.userId || memo.senderObject?.userId === currentUser.userId)
-                    const isFirstApprover = currentUser && (memo.firstApprovedBy === currentUser.userId)
-                    const isSecondApprover = currentUser && (memo.secondApprovedBy === currentUser.userId)
-                    const isApprover = isFirstApprover || isSecondApprover
-                    const isAdmin = currentUser && currentUser.role === 'admin'
-                    
-                    // Show only recipient feedback (acknowledgmentFeedback)
-                    if (memo.acknowledgmentFeedback && typeof memo.acknowledgmentFeedback === 'object') {
-                        const feedbackEntries = Object.entries(memo.acknowledgmentFeedback)
-                        // Sender, approvers, and admin see all feedback
-                        // Non-sender, non-approver, non-admin only sees their own feedback
-                        const filteredRecipientFeedback = feedbackEntries.filter(([userId]) => {
-                            if (isSender || isApprover || isAdmin) {
-                                return true // Sender, approvers, and admin see all feedback
-                            }
-                            return userId === currentUser?.userId // Non-sender/approver/admin sees only their own
-                        })
-                        
-                        if (filteredRecipientFeedback.length > 0) {
-                            let feedbackHTML = ''
-                            filteredRecipientFeedback.forEach(([userId, feedbackData]) => {
-                                const feedbackDate = new Date(feedbackData.feedbackAt)
-                                const dateStr = feedbackDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-                                const name = escHtml(feedbackData.feedbackByName || 'Unknown')
-                                const feedback = escHtml(feedbackData.feedback || '')
-                                feedbackHTML += `<div style="margin-bottom: 12px; padding: 8px; background: rgba(201, 168, 76, 0.1); border-radius: 4px;">
-                                    <div style="font-size: 13px; font-weight: 600; color: var(--yellow);">${name} - ${dateStr}</div>
-                                    <div style="margin-top: 4px; color: var(--ink); white-space: pre-wrap; word-wrap: break-word;">${feedback}</div>
-                                </div>`
-                            })
-                            document.getElementById('memoFeedbackContent').innerHTML = feedbackHTML
-                            document.getElementById('memoFeedbackSection').style.display = 'block'
-                        } else if (isAdmin) {
-                            // Admin always sees feedback section, even if empty
-                            document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                            document.getElementById('memoFeedbackSection').style.display = 'block'
-                        } else {
-                            document.getElementById('memoFeedbackSection').style.display = 'none'
-                        }
-                    } else if (isAdmin) {
-                        // Admin always sees feedback section, even if empty
-                        document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                        document.getElementById('memoFeedbackSection').style.display = 'block'
-                    } else {
-                        document.getElementById('memoFeedbackSection').style.display = 'none'
-                    }
-                } else if (memo.status === 'awaiting_second_approval') {
-                    // First approver completed, waiting for second approver
-                    document.getElementById('memoApprovalStatusSection').style.display = 'block'
-                    document.getElementById('memoStatusIcon').textContent = 'schedule'
-                    document.getElementById('memoStatusIcon').style.color = 'var(--orange)'
-                    
-                    if (memo.isRawMaterialRequest || memo.type === 'Raw Material Request') {
-                        document.getElementById('memoStatusText').textContent = 'อนุมัติขั้นที่ 1 แล้ว - รอการอนุมัติขั้นที่ 2 (Step 2/2)'
-                        if (memo.firstApprovedByName && memo.firstApprovalAt) {
-                            document.getElementById('memoApprovalBy').textContent = memo.firstApprovedByName
-                            const approvalDate = new Date(memo.firstApprovalAt)
-                            document.getElementById('memoApprovalDateTime').textContent = `${translations[currentLanguage]['approvedBy'] || 'Approved by'} ${approvalDate.toLocaleString('th-TH')}`
-                        }
-                    } else {
-                        document.getElementById('memoStatusText').textContent = translations[currentLanguage]['pendingApprovalStatus'] || 'Pending Approval'
-                    }
-                    document.getElementById('memoRejectionReasonSection').style.display = 'none'
-
-                    // Display feedback if any (for awaiting second approval)
-                    // Check if current user is sender or approver
-                    const isSender2 = currentUser && (memo.senderUserId === currentUser.userId || memo.senderId === currentUser.userId || memo.senderObject?.userId === currentUser.userId)
-                    const isFirstApprover2 = currentUser && (memo.firstApprovedBy === currentUser.userId)
-                    const isSecondApprover2 = currentUser && (memo.secondApprovedBy === currentUser.userId)
-                    const isApprover2 = isFirstApprover2 || isSecondApprover2
-                    const isAdmin2 = currentUser && currentUser.role === 'admin'
-                    
-                    if (memo.acknowledgmentFeedback && typeof memo.acknowledgmentFeedback === 'object') {
-                        let feedbackEntries = Object.entries(memo.acknowledgmentFeedback)
-                        // Sender, approvers, and admin see all feedback
-                        // Non-sender, non-approver, non-admin only sees their own feedback
-                        const filteredFeedback = feedbackEntries.filter(([userId]) => {
-                            if (isSender2 || isApprover2 || isAdmin2) {
-                                return true // Sender, approvers, and admin see all feedback
-                            }
-                            return userId === currentUser?.userId // Non-sender/approver/admin sees only their own
-                        })
-                        
-                        if (filteredFeedback.length > 0) {
-                            let feedbackHTML = ''
-                            filteredFeedback.forEach(([userId, feedbackData]) => {
-                                const feedbackDate = new Date(feedbackData.feedbackAt)
-                                const dateStr = feedbackDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-                                const name = escHtml(feedbackData.feedbackByName || 'Unknown')
-                                const feedback = escHtml(feedbackData.feedback || '')
-                                feedbackHTML += `<div style="margin-bottom: 12px; padding: 8px; background: rgba(201, 168, 76, 0.1); border-radius: 4px;">
-                                    <div style="font-size: 13px; font-weight: 600; color: var(--yellow);">${name} - ${dateStr}</div>
-                                    <div style="margin-top: 4px; color: var(--ink); white-space: pre-wrap; word-wrap: break-word;">${feedback}</div>
-                                </div>`
-                            })
-                            document.getElementById('memoFeedbackContent').innerHTML = feedbackHTML
-                            document.getElementById('memoFeedbackSection').style.display = 'block'
-                        } else if (isAdmin2) {
-                            // Admin always sees feedback section, even if empty
-                            document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                            document.getElementById('memoFeedbackSection').style.display = 'block'
-                        } else {
-                            document.getElementById('memoFeedbackSection').style.display = 'none'
-                        }
-                    } else if (isAdmin2) {
-                        // Admin always sees feedback section, even if empty
-                        document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                        document.getElementById('memoFeedbackSection').style.display = 'block'
-                    } else {
-                        document.getElementById('memoFeedbackSection').style.display = 'none'
-                    }
-                } else if (memo.status === 'pending_approval') {
-                    // Show pending approval status
-                    document.getElementById('memoApprovalStatusSection').style.display = 'block'
-                    document.getElementById('memoStatusIcon').textContent = 'schedule'
-                    document.getElementById('memoStatusIcon').style.color = 'var(--orange)'
-                    
-                    // For raw material requests, show which stage is pending
-                    if (memo.isRawMaterialRequest || memo.type === 'Raw Material Request') {
-                        if (memo.approvalStage === 'first_approval') {
-                            document.getElementById('memoStatusText').textContent = 'รอการอนุมัติ - ขั้นที่ 1/2 (First Approver)'
-                        } else if (memo.approvalStage === 'second_approval') {
-                            document.getElementById('memoStatusText').textContent = 'รอการอนุมัติ - ขั้นที่ 2/2 (Second Approver)'
-                            // Show first approver info if available
-                            if (memo.firstApprovedByName && memo.firstApprovalAt) {
-                                document.getElementById('memoApprovalBy').textContent = memo.firstApprovedByName
-                                const approvalDate = new Date(memo.firstApprovalAt)
-                                document.getElementById('memoApprovalDateTime').textContent = `${translations[currentLanguage]['approvedBy'] || 'Approved by'} ${approvalDate.toLocaleString('th-TH')}`
-                            }
-                        } else {
-                            document.getElementById('memoStatusText').textContent = translations[currentLanguage]['pendingApprovalStatus'] || 'Pending Approval'
-                        }
-                    } else {
-                        document.getElementById('memoStatusText').textContent = translations[currentLanguage]['pendingApprovalStatus'] || 'Pending Approval'
-                    }
+                    document.getElementById('memoApprovalBy').textContent = memo.approvedByName || (translations[currentLanguage]['unknown'] || 'Unknown')
+                    const approvalDate = new Date(memo.approvedAt)
+                    document.getElementById('memoApprovalDateTime').textContent = approvalDate.toLocaleString('th-TH')
                     document.getElementById('memoRejectionReasonSection').style.display = 'none'
                 } else if (memo.status === 'rejected') {
                     document.getElementById('memoStatusIcon').textContent = 'cancel'
@@ -14221,71 +13771,17 @@
                     document.getElementById('memoApprovalDateTime').textContent = rejectionDate.toLocaleString('th-TH')
                     document.getElementById('memoRejectionReason').textContent = memo.rejectionReason || (translations[currentLanguage]['noReasonProvided'] || 'No reason provided')
                     document.getElementById('memoRejectionReasonSection').style.display = 'block'
-
-                    // Display feedback if any
-                    // Check if current user is sender or approver
-                    const isSender3 = currentUser && (memo.senderUserId === currentUser.userId || memo.senderId === currentUser.userId || memo.senderObject?.userId === currentUser.userId)
-                    const isFirstApprover3 = currentUser && (memo.firstApprovedBy === currentUser.userId)
-                    const isSecondApprover3 = currentUser && (memo.secondApprovedBy === currentUser.userId)
-                    const isApprover3 = isFirstApprover3 || isSecondApprover3
-                    const isAdmin3 = currentUser && currentUser.role === 'admin'
-                    
-                    if (memo.acknowledgmentFeedback && typeof memo.acknowledgmentFeedback === 'object') {
-                        let feedbackEntries = Object.entries(memo.acknowledgmentFeedback)
-                        // Sender, approvers, and admin see all feedback
-                        // Non-sender, non-approver, non-admin only sees their own feedback
-                        const filteredFeedback = feedbackEntries.filter(([userId]) => {
-                            if (isSender3 || isApprover3 || isAdmin3) {
-                                return true // Sender, approvers, and admin see all feedback
-                            }
-                            return userId === currentUser?.userId // Non-sender/approver/admin sees only their own
-                        })
-                        
-                        if (filteredFeedback.length > 0) {
-                            let feedbackHTML = ''
-                            filteredFeedback.forEach(([userId, feedbackData]) => {
-                                const feedbackDate = new Date(feedbackData.feedbackAt)
-                                const dateStr = feedbackDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-                                const name = escHtml(feedbackData.feedbackByName || 'Unknown')
-                                const feedback = escHtml(feedbackData.feedback || '')
-                                feedbackHTML += `<div style="margin-bottom: 12px; padding: 8px; background: rgba(201, 168, 76, 0.1); border-radius: 4px;">
-                                    <div style="font-size: 13px; font-weight: 600; color: var(--yellow);">${name} - ${dateStr}</div>
-                                    <div style="margin-top: 4px; color: var(--ink); white-space: pre-wrap; word-wrap: break-word;">${feedback}</div>
-                                </div>`
-                            })
-                            document.getElementById('memoFeedbackContent').innerHTML = feedbackHTML
-                            document.getElementById('memoFeedbackSection').style.display = 'block'
-                        } else if (isAdmin3) {
-                            // Admin always sees feedback section, even if empty
-                            document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                            document.getElementById('memoFeedbackSection').style.display = 'block'
-                        } else {
-                            document.getElementById('memoFeedbackSection').style.display = 'none'
-                        }
-                    } else if (isAdmin3) {
-                        // Admin always sees feedback section, even if empty
-                        document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                        document.getElementById('memoFeedbackSection').style.display = 'block'
-                    } else {
-                        document.getElementById('memoFeedbackSection').style.display = 'none'
-                    }
                 }
             }
-            // Also show approval status for received memos that have approvedByName or secondApprovedByName (legacy support)
-            else if ((memo.approvedByName || memo.secondApprovedByName) && (memo.approvedAt || memo.secondApprovalAt) && memo.status !== 'pending_approval') {
+            // Also show approval status for received memos that have approvedByName
+            else if (memo.approvedByName && memo.approvedAt) {
                 document.getElementById('memoApprovalStatusSection').style.display = 'block'
                 document.getElementById('memoStatusIcon').textContent = 'check_circle'
                 document.getElementById('memoStatusIcon').style.color = 'var(--green)'
                 document.getElementById('memoStatusText').textContent = translations[currentLanguage]['approve'] || 'Approved'
-                const approverName = memo.secondApprovedByName || memo.approvedByName || (translations[currentLanguage]['unknown'] || 'Unknown')
-                const approvalDateValue = memo.secondApprovalAt || memo.approvedAt
-                document.getElementById('memoApprovalBy').textContent = approverName
-                if (approvalDateValue) {
-                    const approvalDate = new Date(approvalDateValue)
-                    document.getElementById('memoApprovalDateTime').textContent = approvalDate.toLocaleString('th-TH')
-                } else {
-                    document.getElementById('memoApprovalDateTime').textContent = (translations[currentLanguage]['unknown'] || 'Unknown')
-                }
+                document.getElementById('memoApprovalBy').textContent = memo.approvedByName || (translations[currentLanguage]['unknown'] || 'Unknown')
+                const approvalDate = new Date(memo.approvedAt)
+                document.getElementById('memoApprovalDateTime').textContent = approvalDate.toLocaleString('th-TH')
                 document.getElementById('memoRejectionReasonSection').style.display = 'none'
             }
 
@@ -15651,8 +15147,8 @@ function printMemoDetail() {
         }
 
         // Render the print window immediately with the enriched data
-        if (isRDProject) {
-            // For R&D Projects, need to fetch engineer data
+        if (isRDProject || isRawMat) {
+            // For R&D Projects and Raw Material Requests, need to fetch engineer data
             fetch('/api/rdproject/roles', {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             })
@@ -15664,39 +15160,16 @@ function printMemoDetail() {
                 if (data.engineerSignatureImageUrl) {
                     memo.engineerSignatureImageUrl = data.engineerSignatureImageUrl
                 }
-                if (data.approverSignatureImageUrl) {
+                // For rawmat, use rawmat approver signature; for rdproject, use rdproject approver signature
+                if (isRawMat && data.rawMatApproverSignatureImageUrl) {
+                    memo.approverSignatureImageUrl = data.rawMatApproverSignatureImageUrl
+                } else if (isRDProject && data.approverSignatureImageUrl) {
                     memo.approverSignatureImageUrl = data.approverSignatureImageUrl
                 }
                 renderPrintWindow()
             })
             .catch(err => {
                 console.error('Error fetching engineer data:', err)
-                renderPrintWindow()
-            })
-        } else if (isRawMat) {
-            // For Raw Material Requests, fetch first and second approver signatures
-            Promise.all([
-                memo.firstApproverId ? fetch(`/api/user/${memo.firstApproverId}`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.json()) : Promise.resolve({}),
-                memo.secondApproverId ? fetch(`/api/user/${memo.secondApproverId}`, { headers: { 'Authorization': `Bearer ${authToken}` } }).then(r => r.json()) : Promise.resolve({})
-            ])
-            .then(([firstApprover, secondApprover]) => {
-                if (firstApprover && firstApprover.signatureImageUrl) {
-                    memo.firstApproverSignatureImageUrl = firstApprover.signatureImageUrl
-                }
-                if (secondApprover && secondApprover.signatureImageUrl) {
-                    memo.secondApproverSignatureImageUrl = secondApprover.signatureImageUrl
-                }
-                // Store approver objects for fallback access
-                if (firstApprover) {
-                    memo.firstApproverObject = firstApprover
-                }
-                if (secondApprover) {
-                    memo.secondApproverObject = secondApprover
-                }
-                renderPrintWindow()
-            })
-            .catch(err => {
-                console.error('Error fetching approver signatures:', err)
                 renderPrintWindow()
             })
         } else if (memo.isCC && memo.ccSenderObject?.userId) {
@@ -15833,25 +15306,18 @@ function printMemoDetail() {
                         </div>
                     </div>
                 `
-            } else if (isRawMat) {
-                // Raw Material Request: 3-column layout (ผู้บันทึก - ผู้อนุมัติคนที่ 1 - ผู้อนุมัติคนที่ 2)
-                const firstApproverSignatureUrl = memo.firstApproverSignatureImageUrl || memo.firstApproverObject?.signatureImageUrl
-                const secondApproverSignatureUrl = memo.secondApproverSignatureImageUrl || memo.secondApproverObject?.signatureImageUrl
-                const firstApproverName = memo.firstApproverName || 'ผู้อนุมัติ'
-                const secondApproverName = memo.secondApproverName || 'ผู้อนุมัติ'
-                const firstApprovalDate = memo.firstApprovalAt ? new Date(memo.firstApprovalAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
-                const secondApprovalDate = memo.secondApprovalAt ? new Date(memo.secondApprovalAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
-                
+            } else if (isRawMat && engineerName) {
+                // Raw Material Request: 3-column layout (ผู้บันทึก - วิศวกร - ผู้อนุมัติ)
                 const rawmatSenderSigDisplay = senderSignatureUrl
                     ? `<img src="${escHtml(senderSignatureUrl)}" style="max-width: 150px; max-height: 90px; display: block; margin: 20px auto; background: transparent;" alt="Signature">`
                     : `<div class="sig-line"></div>`
                 
-                const firstApproverSigDisplay = firstApproverSignatureUrl
-                    ? `<img src="${escHtml(firstApproverSignatureUrl)}" style="max-width: 150px; max-height: 90px; display: block; margin: 20px auto; background: transparent;" alt="Signature">`
+                const engineerSigDisplay = engineerSignatureUrl
+                    ? `<img src="${escHtml(engineerSignatureUrl)}" style="max-width: 150px; max-height: 90px; display: block; margin: 20px auto; background: transparent;" alt="Signature">`
                     : `<div class="sig-line"></div>`
                 
-                const secondApproverSigDisplay = secondApproverSignatureUrl
-                    ? `<img src="${escHtml(secondApproverSignatureUrl)}" style="max-width: 150px; max-height: 90px; display: block; margin: 20px auto; background: transparent;" alt="Signature">`
+                const approverSigDisplay = approverSignatureUrl
+                    ? `<img src="${escHtml(approverSignatureUrl)}" style="max-width: 150px; max-height: 90px; display: block; margin: 20px auto; background: transparent;" alt="Signature">`
                     : `<div class="sig-line"></div>`
                 
                 signatureFooterHTML = `
@@ -15868,22 +15334,23 @@ function printMemoDetail() {
                         </div>
                         <div class="sig-center">
                             <div class="sig-content">
-                                ${firstApproverSigDisplay}
-                                ${!firstApproverSignatureUrl ? `<div class="sig-name">${escHtml(firstApproverName)}</div>` : ''}
+                                ${engineerSigDisplay}
+                                ${!engineerSignatureUrl ? `<div class="sig-name">${escHtml(engineerName)}</div>` : ''}
                             </div>
                             <div>
-                                <div class="sig-box-label">ผู้อนุมัติ</div>
-                                <div class="sig-date-label">วันที่ ${firstApprovalDate}</div>
+                                <div class="sig-box-label">วิศวกร</div>
+                                <div class="sig-date-label">วันที่ ${approverDate}</div>
                             </div>
                         </div>
                         <div class="sig-right">
                             <div class="sig-content">
-                                ${secondApproverSigDisplay}
-                                ${!secondApproverSignatureUrl ? `<div class="sig-name">${escHtml(secondApproverName)}</div>` : ''}
+                                ${approverSigDisplay}
+                                ${!approverSignatureUrl ? `<div class="sig-name">${escHtml(approverName)}</div>` : ''}
                             </div>
                             <div>
-                                <div class="sig-box-label">ผู้อนุมัติคนที่ 2</div>
-                                <div class="sig-date-label">วันที่ ${secondApprovalDate}</div>
+                                <div class="sig-box-label">${signatureNote}</div>
+                                <div class="sig-date-label">วันที่ ${approverDate}</div>
+                                ${memo.status === 'rejected' && memo.rejectionReason ? `<div class="sig-note">${escHtml(memo.rejectionReason)}</div>` : ''}
                             </div>
                         </div>
                     </div>
@@ -15999,32 +15466,21 @@ function printMemoDetail() {
                     </div>
                 </div>
             `
-        } else if (isRawMat) {
-            // Raw Material Request without approval status: show 3-column layout (ผู้บันทึก - ผู้อนุมัติคนที่ 1 - ผู้อนุมัติคนที่ 2)
-            const firstApproverSignatureUrl2 = memo.firstApproverSignatureImageUrl || memo.firstApproverObject?.signatureImageUrl
-            const secondApproverSignatureUrl2 = memo.secondApproverSignatureImageUrl || memo.secondApproverObject?.signatureImageUrl
-            const firstApproverName2 = memo.firstApproverName || 'ผู้อนุมัติ'
-            const secondApproverName2 = memo.secondApproverName || 'ผู้อนุมัติ'
-            const firstApprovalDate2 = memo.firstApprovalAt ? new Date(memo.firstApprovalAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
-            const secondApprovalDate2 = memo.secondApprovalAt ? new Date(memo.secondApprovalAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
-            
-            const rawmatSenderSigDisplay3 = senderSignatureUrl
+        } else if (isRawMat && engineerName) {
+            // Raw Material Request without approval status but with engineer: show 3-column layout
+            const rawmatSenderSigDisplay2 = senderSignatureUrl
                 ? `<img src="${escHtml(senderSignatureUrl)}" style="max-width: 150px; max-height: 90px; display: block; margin: 20px auto; background: transparent;" alt="Signature">`
                 : `<div class="sig-line"></div>`
             
-            const firstApproverSigDisplay3 = firstApproverSignatureUrl2
-                ? `<img src="${escHtml(firstApproverSignatureUrl2)}" style="max-width: 150px; max-height: 90px; display: block; margin: 20px auto; background: transparent;" alt="Signature">`
-                : `<div class="sig-line"></div>`
-            
-            const secondApproverSigDisplay3 = secondApproverSignatureUrl2
-                ? `<img src="${escHtml(secondApproverSignatureUrl2)}" style="max-width: 150px; max-height: 90px; display: block; margin: 20px auto; background: transparent;" alt="Signature">`
+            const engineerSigDisplay2 = engineerSignatureUrl
+                ? `<img src="${escHtml(engineerSignatureUrl)}" style="max-width: 150px; max-height: 90px; display: block; margin: 20px auto; background: transparent;" alt="Signature">`
                 : `<div class="sig-line"></div>`
             
             signatureFooterHTML = `
                 <div class="sig-footer sig-footer-3col">
                     <div class="sig-left">
                         <div class="sig-content">
-                            ${rawmatSenderSigDisplay3}
+                            ${rawmatSenderSigDisplay2}
                             ${!senderSignatureUrl ? `<div class="sig-name">${escHtml(memo.senderName || '')}</div>` : ''}
                         </div>
                         <div>
@@ -16034,22 +15490,58 @@ function printMemoDetail() {
                     </div>
                     <div class="sig-center">
                         <div class="sig-content">
-                            ${firstApproverSigDisplay3}
-                            ${!firstApproverSignatureUrl2 ? `<div class="sig-name">${escHtml(firstApproverName2)}</div>` : ''}
+                            ${engineerSigDisplay2}
+                            ${!engineerSignatureUrl ? `<div class="sig-name">${escHtml(engineerName)}</div>` : ''}
                         </div>
                         <div>
-                            <div class="sig-box-label">ผู้อนุมัติ</div>
-                            <div class="sig-date-label">วันที่ ${firstApprovalDate2}</div>
+                            <div class="sig-box-label">วิศวกร</div>
+                            <div class="sig-date-label">วันที่ ${approverDate}</div>
                         </div>
                     </div>
                     <div class="sig-right">
                         <div class="sig-content">
-                            ${secondApproverSigDisplay3}
-                            ${!secondApproverSignatureUrl2 ? `<div class="sig-name">${escHtml(secondApproverName2)}</div>` : ''}
+                            <div class="sig-line"></div>
                         </div>
                         <div>
-                            <div class="sig-box-label">ผู้อนุมัติ</div>
-                            <div class="sig-date-label">วันที่ ${secondApprovalDate2}</div>
+                            <div class="sig-box-label">ผู้รับ</div>
+                            <div class="sig-date-label">วันที่ ${dateStr}</div>
+                        </div>
+                    </div>
+                </div>
+            `
+        } else if (isRawMat) {
+            // Raw Material Request without engineer data: show 2-column layout (ผู้บันทึก - ผู้รับ)
+            let recipientName = ''
+            if (memo.recipientObjects?.length) {
+                recipientName = memo.recipientObjects.map(r => escHtml(r.name || 'ไม่ระบุ')).join('<br>')
+            } else if (memo.recipientNames?.length) {
+                recipientName = memo.recipientNames.map(escHtml).join('<br>')
+            }
+            
+            const rawmatSenderSigDisplay2 = senderSignatureUrl
+                ? `<img src="${escHtml(senderSignatureUrl)}" style="max-width: 150px; max-height: 90px; display: block; margin: 20px auto; background: transparent;" alt="Signature">`
+                : `<div class="sig-line"></div>`
+            
+            signatureFooterHTML = `
+                <div class="sig-footer">
+                    <div class="sig-left">
+                        <div class="sig-content">
+                            ${rawmatSenderSigDisplay2}
+                            ${!senderSignatureUrl ? `<div class="sig-name">${escHtml(memo.senderName || '')}</div>` : ''}
+                        </div>
+                        <div>
+                            <div class="sig-box-label">ผู้บันทึก</div>
+                            <div class="sig-date-label">วันที่ ${dateStr}</div>
+                        </div>
+                    </div>
+                    <div class="sig-right">
+                        <div class="sig-content">
+                            <div class="sig-name">${recipientName}</div>
+                            <div class="sig-line"></div>
+                        </div>
+                        <div>
+                            <div class="sig-box-label">ผู้รับ</div>
+                            <div class="sig-date-label">วันที่ ${dateStr}</div>
                         </div>
                     </div>
                 </div>
@@ -16408,8 +15900,6 @@ function printMemoDetail() {
                     </div>
 
                     ${imageHTML}
-
-                 
                 </div>
 
                 ${signatureFooterHTML}
@@ -17714,40 +17204,7 @@ function printMemoDetail() {
             }
         }
 
-        let pendingAcknowledgeData = { memoId: null, senderUserId: null }
-        function openFeedbackModal(memoId, senderUserId) {
-          pendingAcknowledgeData = { memoId, senderUserId }
-          const textarea = document.getElementById('feedbackTextarea')
-          if (textarea) { textarea.value = ''; updateFeedbackCharCount() }
-          const modal = document.getElementById('acknowledgeFeedbackModal')
-          if (modal) modal.style.display = 'flex'
-          setTimeout(() => { if (textarea) textarea.focus() }, 100)
-        }
-        function closeFeedbackModal() {
-          const modal = document.getElementById('acknowledgeFeedbackModal')
-          if (modal) modal.style.display = 'none'
-          pendingAcknowledgeData = { memoId: null, senderUserId: null }
-          const textarea = document.getElementById('feedbackTextarea')
-          if (textarea) textarea.value = ''
-        }
-        function updateFeedbackCharCount() {
-          const textarea = document.getElementById('feedbackTextarea')
-          const counter = document.getElementById('feedbackCharCount')
-          if (textarea && counter) {
-            const length = textarea.value.length
-            counter.textContent = length
-            if (length > 500) { textarea.value = textarea.value.substring(0, 500); counter.textContent = '500' }
-          }
-        }
-        async function submitFeedbackAcknowledge() {
-          const { memoId, senderUserId } = pendingAcknowledgeData
-          if (!memoId) return
-          const textarea = document.getElementById('feedbackTextarea')
-          const feedback = textarea ? textarea.value.trim() : null
-          await acknowledgeMemo(memoId, senderUserId, feedback)
-          closeFeedbackModal()
-        }
-        async function acknowledgeMemo(memoId, senderUserId, feedback = null) {
+        async function acknowledgeMemo(memoId, senderUserId) {
             try {
                 const res = await fetch(`/memo/acknowledge/${memoId}`, {
                     method: 'POST',
@@ -17755,28 +17212,17 @@ function printMemoDetail() {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authToken}`
                     },
-                    body: JSON.stringify({ senderUserId, ...(feedback && { feedback }) })
+                    body: JSON.stringify({ senderUserId })
                 })
+
                 const data = await res.json()
                 if (res.ok) {
-                    const buttons = document.querySelectorAll('button[onclick*="acknowledgeMemo"], button[onclick*="openFeedbackModal"]')
-                    buttons.forEach(btn => {
-                        if (btn.textContent.includes('Acknowledge') || btn.textContent.includes('รับทราบ')) {
-                            btn.disabled = true
-                            btn.style.opacity = '0.6'
-                            btn.style.color = 'var(--ink-muted)'
-                            btn.innerHTML = feedback ? '<span class="material-symbols-outlined">check</span><span>Ack. with Feedback</span>' : '<span class="material-symbols-outlined">check</span><span>Acknowledged</span>'
-                        }
-                    })
                     await showAlertModal('memoAcknowledgedSuccessfully', 'success')
-                    const memoDetailOverlay = document.getElementById('memoDetailOverlay')
-                    if (memoDetailOverlay && memoDetailOverlay.style.display === 'flex') {
-                        memoDetailOverlay.style.display = 'none'
-                        currentMemoDetail = null
-                    }
+                    // Reset and reload views to show updated data
                     viewLoadStatus['received-memos'] = false
                     viewLoadStatus['dashboard'] = false
                     loadReceivedMemos()
+                    // Also reload sent memos if this is a sender to see updated read status
                     viewLoadStatus['sent-memos'] = false
                     loadSentMemos()
                 } else {
@@ -17787,10 +17233,6 @@ function printMemoDetail() {
                 await showAlertModal('errorAcknowledgingMemo', 'error')
             }
         }
-        document.addEventListener('DOMContentLoaded', () => {
-          const textarea = document.getElementById('feedbackTextarea')
-          if (textarea) textarea.addEventListener('input', updateFeedbackCharCount)
-        })
 
         // ── Prompt Modal System ────────────────────
         let promptModalResolver = null
