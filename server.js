@@ -48,7 +48,6 @@ function addLog(level, messageKey, data = null) {
    channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
    channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
  }
-
 //Test
 
 // const config = {
@@ -61,11 +60,13 @@ const client = new line.Client(config)
 // Firebase Realtime Database (ใช้ REST API แทน Admin SDK)
 //const FIREBASE_PROJECT_ID = "line-6191d"
 const FIREBASE_PROJECT_ID = "test2-a3a49"
+// const FIREBASE_PROJECT_ID = "leave-10269"
 // const FIREBASE_PROJECT_ID = "keyproject-84461"
 
 // const FIREBASE_DB_URL = "https://import-acd62-default-rtdb.asia-southeast1.firebasedatabase.app"
 // const FIREBASE_DB_URL = "https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app"
 const FIREBASE_DB_URL = "https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app"
+// const FIREBASE_DB_URL = "https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app"
 // const FIREBASE_DB_URL = "https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app"
 
 
@@ -4010,6 +4011,10 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
           }
           memo.ccAcknowledgedCount = ack
           memo.ccTotalRecipients = total
+          // Set senderName for CC memo if not already set (fallback for old CC memos in database)
+          if (!memo.senderName && memo.ccSenderName) {
+            memo.senderName = memo.ccSenderName
+          }
         }
         // Handle system user recipient (recipientUserId)
         else if (memo.recipientUserId && allUsers) {
@@ -4089,6 +4094,10 @@ app.get("/received-memos", verifyToken, async (req, res) => {
           for (let memoId in directReceivedMemos) {
             const memo = directReceivedMemos[memoId]
             if (!seenMemoIds.has(memoId)) {
+              // For CC memos, set senderName from ccSenderName if not already set
+              if (memo.isCC && !memo.senderName && memo.ccSenderName) {
+                memo.senderName = memo.ccSenderName
+              }
               receivedMemos.push(memo)
               seenMemoIds.add(memoId)
             }
@@ -4133,11 +4142,16 @@ app.get("/received-memos", verifyToken, async (req, res) => {
           if (!seenMemoIds.has(memoId)) {
             const directMemo = directReceivedMemos[memoId]
             // Set senderName if not already set
-            if (!directMemo.senderName && directMemo.senderId) {
-              const sender = allUsers[directMemo.senderId]
-              if (sender) {
-                directMemo.senderName = `${sender.name} ${sender.surname}`
-                directMemo.senderUserId = directMemo.senderId
+            if (!directMemo.senderName) {
+              // For CC memos, use ccSenderName; for regular memos, use senderId
+              if (directMemo.isCC && directMemo.ccSenderName) {
+                directMemo.senderName = directMemo.ccSenderName
+              } else if (directMemo.senderId) {
+                const sender = allUsers[directMemo.senderId]
+                if (sender) {
+                  directMemo.senderName = `${sender.name} ${sender.surname}`
+                  directMemo.senderUserId = directMemo.senderId
+                }
               }
             }
             receivedMemos.push(directMemo)
@@ -4608,6 +4622,8 @@ app.post("/memo/:memoId/cc", verifyToken, async (req, res) => {
         // CC Sender Information
         ccSenderId: req.userId,
         ccSenderName: sender ? `${sender.name} ${sender.surname}` : 'Unknown',
+        senderName: sender ? `${sender.name} ${sender.surname}` : 'Unknown',
+        senderUserId: req.userId,
         ccSenderObject: sender ? {
           userId: req.userId,
           name: sender.name,

@@ -12261,14 +12261,36 @@
             const grouped = {}
             
             for (let memo of memos) {
-                // For CC memos, use memoKey as unique identifier; otherwise use memoId
-                const id = memo.isCC ? memo.memoKey : (memo.memoId || memo.id)
+                // For CC memos, use original memo ID as unique identifier to group all CCs from same memo
+                // For regular memos, use memoId
+                let id
+                if (memo.isCC) {
+                    // For CC memos, group by original memo ID (memoId field contains the original memo's ID)
+                    // The memoKey contains extra info like _cc_<timestamp>_<random> so extract the base ID
+                    id = memo.memoId  // This is the original memo ID for CC memos
+                } else {
+                    id = memo.memoId || memo.id
+                }
                 
                 if (!grouped[id]) {
                     // First occurrence - create a new entry
                     grouped[id] = { ...memo }
                 } else {
                     // Duplicate - merge recipients
+                    if (memo.isCC && memo.ccRecipientObjects && Array.isArray(memo.ccRecipientObjects)) {
+                        // For CC memos, merge ccRecipientObjects
+                        if (!grouped[id].ccRecipientObjects) {
+                            grouped[id].ccRecipientObjects = []
+                        }
+                        // Add unique recipients
+                        for (let recipient of memo.ccRecipientObjects) {
+                            const recipientId = recipient.userId || recipient.systemUserId
+                            if (!grouped[id].ccRecipientObjects.find(r => (r.userId || r.systemUserId) === recipientId)) {
+                                grouped[id].ccRecipientObjects.push(recipient)
+                            }
+                        }
+                    }
+                    // Merge regular recipient names
                     if (memo.recipientNames && Array.isArray(memo.recipientNames)) {
                         if (!grouped[id].recipientNames) {
                             grouped[id].recipientNames = []
@@ -12325,12 +12347,15 @@
                 const memoWithSource = { ...memo, source: 'received' }
                 const memoJson = escHtml(JSON.stringify(memoWithSource)).replace(/"/g, '&quot;')
 
-                // Get sender name - for CC memos show original sender, otherwise show current sender
-                const senderName = memo.isCC ? (memo.originalSenderName || memo.senderName || 'Unknown') : (memo.senderName || 'Unknown')
+                // Get sender name - for CC memos show CC sender, otherwise show current sender
+                const senderName = memo.isCC ? (memo.ccSenderName || memo.senderName || 'Unknown') : (memo.senderName || 'Unknown')
 
-                // Get recipient name for admin/approver view - for raw material requests, show status
+                // Get recipient name for admin/approver view
                 let recipientName = 'Unknown'
-                if (memo.recipientNames) {
+                if (memo.isCC && memo.ccRecipientObjects && Array.isArray(memo.ccRecipientObjects) && memo.ccRecipientObjects.length > 0) {
+                    // For CC memos, show CC recipients
+                    recipientName = memo.ccRecipientObjects.map(r => r.name || r.username || 'Unknown').join(', ')
+                } else if (memo.recipientNames) {
                     recipientName = memo.recipientNames.join(', ')
                 } else if (memo.recipientName) {
                     recipientName = memo.recipientName
@@ -13446,6 +13471,7 @@
                 // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
                 const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
                 // const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                // const firebaseUrl = 'https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
                 try {
                     const res = await fetch(firebaseUrl)
@@ -13453,6 +13479,7 @@
                     
                     let logs = []
                     if (logsData && typeof logsData === 'object') {
+                        
                         logs = Object.values(logsData)
                             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
                     }
@@ -13483,6 +13510,8 @@
 
                 const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
                 // const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+
+                // const firebaseUrl = 'https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
 
                 const res = await fetch(firebaseUrl)
@@ -13689,7 +13718,8 @@
                 if (isReceived) {
                     recipientLabel.textContent = 'From'
                     // For CC memos, show original sender; for regular memos, show sender
-                    const senderName = isCC ? memo.originalSenderName : memo.senderName
+                    // For CC memos, try originalSenderName first, then fallback to ccSenderName or senderName
+                    const senderName = isCC ? (memo.originalSenderName || memo.ccSenderName || memo.senderName) : memo.senderName
                     const senderObj = isCC ? memo.originalSenderObject : memo.senderObject
                     const senderDept = isCC ? (senderObj?.department || memo.originalSenderObject?.department) : getSenderDepartment(memo)
                     setSenderElementWithDept('memoDetailSender', senderName, senderDept)
@@ -14112,18 +14142,12 @@
                             })
                             document.getElementById('memoFeedbackContent').innerHTML = feedbackHTML
                             document.getElementById('memoFeedbackSection').style.display = 'block'
-                        } else if (isAdmin) {
-                            // Admin always sees feedback section, even if empty
-                            document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                            document.getElementById('memoFeedbackSection').style.display = 'block'
                         } else {
+                            // No feedback, hide section
                             document.getElementById('memoFeedbackSection').style.display = 'none'
                         }
-                    } else if (isAdmin) {
-                        // Admin always sees feedback section, even if empty
-                        document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                        document.getElementById('memoFeedbackSection').style.display = 'block'
                     } else {
+                        // No feedback object, hide section
                         document.getElementById('memoFeedbackSection').style.display = 'none'
                     }
                 } else if (memo.status === 'awaiting_second_approval') {
@@ -14177,18 +14201,12 @@
                             })
                             document.getElementById('memoFeedbackContent').innerHTML = feedbackHTML
                             document.getElementById('memoFeedbackSection').style.display = 'block'
-                        } else if (isAdmin2) {
-                            // Admin always sees feedback section, even if empty
-                            document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                            document.getElementById('memoFeedbackSection').style.display = 'block'
                         } else {
+                            // No feedback, hide section
                             document.getElementById('memoFeedbackSection').style.display = 'none'
                         }
-                    } else if (isAdmin2) {
-                        // Admin always sees feedback section, even if empty
-                        document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                        document.getElementById('memoFeedbackSection').style.display = 'block'
                     } else {
+                        // No feedback object, hide section
                         document.getElementById('memoFeedbackSection').style.display = 'none'
                     }
                 } else if (memo.status === 'pending_approval') {
@@ -14259,20 +14277,88 @@
                             })
                             document.getElementById('memoFeedbackContent').innerHTML = feedbackHTML
                             document.getElementById('memoFeedbackSection').style.display = 'block'
-                        } else if (isAdmin3) {
-                            // Admin always sees feedback section, even if empty
-                            document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                            document.getElementById('memoFeedbackSection').style.display = 'block'
                         } else {
+                            // No feedback, hide section
                             document.getElementById('memoFeedbackSection').style.display = 'none'
                         }
-                    } else if (isAdmin3) {
-                        // Admin always sees feedback section, even if empty
-                        document.getElementById('memoFeedbackContent').innerHTML = `<div style="color: var(--ink-faint); font-size: 13px; font-style: italic;">${translations[currentLanguage]['noFeedback'] || 'No feedback received'}</div>`
-                        document.getElementById('memoFeedbackSection').style.display = 'block'
                     } else {
+                        // No feedback object, hide section
                         document.getElementById('memoFeedbackSection').style.display = 'none'
                     }
+                }
+            } else if (memo.status === 'sent') {
+                console.log('📨 DEBUG: Processing sent status memo')
+                console.log('   memoId:', memo.memoId)
+                console.log('   senderName:', memo.senderName)
+                console.log('   sentAt:', memo.sentAt)
+                
+                // Set approval status display for sent memos
+                document.getElementById('memoApprovalStatusSection').style.display = 'block'
+                document.getElementById('memoStatusIcon').textContent = 'done'
+                document.getElementById('memoStatusIcon').style.color = 'var(--green)'
+                document.getElementById('memoStatusText').textContent = translations[currentLanguage]['sent'] || 'ส่งแล้ว'
+                
+                // Show sender info
+                const senderName = memo.senderName || (currentUser?.name) || 'Unknown'
+                document.getElementById('memoApprovalBy').textContent = senderName
+                console.log('   setting memoApprovalBy to:', senderName)
+                
+                // Show sent date
+                const sentDate = new Date(memo.sentAt || memo.timestamp || memo.date)
+                const sentDateStr = isNaN(sentDate.getTime()) ? '—' : sentDate.toLocaleString('th-TH')
+                document.getElementById('memoApprovalDateTime').textContent = sentDateStr
+                console.log('   setting memoApprovalDateTime to:', sentDateStr)
+                
+                document.getElementById('memoRejectionReasonSection').style.display = 'none'
+                
+                // Display feedback if any (for sent memos)
+                const isSender = currentUser && (memo.senderUserId === currentUser.userId || memo.senderId === currentUser.userId || memo.senderObject?.userId === currentUser.userId)
+                const isRecipient = currentUser && memo.recipientIds && memo.recipientIds.includes(currentUser.userId)
+                const isAdmin = currentUser && currentUser.role === 'admin'
+                
+                if (memo.acknowledgmentFeedback && typeof memo.acknowledgmentFeedback === 'object') {
+                    const feedbackEntries = Object.entries(memo.acknowledgmentFeedback)
+                    // Sender and admin see all feedback; recipients see only their own
+                    const filteredFeedback = feedbackEntries.filter(([userId]) => {
+                        if (isSender || isAdmin) {
+                            return true
+                        }
+                        return userId === currentUser?.userId
+                    })
+                    
+                    if (filteredFeedback.length > 0) {
+                        let feedbackHTML = ''
+                        filteredFeedback.forEach(([userId, feedbackData]) => {
+                            const feedbackDate = new Date(feedbackData.feedbackAt)
+                            const dateStr = feedbackDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            const name = escHtml(feedbackData.feedbackByName || 'Unknown')
+                            const feedback = escHtml(feedbackData.feedback || '')
+                            feedbackHTML += `<div style="margin-bottom: 12px; padding: 8px; background: rgba(201, 168, 76, 0.1); border-radius: 4px;">
+                                <div style="font-size: 13px; font-weight: 600; color: var(--yellow);">${name} - ${dateStr}</div>
+                                <div style="margin-top: 4px; color: var(--ink); white-space: pre-wrap; word-wrap: break-word;">${feedback}</div>
+                            </div>`
+                        })
+                        const feedbackElement = document.getElementById('memoFeedbackContent')
+                        const feedbackSection = document.getElementById('memoFeedbackSection')
+                        if (feedbackElement) {
+                            feedbackElement.innerHTML = feedbackHTML
+                        }
+                        if (feedbackSection) {
+                            feedbackSection.style.display = 'block'
+                            
+                            // feedbackSection is inside memoApprovalStatusSection, so show parent too
+                            const approvalStatusSection = document.getElementById('memoApprovalStatusSection')
+                            if (approvalStatusSection) {
+                                approvalStatusSection.style.display = 'block'
+                            }
+                        }
+                    } else {
+                        // No feedback to display, hide section
+                        document.getElementById('memoFeedbackSection').style.display = 'none'
+                    }
+                } else {
+                    // No acknowledgmentFeedback object, hide section
+                    document.getElementById('memoFeedbackSection').style.display = 'none'
                 }
             }
             // Also show approval status for received memos that have approvedByName or secondApprovedByName (legacy support)
@@ -14317,7 +14403,10 @@
                 console.error('Error in openMemoDetail:', err)
             }
         }
+/*
 
+แก้ไขบัค memo id = memo_1781139612718_3yao8moi8,memo_1781139682549_49bfok160
+ไม่แสดงผล feedback ใน modal แก้ไขที*/
         // Check if current user is the designated R&D project approver
         async function checkIfUserIsRDProjectApprover() {
             try {
