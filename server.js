@@ -44,29 +44,31 @@ function addLog(level, messageKey, data = null) {
   })
 }
 
- const config = {
-   channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
-   channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
- }
-//Test
+//  const config = {
+//    channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
+//    channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
+//  }
 
-// const config = {
-//   channelAccessToken: "26QcmPpK39AJ60Mg9tnk9sorWmm9DhOv70KjkSradTe3UGenhIlhUrLii4kWukxF0BWOA/3FNhlZUQ25rMiS+cdsz33h/esKxpyXEEJx3i9Xv755YQABvc61s63yenpEmyvMC9ZUwFDTcAz/2ERAYQdB04t89/1O/w1cDnyilFU=",
-//   channelSecret: "3e94265fab13b7b71fb338a355d4fc9d"
-// }
+
+
+//Line Official Account Test
+const config = {
+  channelAccessToken: "26QcmPpK39AJ60Mg9tnk9sorWmm9DhOv70KjkSradTe3UGenhIlhUrLii4kWukxF0BWOA/3FNhlZUQ25rMiS+cdsz33h/esKxpyXEEJx3i9Xv755YQABvc61s63yenpEmyvMC9ZUwFDTcAz/2ERAYQdB04t89/1O/w1cDnyilFU=",
+  channelSecret: "3e94265fab13b7b71fb338a355d4fc9d"
+}
 
 const client = new line.Client(config)
 
 // Firebase Realtime Database (ใช้ REST API แทน Admin SDK)
 //const FIREBASE_PROJECT_ID = "line-6191d"
-const FIREBASE_PROJECT_ID = "test2-a3a49"
-// const FIREBASE_PROJECT_ID = "leave-10269"
+// const FIREBASE_PROJECT_ID = "test2-a3a49"
+const FIREBASE_PROJECT_ID = "leave-10269"
 // const FIREBASE_PROJECT_ID = "keyproject-84461"
 
 // const FIREBASE_DB_URL = "https://import-acd62-default-rtdb.asia-southeast1.firebasedatabase.app"
 // const FIREBASE_DB_URL = "https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app"
-const FIREBASE_DB_URL = "https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app"
-// const FIREBASE_DB_URL = "https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app"
+// const FIREBASE_DB_URL = "https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app"
+const FIREBASE_DB_URL = "https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app"
 // const FIREBASE_DB_URL = "https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app"
 
 
@@ -1989,7 +1991,10 @@ app.post("/send", async (req, res) => {
     return res.status(400).json({ error: 'No recipients specified' })
   }
 
-  const { title, type, content, senderUserId, docNumber, imageUrl } = req.body
+  const { title, type, content, senderUserId, docNumber, imageUrl, imageUrls } = req.body
+
+  // Support both old format (imageUrl) and new format (imageUrls)
+  const finalImageUrls = imageUrls || (imageUrl ? [imageUrl] : []);
 
   try {
     // Resolve any DocNumber conflicts before proceeding
@@ -2060,7 +2065,7 @@ app.post("/send", async (req, res) => {
       type,
       content,
       docNumber: resolvedDocNumber || '',
-      imageUrl: imageUrl || null,
+      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null,
       // Multi-recipient support
       recipientIds: recipientIds,  // All system user IDs
       recipientNames: recipientNames,  // All recipient names
@@ -4644,7 +4649,8 @@ app.post("/memo/:memoId/cc", verifyToken, async (req, res) => {
         // Original memo status
         approvedByName: memo.approvedByName || '',
         approvedAt: memo.approvedAt || new Date().toISOString(),
-        imageUrl: memo.imageUrl || ''
+        imageUrl: memo.imageUrl || '',
+        imageUrls: memo.imageUrls || (memo.imageUrl ? [memo.imageUrl] : null)
       }
 
       // Save CC memo to receiver's received_memos
@@ -4907,8 +4913,11 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'No recipients specified' })
     }
 
-    const { title, type, content, docNumber, imageUrl } = req.body
+    const { title, type, content, docNumber, imageUrl, imageUrls } = req.body
     const senderUserId = req.userId
+
+    // Support both old format (imageUrl) and new format (imageUrls)
+    const finalImageUrls = imageUrls || (imageUrl ? [imageUrl] : [])
 
     if (!title || !type || !content) {
       return res.status(400).json({ error: 'title, type, and content required' })
@@ -4971,7 +4980,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       type,
       content,
       docNumber: resolvedDocNumber || '',
-      imageUrl: imageUrl || null,
+      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null,
       senderUserId,
       senderName: `${sender.name} ${sender.surname}`,
       senderUsername: sender.username,
@@ -5908,7 +5917,10 @@ app.post("/api/rdproject", verifyToken, async (req, res) => {
 
     // Extract R&D project form data from request
     const { projectNumber, projectName, division, purpose, specification, conditions, shopName,
-      productSample, targetCustomer, customerAddress, monthlyQuantity, salesPrice, revenue, terms, imageUrl } = req.body
+      productSample, targetCustomer, customerAddress, monthlyQuantity, salesPrice, revenue, terms, imageUrl, imageUrls } = req.body
+    
+    // Support both old format (imageUrl) and new format (imageUrls)
+    const finalImageUrls = imageUrls || (imageUrl ? [imageUrl] : [])
 
     if (!projectName) {
       return res.status(400).json({ error: "Project name is required" })
@@ -5968,7 +5980,7 @@ app.post("/api/rdproject", verifyToken, async (req, res) => {
       docNumber: projectNumber || '',
       isRDProject: true,
       approvalType: 'marketing',
-      imageUrl: imageUrl || ''
+      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null
     }
 
     await firebase_set(`sent_memos/${initiatorUserId}/${memoId}`, sentMemoData)
@@ -6006,7 +6018,7 @@ app.post("/api/rdproject", verifyToken, async (req, res) => {
       docNumber: projectNumber || '',
       isRDProject: true,
       approvalType: 'marketing',
-      imageUrl: imageUrl || ''
+      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null
     }
 
     await firebase_set(`received_memos/${approverUserId}/${memoId}`, receivedMemoData)
@@ -6168,7 +6180,10 @@ app.post("/api/rawmat", verifyToken, async (req, res) => {
 
     // Extract data from request (approvers are now from admin config, not request body)
     const { documentNo, projectName, purpose, supplierName, supplierContact,
-      materialName, quantity, lot, price, moq, description, imageUrl } = req.body
+      materialName, quantity, lot, price, moq, description, imageUrl, imageUrls } = req.body
+    
+    // Support both old format (imageUrl) and new format (imageUrls)
+    const finalImageUrls = imageUrls || (imageUrl ? [imageUrl] : [])
 
     if (!projectName || !supplierName || !materialName) {
       return res.status(400).json({ error: "Project name, supplier name, and material name are required" })
@@ -6282,7 +6297,7 @@ app.post("/api/rawmat", verifyToken, async (req, res) => {
       recipients: [engineerId],
       recipientNames: [engineerName],
       recipientObjects: [engineerRecipient],
-      imageUrl: imageUrl || ''
+      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null
     }
 
     // Store in sent_memos for initiator
@@ -6589,8 +6604,6 @@ app.post("/api/rawmat", verifyToken, async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
-
-
 
 // Approve Raw Material Request (approver sends to engineer)
 app.post("/api/rawmat/:memoId/approve", verifyToken, async (req, res) => {

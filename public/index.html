@@ -3789,30 +3789,22 @@
                         <div class="field">
                             <label data-translate="attachImage"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
-                                Image (Optional)</label>
+                                Images (Optional - Multiple)</label>
                             <div class="image-upload-wrapper">
-                                <input type="file" id="memoImageInput" accept="image/*" style="display: none;"
+                                <input type="file" id="memoImageInput" accept="image/*" multiple style="display: none;"
                                     onchange="handleImageUpload(event)">
                                 <button type="button" class="image-upload-btn"
                                     onclick="document.getElementById('memoImageInput').click()"
                                     style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
                                     <span class="material-symbols-outlined">upload_file</span>
                                     <span id="uploadBtnText" data-translate="clickToUpload">Click to upload or drag
-                                        image here</span>
+                                        images here</span>
                                 </button>
-                                <!-- Image Preview -->
+                                <!-- Image Preview Gallery -->
                                 <div id="memoImagePreview" class="image-preview-container"
                                     style="display: none; margin-top: 12px;">
-                                    <div style="position: relative; display: inline-block;">
-                                        <img id="memoImageThumb" src="" alt="Preview"
-                                            style="max-width: 200px; max-height: 200px; border-radius: var(--radius); border: 1px solid var(--border);">
-                                        <button type="button" class="image-remove-btn" onclick="removeImage()"
-                                            style="position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s ease;">
-                                            <span class="material-symbols-outlined"
-                                                style="font-size: 16px;">close</span>
-                                        </button>
-                                    </div>
-                                    <div id="uploadProgress" style="margin-top: 8px; display: none;">
+                                    <div id="memoImageGallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-bottom: 8px;"></div>
+                                    <div id="uploadProgress" style="display: none;">
                                         <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
                                             Uploading...</div>
                                         <div class="progress-bar-wrap show">
@@ -4017,30 +4009,22 @@
                         <div class="field" style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px;">
                             <label data-translate="attachImage"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
-                                Image (Optional)</label>
+                                Images (Optional - Multiple)</label>
                             <div class="image-upload-wrapper">
-                                <input type="file" id="rdProjectImageInput" accept="image/*" style="display: none;"
+                                <input type="file" id="rdProjectImageInput" accept="image/*" multiple style="display: none;"
                                     onchange="handleRDProjectImageUpload(event)">
                                 <button type="button" class="image-upload-btn"
                                     onclick="document.getElementById('rdProjectImageInput').click()"
                                     style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
                                     <span class="material-symbols-outlined">upload_file</span>
                                     <span id="rdProjectUploadBtnText" data-translate="clickToUpload">Click to upload or drag
-                                        image here</span>
+                                        images here</span>
                                 </button>
-                                <!-- Image Preview -->
+                                <!-- Image Preview Gallery -->
                                 <div id="rdProjectImagePreview" class="image-preview-container"
                                     style="display: none; margin-top: 12px;">
-                                    <div style="position: relative; display: inline-block;">
-                                        <img id="rdProjectImageThumb" src="" alt="Preview"
-                                            style="max-width: 200px; max-height: 200px; border-radius: var(--radius); border: 1px solid var(--border);">
-                                        <button type="button" class="image-remove-btn" onclick="removeRDProjectImage()"
-                                            style="position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s ease;">
-                                            <span class="material-symbols-outlined"
-                                                style="font-size: 16px;">close</span>
-                                        </button>
-                                    </div>
-                                    <div id="rdProjectUploadProgress" style="margin-top: 8px; display: none;">
+                                    <div id="rdProjectImageGallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-bottom: 8px;"></div>
+                                    <div id="rdProjectUploadProgress" style="display: none;">
                                         <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
                                             Uploading...</div>
                                         <div class="progress-bar-wrap show">
@@ -4258,30 +4242,24 @@
                         <div class="field" style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px;">
                             <label data-translate="attachImage"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
-                                Image (Optional)</label>
+                                Images (Optional - Multiple)</label>
                             <div class="image-upload-wrapper">
-                                <input type="file" id="rawMatImageInput" accept="image/*" style="display: none;"
+                                <input type="file" id="rawMatImageInput" accept="image/*" multiple style="display: none;"
                                     onchange="handleRawMatImageUpload(event)">
                                 <button type="button" class="image-upload-btn"
                                     onclick="document.getElementById('rawMatImageInput').click()"
                                     style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
                                     <span class="material-symbols-outlined">upload_file</span>
                                     <span id="rawMatUploadBtnText" data-translate="clickToUpload">Click to upload or drag
-                                        image here</span>
+                                        images here</span>
                                 </button>
-                                <!-- Image Preview -->
+                                <!-- Image Preview Gallery -->
                                 <div id="rawMatImagePreview" class="image-preview-container"
                                     style="display: none; margin-top: 12px;">
-                                    <div style="position: relative; display: inline-block;">
-                                        <img id="rawMatImageThumb" src="" alt="Preview"
-                                            style="max-width: 200px; max-height: 200px; border-radius: var(--radius); border: 1px solid var(--border);">
-                                        <button type="button" class="image-remove-btn" onclick="removeRawMatImage()"
-                                            style="position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s ease;">
-                                            <span class="material-symbols-outlined"
-                                                style="font-size: 16px;">close</span>
-                                        </button>
+                                    <div id="rawMatImageGallery"
+                                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; padding: 12px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);">
                                     </div>
-                                    <div id="rawMatUploadProgress" style="margin-top: 8px; display: none;">
+                                    <div id="rawMatUploadProgress" style="margin-top: 12px; display: none;">
                                         <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
                                             Uploading...</div>
                                         <div class="progress-bar-wrap show">
@@ -10519,6 +10497,8 @@
                 item.style.background = 'transparent'
                 item.style.borderColor = 'transparent'
             })
+            // Clear images
+            removeImage()
             document.getElementById('statusSingleSend').classList.remove('show')
             const dropdown = document.getElementById('recipientsDropdown')
             if (dropdown) {
@@ -10615,7 +10595,7 @@
                             content: text,
                             docNumber: currentDocNumber,
                             senderUserId: currentUser?.userId,
-                            imageUrl: memoImageUrl || null
+                            imageUrls: memoImageUrls && memoImageUrls.length > 0 ? memoImageUrls : null
                         }
                         const res = await fetch('/send', {
                             method: 'POST',
@@ -10650,7 +10630,7 @@
                             type: type,
                             content: text,
                             docNumber: currentDocNumber,
-                            imageUrl: memoImageUrl || null
+                            imageUrls: memoImageUrls && memoImageUrls.length > 0 ? memoImageUrls : null
                         }
 
                         const memoRes = await fetch(`/send-system-memo`, {
@@ -11075,7 +11055,7 @@
                     totalCost,
                     moq,
                     breakEvenPoint,
-                    imageUrl: rdProjectImageUrl
+                    imageUrls: rdProjectImageUrls && rdProjectImageUrls.length > 0 ? rdProjectImageUrls : null
                 }
 
                 const response = await fetch('/api/rdproject', {
@@ -11546,7 +11526,7 @@
                     price: getElementValue('rawMatPrice'),
                     moq: getElementValue('rawMatMOQ'),
                     description: getElementValue('rawMatDescription'),
-                    imageUrl: rawMatImageUrl
+                    imageUrls: rawMatImageUrls && rawMatImageUrls.length > 0 ? rawMatImageUrls : null
                     // Approvers are now fetched from admin-configured roles on the server
                 }
                 
@@ -13469,9 +13449,9 @@
                 }
 
                 // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-                const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                // const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
                 // const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-                // const firebaseUrl = 'https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                const firebaseUrl = 'https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
                 try {
                     const res = await fetch(firebaseUrl)
@@ -13508,10 +13488,10 @@
                 // Fetch logs from Firebase
                 // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
-                const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                // const firebaseUrl = 'https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
                 // const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
-                // const firebaseUrl = 'https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                const firebaseUrl = 'https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
 
                 const res = await fetch(firebaseUrl)
@@ -14017,11 +13997,64 @@
                 contentElement.textContent = memo.content || '—'
             }
 
-            // Display image if available
+            // Display images if available (supports both single imageUrl and multiple imageUrls)
             const imageField = document.getElementById('memoDetailImageField')
-            const imageElement = document.getElementById('memoDetailImage')
-            if (memo.imageUrl) {
-                imageElement.src = memo.imageUrl
+            const imagesToDisplay = memo.imageUrls || (memo.imageUrl ? [memo.imageUrl] : [])
+            
+            if (imagesToDisplay && imagesToDisplay.length > 0) {
+                // Find or create image container (don't clear label)
+                let imageContainer = imageField.querySelector('.memo-image-container')
+                if (!imageContainer) {
+                    imageContainer = document.createElement('div')
+                    imageContainer.className = 'memo-image-container'
+                    imageContainer.style.cssText = 'margin-top: 8px;'
+                    imageField.appendChild(imageContainer)
+                }
+                
+                // Clear previous images only
+                imageContainer.innerHTML = ''
+                
+                if (imagesToDisplay.length > 1) {
+                    // Multiple images - create gallery
+                    const galleryDiv = document.createElement('div')
+                    galleryDiv.style.cssText = 'display: flex; flex-wrap: wrap; gap: 12px;'
+                    
+                    imagesToDisplay.forEach((url, idx) => {
+                        const imgContainer = document.createElement('div')
+                        imgContainer.style.cssText = 'position: relative; display: inline-block;'
+                        
+                        const img = document.createElement('img')
+                        img.src = url
+                        img.alt = `Attachment ${idx + 1}`
+                        img.style.cssText = 'max-width: 150px; max-height: 150px; display: block; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer; object-fit: cover; transition: transform 0.2s ease;'
+                        img.onclick = (e) => {
+                            e.stopPropagation()
+                            openImageModal(url)
+                        }
+                        img.onmouseover = () => img.style.transform = 'scale(1.05)'
+                        img.onmouseout = () => img.style.transform = 'scale(1)'
+                        
+                        imgContainer.appendChild(img)
+                        galleryDiv.appendChild(imgContainer)
+                    })
+                    
+                    imageContainer.appendChild(galleryDiv)
+                } else {
+                    // Single image (supports both old imageUrl and new imageUrls formats)
+                    const img = document.createElement('img')
+                    img.id = 'memoDetailImage'
+                    img.src = imagesToDisplay[0]
+                    img.alt = 'Memo Attachment'
+                    img.style.cssText = 'max-width: 100%; max-height: 250px; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer;'
+                    img.onclick = (e) => {
+                        e.stopPropagation()
+                        openImageModal(imagesToDisplay[0])
+                    }
+                    img.onerror = handleMemoImageError
+                    
+                    imageContainer.appendChild(img)
+                }
+                
                 imageField.style.display = 'block'
             } else {
                 imageField.style.display = 'none'
@@ -14403,10 +14436,8 @@
                 console.error('Error in openMemoDetail:', err)
             }
         }
-/*
 
-แก้ไขบัค memo id = memo_1781139612718_3yao8moi8,memo_1781139682549_49bfok160
-ไม่แสดงผล feedback ใน modal แก้ไขที*/
+
         // Check if current user is the designated R&D project approver
         async function checkIfUserIsRDProjectApprover() {
             try {
@@ -18610,88 +18641,154 @@ function printMemoDetail() {
             folder: "MEMO"
         };
 
-        let memoImageUrl = null;
-        let rdProjectImageUrl = null;
-        let rawMatImageUrl = null;
+        let memoImageUrls = [];
+        let rdProjectImageUrls = [];
+        let rawMatImageUrls = [];
 
-        // Handle Image Upload
+        // Handle Image Upload (Multiple Files Support)
         async function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
 
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                showStatus('statusSingleSend', 'Please select a valid image file', 'error');
-                return;
+            // Validate all files first
+            const filesToUpload = [];
+            for (let file of files) {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showStatus('statusSingleSend', `"${file.name}" is not a valid image file`, 'error');
+                    continue;
+                }
+
+                // Validate file size (max 5MB per file)
+                if (file.size > 5 * 1024 * 1024) {
+                    showStatus('statusSingleSend', `"${file.name}" exceeds 5MB limit`, 'error');
+                    continue;
+                }
+
+                filesToUpload.push(file);
             }
 
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                showStatus('statusSingleSend', 'Image size must be less than 5MB', 'error');
-                return;
-            }
+            if (filesToUpload.length === 0) return;
 
             // Show progress
             document.getElementById('uploadProgress').style.display = 'block';
             document.getElementById('uploadProgressBar').style.width = '0%';
 
+            let uploadedCount = 0;
+            const totalFiles = filesToUpload.length;
+
             try {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
-                formData.append('folder', CLOUDINARY_CONFIG.folder);
-                formData.append('resource_type', 'auto');
+                for (const file of filesToUpload) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+                    formData.append('folder', CLOUDINARY_CONFIG.folder);
+                    formData.append('resource_type', 'auto');
 
-                const xhr = new XMLHttpRequest();
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
 
-                xhr.upload.addEventListener('progress', (e) => {
-                    if (e.lengthComputable) {
-                        const percentComplete = (e.loaded / e.total) * 100;
-                        document.getElementById('uploadProgressBar').style.width = percentComplete + '%';
-                    }
-                });
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                                const fileProgress = (e.loaded / e.total) * 100;
+                                const totalProgress = ((uploadedCount + fileProgress / 100) / totalFiles) * 100;
+                                document.getElementById('uploadProgressBar').style.width = totalProgress + '%';
+                            }
+                        });
 
-                xhr.addEventListener('load', () => {
-                    if (xhr.status === 200) {
-                        const response = JSON.parse(xhr.responseText);
-                        memoImageUrl = response.secure_url;
+                        xhr.addEventListener('load', () => {
+                            if (xhr.status === 200) {
+                                const response = JSON.parse(xhr.responseText);
+                                memoImageUrls.push(response.secure_url);
+                                uploadedCount++;
+                                
+                                // Update progress bar
+                                const totalProgress = (uploadedCount / totalFiles) * 100;
+                                document.getElementById('uploadProgressBar').style.width = totalProgress + '%';
+                                
+                                updateMemoImageGallery();
+                                resolve();
+                            } else {
+                                reject(new Error(`Upload failed for ${file.name}`));
+                            }
+                        });
 
-                        // Show preview
-                        const previewContainer = document.getElementById('memoImagePreview');
-                        const previewImage = document.getElementById('memoImageThumb');
-                        previewImage.src = memoImageUrl;
-                        previewContainer.style.display = 'block';
+                        xhr.addEventListener('error', () => {
+                            reject(new Error(`Upload error for ${file.name}`));
+                        });
 
-                        // Hide progress
-                        setTimeout(() => {
-                            document.getElementById('uploadProgress').style.display = 'none';
-                            document.getElementById('uploadProgressBar').style.width = '0%';
-                        }, 500);
+                        xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
+                        xhr.send(formData);
+                    });
+                }
 
-                        showStatus('statusSingleSend', 'Image uploaded successfully', 'success');
-                    } else {
-                        showStatus('statusSingleSend', 'Image upload failed', 'error');
-                    }
-                });
-
-                xhr.addEventListener('error', () => {
-                    showStatus('statusSingleSend', 'Image upload error', 'error');
+                // Hide progress
+                setTimeout(() => {
                     document.getElementById('uploadProgress').style.display = 'none';
-                });
+                    document.getElementById('uploadProgressBar').style.width = '0%';
+                }, 500);
 
-                xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
-                xhr.send(formData);
-
+                showStatus('statusSingleSend', `${uploadedCount} image(s) uploaded successfully`, 'success');
             } catch (error) {
                 console.error('Upload error:', error);
-                showStatus('statusSingleSend', 'Error uploading image', 'error');
+                showStatus('statusSingleSend', 'Error uploading images: ' + error.message, 'error');
                 document.getElementById('uploadProgress').style.display = 'none';
             }
         }
 
-        // Remove Image
+        // Update Memo Image Gallery Preview
+        function updateMemoImageGallery() {
+            const gallery = document.getElementById('memoImageGallery');
+            const previewContainer = document.getElementById('memoImagePreview');
+
+            if (memoImageUrls.length === 0) {
+                previewContainer.style.display = 'none';
+                return;
+            }
+
+            gallery.innerHTML = '';
+            memoImageUrls.forEach((url, index) => {
+                const thumbDiv = document.createElement('div');
+                thumbDiv.style.cssText = 'position: relative; width: 120px; height: 120px;';
+                
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer;';
+                img.onclick = () => openImageModal(url);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'image-remove-btn';
+                removeBtn.style.cssText = 'position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s ease;';
+                removeBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 14px;">close</span>';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeImageFromGallery(index);
+                };
+                
+                thumbDiv.appendChild(img);
+                thumbDiv.appendChild(removeBtn);
+                gallery.appendChild(thumbDiv);
+            });
+
+            previewContainer.style.display = 'block';
+        }
+
+        // Remove Image from Gallery
+        function removeImageFromGallery(index) {
+            memoImageUrls.splice(index, 1);
+            updateMemoImageGallery();
+            
+            // Reset file input
+            const inputElement = document.getElementById('memoImageInput');
+            if (inputElement) inputElement.value = '';
+            
+            showStatus('statusSingleSend', 'Image removed', 'info');
+        }
+
+        // Remove All Images (kept for backwards compatibility)
         function removeImage() {
-            memoImageUrl = null;
+            memoImageUrls = [];
             const inputElement = document.getElementById('memoImageInput');
             if (inputElement) inputElement.value = '';
             const previewContainer = document.getElementById('memoImagePreview');
@@ -18702,78 +18799,142 @@ function printMemoDetail() {
             if (progressBar) progressBar.style.width = '0%';
         }
 
-        // Handle R&D Project Image Upload
+        // Handle R&D Project Image Upload (Multiple Files Support)
         async function handleRDProjectImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
 
-            if (!file.type.startsWith('image/')) {
-                showStatus('statusRDProject', 'Please select a valid image file', 'error');
-                return;
+            const filesToUpload = [];
+            for (let file of files) {
+                if (!file.type.startsWith('image/')) {
+                    showStatus('statusRDProject', `"${file.name}" is not a valid image file`, 'error');
+                    continue;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    showStatus('statusRDProject', `"${file.name}" exceeds 5MB limit`, 'error');
+                    continue;
+                }
+
+                filesToUpload.push(file);
             }
 
-            if (file.size > 5 * 1024 * 1024) {
-                showStatus('statusRDProject', 'Image size must be less than 5MB', 'error');
-                return;
-            }
+            if (filesToUpload.length === 0) return;
 
             document.getElementById('rdProjectUploadProgress').style.display = 'block';
             document.getElementById('rdProjectUploadProgressBar').style.width = '0%';
 
+            let uploadedCount = 0;
+            const totalFiles = filesToUpload.length;
+
             try {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
-                formData.append('folder', CLOUDINARY_CONFIG.folder);
-                formData.append('resource_type', 'auto');
+                for (const file of filesToUpload) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+                    formData.append('folder', CLOUDINARY_CONFIG.folder);
+                    formData.append('resource_type', 'auto');
 
-                const xhr = new XMLHttpRequest();
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
 
-                xhr.upload.addEventListener('progress', (e) => {
-                    if (e.lengthComputable) {
-                        const percentComplete = (e.loaded / e.total) * 100;
-                        document.getElementById('rdProjectUploadProgressBar').style.width = percentComplete + '%';
-                    }
-                });
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                                const fileProgress = (e.loaded / e.total) * 100;
+                                const totalProgress = ((uploadedCount + fileProgress / 100) / totalFiles) * 100;
+                                document.getElementById('rdProjectUploadProgressBar').style.width = totalProgress + '%';
+                            }
+                        });
 
-                xhr.addEventListener('load', () => {
-                    if (xhr.status === 200) {
-                        const response = JSON.parse(xhr.responseText);
-                        rdProjectImageUrl = response.secure_url;
+                        xhr.addEventListener('load', () => {
+                            if (xhr.status === 200) {
+                                const response = JSON.parse(xhr.responseText);
+                                rdProjectImageUrls.push(response.secure_url);
+                                uploadedCount++;
+                                
+                                const totalProgress = (uploadedCount / totalFiles) * 100;
+                                document.getElementById('rdProjectUploadProgressBar').style.width = totalProgress + '%';
+                                
+                                updateRDProjectImageGallery();
+                                resolve();
+                            } else {
+                                reject(new Error(`Upload failed for ${file.name}`));
+                            }
+                        });
 
-                        const previewContainer = document.getElementById('rdProjectImagePreview');
-                        const previewImage = document.getElementById('rdProjectImageThumb');
-                        previewImage.src = rdProjectImageUrl;
-                        previewContainer.style.display = 'block';
+                        xhr.addEventListener('error', () => {
+                            reject(new Error(`Upload error for ${file.name}`));
+                        });
 
-                        setTimeout(() => {
-                            document.getElementById('rdProjectUploadProgress').style.display = 'none';
-                            document.getElementById('rdProjectUploadProgressBar').style.width = '0%';
-                        }, 500);
+                        xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
+                        xhr.send(formData);
+                    });
+                }
 
-                        showStatus('statusRDProject', 'Image uploaded successfully', 'success');
-                    } else {
-                        showStatus('statusRDProject', 'Image upload failed', 'error');
-                    }
-                });
-
-                xhr.addEventListener('error', () => {
-                    showStatus('statusRDProject', 'Image upload error', 'error');
+                setTimeout(() => {
                     document.getElementById('rdProjectUploadProgress').style.display = 'none';
-                });
+                    document.getElementById('rdProjectUploadProgressBar').style.width = '0%';
+                }, 500);
 
-                xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
-                xhr.send(formData);
-
+                showStatus('statusRDProject', `${uploadedCount} image(s) uploaded successfully`, 'success');
             } catch (error) {
                 console.error('Upload error:', error);
-                showStatus('statusRDProject', 'Error uploading image', 'error');
+                showStatus('statusRDProject', 'Error uploading images: ' + error.message, 'error');
                 document.getElementById('rdProjectUploadProgress').style.display = 'none';
             }
         }
 
+        // Update R&D Project Image Gallery Preview
+        function updateRDProjectImageGallery() {
+            const gallery = document.getElementById('rdProjectImageGallery');
+            const previewContainer = document.getElementById('rdProjectImagePreview');
+
+            if (rdProjectImageUrls.length === 0) {
+                previewContainer.style.display = 'none';
+                return;
+            }
+
+            gallery.innerHTML = '';
+            rdProjectImageUrls.forEach((url, index) => {
+                const thumbDiv = document.createElement('div');
+                thumbDiv.style.cssText = 'position: relative; width: 120px; height: 120px;';
+                
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer;';
+                img.onclick = () => openImageModal(url);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'image-remove-btn';
+                removeBtn.style.cssText = 'position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s ease;';
+                removeBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 14px;">close</span>';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeRDProjectImageFromGallery(index);
+                };
+                
+                thumbDiv.appendChild(img);
+                thumbDiv.appendChild(removeBtn);
+                gallery.appendChild(thumbDiv);
+            });
+
+            previewContainer.style.display = 'block';
+        }
+
+        // Remove R&D Project Image from Gallery
+        function removeRDProjectImageFromGallery(index) {
+            rdProjectImageUrls.splice(index, 1);
+            updateRDProjectImageGallery();
+            
+            const inputElement = document.getElementById('rdProjectImageInput');
+            if (inputElement) inputElement.value = '';
+            
+            showStatus('statusRDProject', 'Image removed', 'info');
+        }
+
         function removeRDProjectImage() {
-            rdProjectImageUrl = null;
+            rdProjectImageUrls = [];
             const inputElement = document.getElementById('rdProjectImageInput');
             if (inputElement) inputElement.value = '';
             const previewContainer = document.getElementById('rdProjectImagePreview');
@@ -18784,78 +18945,142 @@ function printMemoDetail() {
             if (progressBar) progressBar.style.width = '0%';
         }
 
-        // Handle Raw Material Image Upload
+        // Handle Raw Material Image Upload (Multiple Files Support)
         async function handleRawMatImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
 
-            if (!file.type.startsWith('image/')) {
-                showStatus('statusRawMat', 'Please select a valid image file', 'error');
-                return;
+            const filesToUpload = [];
+            for (let file of files) {
+                if (!file.type.startsWith('image/')) {
+                    showStatus('statusRawMat', `"${file.name}" is not a valid image file`, 'error');
+                    continue;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    showStatus('statusRawMat', `"${file.name}" exceeds 5MB limit`, 'error');
+                    continue;
+                }
+
+                filesToUpload.push(file);
             }
 
-            if (file.size > 5 * 1024 * 1024) {
-                showStatus('statusRawMat', 'Image size must be less than 5MB', 'error');
-                return;
-            }
+            if (filesToUpload.length === 0) return;
 
             document.getElementById('rawMatUploadProgress').style.display = 'block';
             document.getElementById('rawMatUploadProgressBar').style.width = '0%';
 
+            let uploadedCount = 0;
+            const totalFiles = filesToUpload.length;
+
             try {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
-                formData.append('folder', CLOUDINARY_CONFIG.folder);
-                formData.append('resource_type', 'auto');
+                for (const file of filesToUpload) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+                    formData.append('folder', CLOUDINARY_CONFIG.folder);
+                    formData.append('resource_type', 'auto');
 
-                const xhr = new XMLHttpRequest();
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
 
-                xhr.upload.addEventListener('progress', (e) => {
-                    if (e.lengthComputable) {
-                        const percentComplete = (e.loaded / e.total) * 100;
-                        document.getElementById('rawMatUploadProgressBar').style.width = percentComplete + '%';
-                    }
-                });
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                                const fileProgress = (e.loaded / e.total) * 100;
+                                const totalProgress = ((uploadedCount + fileProgress / 100) / totalFiles) * 100;
+                                document.getElementById('rawMatUploadProgressBar').style.width = totalProgress + '%';
+                            }
+                        });
 
-                xhr.addEventListener('load', () => {
-                    if (xhr.status === 200) {
-                        const response = JSON.parse(xhr.responseText);
-                        rawMatImageUrl = response.secure_url;
+                        xhr.addEventListener('load', () => {
+                            if (xhr.status === 200) {
+                                const response = JSON.parse(xhr.responseText);
+                                rawMatImageUrls.push(response.secure_url);
+                                uploadedCount++;
+                                
+                                const totalProgress = (uploadedCount / totalFiles) * 100;
+                                document.getElementById('rawMatUploadProgressBar').style.width = totalProgress + '%';
+                                
+                                updateRawMatImageGallery();
+                                resolve();
+                            } else {
+                                reject(new Error(`Upload failed for ${file.name}`));
+                            }
+                        });
 
-                        const previewContainer = document.getElementById('rawMatImagePreview');
-                        const previewImage = document.getElementById('rawMatImageThumb');
-                        previewImage.src = rawMatImageUrl;
-                        previewContainer.style.display = 'block';
+                        xhr.addEventListener('error', () => {
+                            reject(new Error(`Upload error for ${file.name}`));
+                        });
 
-                        setTimeout(() => {
-                            document.getElementById('rawMatUploadProgress').style.display = 'none';
-                            document.getElementById('rawMatUploadProgressBar').style.width = '0%';
-                        }, 500);
+                        xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
+                        xhr.send(formData);
+                    });
+                }
 
-                        showStatus('statusRawMat', 'Image uploaded successfully', 'success');
-                    } else {
-                        showStatus('statusRawMat', 'Image upload failed', 'error');
-                    }
-                });
-
-                xhr.addEventListener('error', () => {
-                    showStatus('statusRawMat', 'Image upload error', 'error');
+                setTimeout(() => {
                     document.getElementById('rawMatUploadProgress').style.display = 'none';
-                });
+                    document.getElementById('rawMatUploadProgressBar').style.width = '0%';
+                }, 500);
 
-                xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
-                xhr.send(formData);
-
+                showStatus('statusRawMat', `${uploadedCount} image(s) uploaded successfully`, 'success');
             } catch (error) {
                 console.error('Upload error:', error);
-                showStatus('statusRawMat', 'Error uploading image', 'error');
+                showStatus('statusRawMat', 'Error uploading images: ' + error.message, 'error');
                 document.getElementById('rawMatUploadProgress').style.display = 'none';
             }
         }
 
+        // Update Raw Material Image Gallery Preview
+        function updateRawMatImageGallery() {
+            const gallery = document.getElementById('rawMatImageGallery');
+            const previewContainer = document.getElementById('rawMatImagePreview');
+
+            if (rawMatImageUrls.length === 0) {
+                previewContainer.style.display = 'none';
+                return;
+            }
+
+            gallery.innerHTML = '';
+            rawMatImageUrls.forEach((url, index) => {
+                const thumbDiv = document.createElement('div');
+                thumbDiv.style.cssText = 'position: relative; width: 120px; height: 120px;';
+                
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer;';
+                img.onclick = () => openImageModal(url);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'image-remove-btn';
+                removeBtn.style.cssText = 'position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s ease;';
+                removeBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 14px;">close</span>';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeRawMatImageFromGallery(index);
+                };
+                
+                thumbDiv.appendChild(img);
+                thumbDiv.appendChild(removeBtn);
+                gallery.appendChild(thumbDiv);
+            });
+
+            previewContainer.style.display = 'block';
+        }
+
+        // Remove Raw Material Image from Gallery
+        function removeRawMatImageFromGallery(index) {
+            rawMatImageUrls.splice(index, 1);
+            updateRawMatImageGallery();
+            
+            const inputElement = document.getElementById('rawMatImageInput');
+            if (inputElement) inputElement.value = '';
+            
+            showStatus('statusRawMat', 'Image removed', 'info');
+        }
+
         function removeRawMatImage() {
-            rawMatImageUrl = null;
+            rawMatImageUrls = [];
             const inputElement = document.getElementById('rawMatImageInput');
             if (inputElement) inputElement.value = '';
             const previewContainer = document.getElementById('rawMatImagePreview');
@@ -18894,18 +19119,7 @@ function printMemoDetail() {
             }
         });
 
-        // Wrap original send() function to include image URL
-        const originalSend = typeof send === 'function' ? send : null;
-        if (originalSend) {
-            send = function () {
-                if (memoImageUrl) {
-                    console.log('Memo includes image:', memoImageUrl);
-                    // The memoImageUrl is available in the global scope
-                    // You can send it to your backend along with the memo
-                }
-                originalSend();
-            };
-        }
+        // Note: send() function already handles memoImageUrls correctly
 
         // Wrap original clearCompose() function to reset images
         const originalClearCompose = typeof clearCompose === 'function' ? clearCompose : null;
