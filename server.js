@@ -44,31 +44,31 @@ function addLog(level, messageKey, data = null) {
   })
 }
 
-//  const config = {
-//    channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
-//    channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
-//  }
+ const config = {
+   channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
+   channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
+ }
 
 
 
 //Line Official Account Test
-const config = {
-  channelAccessToken: "26QcmPpK39AJ60Mg9tnk9sorWmm9DhOv70KjkSradTe3UGenhIlhUrLii4kWukxF0BWOA/3FNhlZUQ25rMiS+cdsz33h/esKxpyXEEJx3i9Xv755YQABvc61s63yenpEmyvMC9ZUwFDTcAz/2ERAYQdB04t89/1O/w1cDnyilFU=",
-  channelSecret: "3e94265fab13b7b71fb338a355d4fc9d"
-}
+// const config = {
+//   channelAccessToken: "26QcmPpK39AJ60Mg9tnk9sorWmm9DhOv70KjkSradTe3UGenhIlhUrLii4kWukxF0BWOA/3FNhlZUQ25rMiS+cdsz33h/esKxpyXEEJx3i9Xv755YQABvc61s63yenpEmyvMC9ZUwFDTcAz/2ERAYQdB04t89/1O/w1cDnyilFU=",
+//   channelSecret: "3e94265fab13b7b71fb338a355d4fc9d"
+// }
 
 const client = new line.Client(config)
 
 // Firebase Realtime Database (ใช้ REST API แทน Admin SDK)
 //const FIREBASE_PROJECT_ID = "line-6191d"
-// const FIREBASE_PROJECT_ID = "test2-a3a49"
-const FIREBASE_PROJECT_ID = "leave-10269"
+const FIREBASE_PROJECT_ID = "test2-a3a49"
+// const FIREBASE_PROJECT_ID = "leave-10269"
 // const FIREBASE_PROJECT_ID = "keyproject-84461"
 
 // const FIREBASE_DB_URL = "https://import-acd62-default-rtdb.asia-southeast1.firebasedatabase.app"
 // const FIREBASE_DB_URL = "https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app"
-// const FIREBASE_DB_URL = "https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app"
-const FIREBASE_DB_URL = "https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app"
+const FIREBASE_DB_URL = "https://test2-a3a49-default-rtdb.asia-southeast1.firebasedatabase.app"
+// const FIREBASE_DB_URL = "https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app"
 // const FIREBASE_DB_URL = "https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app"
 
 
