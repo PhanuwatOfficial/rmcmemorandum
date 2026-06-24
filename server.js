@@ -1991,10 +1991,13 @@ app.post("/send", async (req, res) => {
     return res.status(400).json({ error: 'No recipients specified' })
   }
 
-  const { title, type, content, senderUserId, docNumber, imageUrl, imageUrls } = req.body
+  const { title, type, content, senderUserId, docNumber, imageUrl, imageUrls, fileUrl, fileUrls } = req.body
 
   // Support both old format (imageUrl) and new format (imageUrls)
   const finalImageUrls = imageUrls || (imageUrl ? [imageUrl] : []);
+  
+  // Support both old format (fileUrl) and new format (fileUrls)
+  const finalFileUrls = fileUrls || (fileUrl ? [fileUrl] : []);
 
   try {
     // Resolve any DocNumber conflicts before proceeding
@@ -2066,6 +2069,7 @@ app.post("/send", async (req, res) => {
       content,
       docNumber: resolvedDocNumber || '',
       imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null,
+      fileUrls: finalFileUrls && finalFileUrls.length > 0 ? finalFileUrls : null,
       // Multi-recipient support
       recipientIds: recipientIds,  // All system user IDs
       recipientNames: recipientNames,  // All recipient names
@@ -2335,6 +2339,8 @@ app.post("/send", async (req, res) => {
         }
       }
 
+      // Log memo creation (pending approval)
+      addLog('info', 'Send memo', { title, type, recipientUserId: actualRecipientUserId, senderName, approverCount: memoApprovers.length })
       return res.json({ status: "Memo created - pending approval", memoId, approverCount: memoApprovers.length })
     }
 
@@ -4650,7 +4656,8 @@ app.post("/memo/:memoId/cc", verifyToken, async (req, res) => {
         approvedByName: memo.approvedByName || '',
         approvedAt: memo.approvedAt || new Date().toISOString(),
         imageUrl: memo.imageUrl || '',
-        imageUrls: memo.imageUrls || (memo.imageUrl ? [memo.imageUrl] : null)
+        imageUrls: memo.imageUrls || (memo.imageUrl ? [memo.imageUrl] : null),
+        fileUrls: memo.fileUrls || null
       }
 
       // Save CC memo to receiver's received_memos
@@ -4913,11 +4920,14 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'No recipients specified' })
     }
 
-    const { title, type, content, docNumber, imageUrl, imageUrls } = req.body
+    const { title, type, content, docNumber, imageUrl, imageUrls, fileUrl, fileUrls } = req.body
     const senderUserId = req.userId
 
     // Support both old format (imageUrl) and new format (imageUrls)
     const finalImageUrls = imageUrls || (imageUrl ? [imageUrl] : [])
+    
+    // Support both old format (fileUrl) and new format (fileUrls)
+    const finalFileUrls = fileUrls || (fileUrl ? [fileUrl] : [])
 
     if (!title || !type || !content) {
       return res.status(400).json({ error: 'title, type, and content required' })
@@ -4981,6 +4991,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       content,
       docNumber: resolvedDocNumber || '',
       imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null,
+      fileUrls: finalFileUrls && finalFileUrls.length > 0 ? finalFileUrls : null,
       senderUserId,
       senderName: `${sender.name} ${sender.surname}`,
       senderUsername: sender.username,
@@ -5241,7 +5252,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
       }
 
       // Log pending approval memo
-      addLog('info', 'Send memo (pending approval)', { title, type, recipientIds, senderName, approverCount: memoApprovers.length })
+      addLog('info', 'Send memo', { title, type, recipientIds, senderName, approverCount: memoApprovers.length })
       return res.json({ status: "Memo created - pending approval", memoId, approverCount: memoApprovers.length })
     }
 
@@ -5917,10 +5928,13 @@ app.post("/api/rdproject", verifyToken, async (req, res) => {
 
     // Extract R&D project form data from request
     const { projectNumber, projectName, division, purpose, specification, conditions, shopName,
-      productSample, targetCustomer, customerAddress, monthlyQuantity, salesPrice, revenue, terms, imageUrl, imageUrls } = req.body
+      productSample, targetCustomer, customerAddress, monthlyQuantity, salesPrice, revenue, terms, imageUrl, imageUrls, fileUrl, fileUrls } = req.body
     
     // Support both old format (imageUrl) and new format (imageUrls)
     const finalImageUrls = imageUrls || (imageUrl ? [imageUrl] : [])
+    
+    // Support both old format (fileUrl) and new format (fileUrls)
+    const finalFileUrls = fileUrls || (fileUrl ? [fileUrl] : [])
 
     if (!projectName) {
       return res.status(400).json({ error: "Project name is required" })
@@ -5980,7 +5994,8 @@ app.post("/api/rdproject", verifyToken, async (req, res) => {
       docNumber: projectNumber || '',
       isRDProject: true,
       approvalType: 'marketing',
-      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null
+      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null,
+      fileUrls: finalFileUrls && finalFileUrls.length > 0 ? finalFileUrls : null
     }
 
     await firebase_set(`sent_memos/${initiatorUserId}/${memoId}`, sentMemoData)
@@ -6018,7 +6033,8 @@ app.post("/api/rdproject", verifyToken, async (req, res) => {
       docNumber: projectNumber || '',
       isRDProject: true,
       approvalType: 'marketing',
-      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null
+      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null,
+      fileUrls: finalFileUrls && finalFileUrls.length > 0 ? finalFileUrls : null
     }
 
     await firebase_set(`received_memos/${approverUserId}/${memoId}`, receivedMemoData)
@@ -6180,10 +6196,13 @@ app.post("/api/rawmat", verifyToken, async (req, res) => {
 
     // Extract data from request (approvers are now from admin config, not request body)
     const { documentNo, projectName, purpose, supplierName, supplierContact,
-      materialName, quantity, lot, price, moq, description, imageUrl, imageUrls } = req.body
+      materialName, quantity, lot, price, moq, description, imageUrl, imageUrls, fileUrl, fileUrls } = req.body
     
     // Support both old format (imageUrl) and new format (imageUrls)
     const finalImageUrls = imageUrls || (imageUrl ? [imageUrl] : [])
+    
+    // Support both old format (fileUrl) and new format (fileUrls)
+    const finalFileUrls = fileUrls || (fileUrl ? [fileUrl] : [])
 
     if (!projectName || !supplierName || !materialName) {
       return res.status(400).json({ error: "Project name, supplier name, and material name are required" })
@@ -6297,7 +6316,8 @@ app.post("/api/rawmat", verifyToken, async (req, res) => {
       recipients: [engineerId],
       recipientNames: [engineerName],
       recipientObjects: [engineerRecipient],
-      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null
+      imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null,
+      fileUrls: finalFileUrls && finalFileUrls.length > 0 ? finalFileUrls : null
     }
 
     // Store in sent_memos for initiator

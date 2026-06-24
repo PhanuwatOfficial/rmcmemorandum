@@ -532,7 +532,7 @@
             resize: vertical;
         }
 
-        .field input:hover,
+        /* .field input:hover,
         .field textarea:hover,
         .field select:hover {
             border-color: var(--accent-2);
@@ -545,7 +545,7 @@
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(26, 39, 64, 0.08), 0 0 0 1px rgba(200, 169, 110, 0.2);
             background: #fff;
-        }
+        } */
 
         .field textarea {
             min-height: 90px;
@@ -2905,7 +2905,7 @@
                 <div class="search-wrap">
                     <span class="material-symbols-outlined">search</span>
                     <input id="topbarSearchInput" class="search-input" type="text" placeholder="Search..."
-                        data-translate="search" disabled>
+                        data-translate="search">
                 </div>
             </div>
             <div class="topbar-right">
@@ -3785,30 +3785,62 @@
                                 data-translate="typeContent"></textarea>
                         </div>
 
-                        <!-- Image Upload Field -->
-                        <div class="field">
-                            <label data-translate="attachImage"><span class="material-symbols-outlined"
-                                    style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
-                                Images (Optional - Multiple)</label>
-                            <div class="image-upload-wrapper">
-                                <input type="file" id="memoImageInput" accept="image/*" multiple style="display: none;"
-                                    onchange="handleImageUpload(event)">
-                                <button type="button" class="image-upload-btn"
-                                    onclick="document.getElementById('memoImageInput').click()"
-                                    style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
-                                    <span class="material-symbols-outlined">upload_file</span>
-                                    <span id="uploadBtnText" data-translate="clickToUpload">Click to upload or drag
-                                        images here</span>
-                                </button>
-                                <!-- Image Preview Gallery -->
-                                <div id="memoImagePreview" class="image-preview-container"
-                                    style="display: none; margin-top: 12px;">
-                                    <div id="memoImageGallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-bottom: 8px;"></div>
-                                    <div id="uploadProgress" style="display: none;">
-                                        <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
-                                            Uploading...</div>
-                                        <div class="progress-bar-wrap show">
-                                            <div class="progress-bar" id="uploadProgressBar" style="width: 0%;"></div>
+                        <!-- Image & File Upload Fields (Side by Side) -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;">
+                            <!-- Image Upload Field -->
+                            <div class="field">
+                                <label data-translate="attachImage"><span class="material-symbols-outlined"
+                                        style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
+                                    Images (Optional - Multiple)</label>
+                                <div class="image-upload-wrapper">
+                                    <input type="file" id="memoImageInput" accept="image/*" multiple style="display: none;"
+                                        onchange="handleImageUpload(event)">
+                                    <button type="button" class="image-upload-btn"
+                                        onclick="document.getElementById('memoImageInput').click()"
+                                        style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                                        <span class="material-symbols-outlined">upload_file</span>
+                                        <span id="uploadBtnText" data-translate="clickToUpload">Click to upload or drag
+                                            images here</span>
+                                    </button>
+                                    <!-- Image Preview Gallery -->
+                                    <div id="memoImagePreview" class="image-preview-container"
+                                        style="display: none; margin-top: 12px;">
+                                        <div id="memoImageGallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-bottom: 8px;"></div>
+                                        <div id="uploadProgress" style="display: none;">
+                                            <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                                Uploading...</div>
+                                            <div class="progress-bar-wrap show">
+                                                <div class="progress-bar" id="uploadProgressBar" style="width: 0%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- File Upload Field -->
+                            <div class="field">
+                                <label data-translate="attachFiles"><span class="material-symbols-outlined"
+                                        style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">attach_file</span>Attach
+                                    Files (Optional - Multiple)</label>
+                                <div class="file-upload-wrapper">
+                                    <input type="file" id="memoFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx" multiple style="display: none;"
+                                        onchange="handleMemoFileUpload(event)">
+                                    <button type="button" class="image-upload-btn"
+                                        onclick="document.getElementById('memoFileInput').click()"
+                                        style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                                        <span class="material-symbols-outlined">attach_file</span>
+                                        <span id="memoUploadFileBtnText" data-translate="clickToUploadFiles">Click to upload or drag files here</span>
+                                    </button>
+                                    <!-- File Preview List -->
+                                    <div id="memoFilePreview" class="file-preview-container"
+                                        style="display: none; margin-top: 12px;">
+                                        <div id="memoFileList" style="display: grid; gap: 8px;"></div>
+                                        <div id="memoFileUploadProgress" style="display: none;">
+                                            <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                                Uploading...</div>
+                                            <div class="progress-bar-wrap show">
+                                                <div class="progress-bar" id="memoFileUploadProgressBar" style="width: 0%;"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -4005,30 +4037,62 @@
                                 data-translate="enterTerms" placeholder="Enter purchase/sale terms..."></textarea>
                         </div>
 
-                        <!-- Image Upload Field -->
-                        <div class="field" style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px;">
-                            <label data-translate="attachImage"><span class="material-symbols-outlined"
-                                    style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
-                                Images (Optional - Multiple)</label>
-                            <div class="image-upload-wrapper">
-                                <input type="file" id="rdProjectImageInput" accept="image/*" multiple style="display: none;"
-                                    onchange="handleRDProjectImageUpload(event)">
-                                <button type="button" class="image-upload-btn"
-                                    onclick="document.getElementById('rdProjectImageInput').click()"
-                                    style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
-                                    <span class="material-symbols-outlined">upload_file</span>
-                                    <span id="rdProjectUploadBtnText" data-translate="clickToUpload">Click to upload or drag
-                                        images here</span>
-                                </button>
-                                <!-- Image Preview Gallery -->
-                                <div id="rdProjectImagePreview" class="image-preview-container"
-                                    style="display: none; margin-top: 12px;">
-                                    <div id="rdProjectImageGallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-bottom: 8px;"></div>
-                                    <div id="rdProjectUploadProgress" style="display: none;">
-                                        <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
-                                            Uploading...</div>
-                                        <div class="progress-bar-wrap show">
-                                            <div class="progress-bar" id="rdProjectUploadProgressBar" style="width: 0%;"></div>
+                        <!-- Image & File Upload Fields (Side by Side) -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px;">
+                            <!-- Image Upload Field -->
+                            <div class="field">
+                                <label data-translate="attachImage"><span class="material-symbols-outlined"
+                                        style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
+                                    Images (Optional - Multiple)</label>
+                                <div class="image-upload-wrapper">
+                                    <input type="file" id="rdProjectImageInput" accept="image/*" multiple style="display: none;"
+                                        onchange="handleRDProjectImageUpload(event)">
+                                    <button type="button" class="image-upload-btn"
+                                        onclick="document.getElementById('rdProjectImageInput').click()"
+                                        style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                                        <span class="material-symbols-outlined">upload_file</span>
+                                        <span id="rdProjectUploadBtnText" data-translate="clickToUpload">Click to upload or drag
+                                            images here</span>
+                                    </button>
+                                    <!-- Image Preview Gallery -->
+                                    <div id="rdProjectImagePreview" class="image-preview-container"
+                                        style="display: none; margin-top: 12px;">
+                                        <div id="rdProjectImageGallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-bottom: 8px;"></div>
+                                        <div id="rdProjectUploadProgress" style="display: none;">
+                                            <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                                Uploading...</div>
+                                            <div class="progress-bar-wrap show">
+                                                <div class="progress-bar" id="rdProjectUploadProgressBar" style="width: 0%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- File Upload Field -->
+                            <div class="field">
+                                <label data-translate="attachFiles"><span class="material-symbols-outlined"
+                                        style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">attach_file</span>Attach
+                                    Files (Optional - Multiple)</label>
+                                <div class="file-upload-wrapper">
+                                    <input type="file" id="rdProjectFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx" multiple style="display: none;"
+                                        onchange="handleRDProjectFileUpload(event)">
+                                    <button type="button" class="image-upload-btn"
+                                        onclick="document.getElementById('rdProjectFileInput').click()"
+                                        style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                                        <span class="material-symbols-outlined">attach_file</span>
+                                        <span id="rdProjectUploadFileBtnText" data-translate="clickToUploadFiles">Click to upload or drag files here</span>
+                                    </button>
+                                    <!-- File Preview List -->
+                                    <div id="rdProjectFilePreview" class="file-preview-container"
+                                        style="display: none; margin-top: 12px;">
+                                        <div id="rdProjectFileList" style="display: grid; gap: 8px;"></div>
+                                        <div id="rdProjectFileUploadProgress" style="display: none;">
+                                            <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                                Uploading...</div>
+                                            <div class="progress-bar-wrap show">
+                                                <div class="progress-bar" id="rdProjectFileUploadProgressBar" style="width: 0%;"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -4238,32 +4302,64 @@
                             <textarea id="rawMatDescription" rows="3" placeholder="Enter additional details..." data-translate="enterDescription"></textarea>
                         </div>
 
-                        <!-- Image Upload Field -->
-                        <div class="field" style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px;">
-                            <label data-translate="attachImage"><span class="material-symbols-outlined"
-                                    style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
-                                Images (Optional - Multiple)</label>
-                            <div class="image-upload-wrapper">
-                                <input type="file" id="rawMatImageInput" accept="image/*" multiple style="display: none;"
-                                    onchange="handleRawMatImageUpload(event)">
-                                <button type="button" class="image-upload-btn"
-                                    onclick="document.getElementById('rawMatImageInput').click()"
-                                    style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
-                                    <span class="material-symbols-outlined">upload_file</span>
-                                    <span id="rawMatUploadBtnText" data-translate="clickToUpload">Click to upload or drag
-                                        images here</span>
-                                </button>
-                                <!-- Image Preview Gallery -->
-                                <div id="rawMatImagePreview" class="image-preview-container"
-                                    style="display: none; margin-top: 12px;">
-                                    <div id="rawMatImageGallery"
-                                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; padding: 12px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);">
+                        <!-- Image & File Upload Fields (Side by Side) -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px;">
+                            <!-- Image Upload Field -->
+                            <div class="field">
+                                <label data-translate="attachImage"><span class="material-symbols-outlined"
+                                        style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">image</span>Attach
+                                    Images (Optional - Multiple)</label>
+                                <div class="image-upload-wrapper">
+                                    <input type="file" id="rawMatImageInput" accept="image/*" multiple style="display: none;"
+                                        onchange="handleRawMatImageUpload(event)">
+                                    <button type="button" class="image-upload-btn"
+                                        onclick="document.getElementById('rawMatImageInput').click()"
+                                        style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                                        <span class="material-symbols-outlined">upload_file</span>
+                                        <span id="rawMatUploadBtnText" data-translate="clickToUpload">Click to upload or drag
+                                            images here</span>
+                                    </button>
+                                    <!-- Image Preview Gallery -->
+                                    <div id="rawMatImagePreview" class="image-preview-container"
+                                        style="display: none; margin-top: 12px;">
+                                        <div id="rawMatImageGallery"
+                                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-bottom: 8px;">
+                                        </div>
+                                        <div id="rawMatUploadProgress" style="margin-top: 12px; display: none;">
+                                            <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                                Uploading...</div>
+                                            <div class="progress-bar-wrap show">
+                                                <div class="progress-bar" id="rawMatUploadProgressBar" style="width: 0%;"></div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div id="rawMatUploadProgress" style="margin-top: 12px; display: none;">
-                                        <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
-                                            Uploading...</div>
-                                        <div class="progress-bar-wrap show">
-                                            <div class="progress-bar" id="rawMatUploadProgressBar" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- File Upload Field -->
+                            <div class="field">
+                                <label data-translate="attachFiles"><span class="material-symbols-outlined"
+                                        style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">attach_file</span>Attach
+                                    Files (Optional - Multiple)</label>
+                                <div class="file-upload-wrapper">
+                                    <input type="file" id="rawMatFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx" multiple style="display: none;"
+                                        onchange="handleRawMatFileUpload(event)">
+                                    <button type="button" class="image-upload-btn"
+                                        onclick="document.getElementById('rawMatFileInput').click()"
+                                        style="width: 100%; padding: 12px 14px; background: var(--surface); border: 2px dashed var(--border); border-radius: var(--radius); font-family: inherit; font-size: 14px; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                                        <span class="material-symbols-outlined">attach_file</span>
+                                        <span id="rawMatUploadFileBtnText" data-translate="clickToUploadFiles">Click to upload or drag files here</span>
+                                    </button>
+                                    <!-- File Preview List -->
+                                    <div id="rawMatFilePreview" class="file-preview-container"
+                                        style="display: none; margin-top: 12px;">
+                                        <div id="rawMatFileList" style="display: grid; gap: 8px;"></div>
+                                        <div id="rawMatFileUploadProgress" style="display: none;">
+                                            <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                                Uploading...</div>
+                                            <div class="progress-bar-wrap show">
+                                                <div class="progress-bar" id="rawMatFileUploadProgressBar" style="width: 0%;"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -5568,7 +5664,7 @@
                     <div class="memo-detail-label" data-translate="attachedImage">Attached Image</div>
                     <div style="margin-top: 8px;">
                         <img id="memoDetailImage" src=""
-                            style="max-width: 100%; max-height: 250px; display:flex; margin:0 auto; border-radius: var(--radius); border: 1px solid var(--border); cursor: pointer; transition: transform 0.2s ease;"
+                            style="max-width: 100%; max-height: 250px; display:flex; margin:0 auto; border-radius: var(--radius); cursor: pointer; transition: transform 0.2s ease;"
                             onmouseover="this.style.transform='scale(1.02)'"
                             onmouseout="this.style.transform='scale(1)'"
                             onerror="if(typeof handleMemoImageError==='function')handleMemoImageError();else this.parentElement.style.display='none'"
@@ -5577,6 +5673,12 @@
                             data-translate="clickToViewFullSize">Click
                             to view in full size</p>
                     </div>
+                </div>
+
+                <!-- File Display Section -->
+                <div class="memo-detail-field" id="memoDetailFileField" style="display: none;">
+                    <div class="memo-detail-label" data-translate="attachedFiles"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px; margin-right: 6px;">attach_file</span>Attached Files</div>
+                    <div id="memoDetailFileList" style="margin-top: 12px; display: grid; gap: 8px;"></div>
                 </div>
 
                 <!-- Approval Status Section (shown when memo is approved or rejected) -->
@@ -5779,9 +5881,9 @@
             <span class="material-symbols-outlined">close</span>
         </button>
         <div class="image-zoom-container"
-            style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; align-items: center;">
+            style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; align-items: center; justify-content: center;">
             <img id="imageZoomContent" src="" alt="Full size image"
-                style="max-width: 100%; max-height: 100%; border-radius: 8px; object-fit: contain;">
+                style="max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain;">
         </div>
         <div class="image-zoom-info"
             style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255, 255, 255, 0.6); font-size: 12px; text-align: center;">
@@ -6495,6 +6597,9 @@
                 typeContent: "พิมพ์เนื้อหาเมมโมของคุณที่นี่...",
                 attachImage: "แนบรูปภาพ (ไม่บังคับ)",
                 clickToUpload: "คลิกเพื่ออัปโหลดหรือลากรูปภาพที่นี่",
+                attachFiles: "แนบไฟล์ (ไม่บังคับ)",
+                clickToUploadFiles: "คลิกเพื่ออัปโหลดหรือลากไฟล์ที่นี่",
+                attachedFiles: "ไฟล์ที่แนบมา",
                 sendMemorandum: "ส่งเมมโม",
                 clear: "ล้าง",
                 sentMemos: "เมมโมที่ส่ง",
@@ -7030,6 +7135,9 @@
                 typeContent: "Type your memorandum content here...",
                 attachImage: "Attach Image (Optional)",
                 clickToUpload: "Click to upload or drag image here",
+                attachFiles: "Attach Files (Optional - Multiple)",
+                clickToUploadFiles: "Click to upload or drag files here",
+                attachedFiles: "Attached Files",
                 sendMemorandum: "Send Memorandum",
                 clear: "Clear",
                 sentMemos: "Sent Memos",
@@ -7582,6 +7690,7 @@
             'persistentlogin': 'logPersistentLogin',
             'logout': 'logLogout',
             'send memo': 'logSendMemo',
+            'Send memo': 'logSendMemo',
             'approved memo': 'logApprovedMemo',
             'edited memo': 'logEditedMemo',
             'cc_memo_sent': 'logCCMemoSent',
@@ -10497,8 +10606,13 @@
                 item.style.background = 'transparent'
                 item.style.borderColor = 'transparent'
             })
-            // Clear images
+            // Clear images and files
             removeImage()
+            memoFileUrls = []
+            const memoFileInput = document.getElementById('memoFileInput')
+            if (memoFileInput) memoFileInput.value = ''
+            const memoFilePreview = document.getElementById('memoFilePreview')
+            if (memoFilePreview) memoFilePreview.style.display = 'none'
             document.getElementById('statusSingleSend').classList.remove('show')
             const dropdown = document.getElementById('recipientsDropdown')
             if (dropdown) {
@@ -10595,7 +10709,8 @@
                             content: text,
                             docNumber: currentDocNumber,
                             senderUserId: currentUser?.userId,
-                            imageUrls: memoImageUrls && memoImageUrls.length > 0 ? memoImageUrls : null
+                            imageUrls: memoImageUrls && memoImageUrls.length > 0 ? memoImageUrls : null,
+                            fileUrls: memoFileUrls && memoFileUrls.length > 0 ? memoFileUrls : null
                         }
                         const res = await fetch('/send', {
                             method: 'POST',
@@ -10630,7 +10745,8 @@
                             type: type,
                             content: text,
                             docNumber: currentDocNumber,
-                            imageUrls: memoImageUrls && memoImageUrls.length > 0 ? memoImageUrls : null
+                            imageUrls: memoImageUrls && memoImageUrls.length > 0 ? memoImageUrls : null,
+                            fileUrls: memoFileUrls && memoFileUrls.length > 0 ? memoFileUrls : null
                         }
 
                         const memoRes = await fetch(`/send-system-memo`, {
@@ -11055,7 +11171,8 @@
                     totalCost,
                     moq,
                     breakEvenPoint,
-                    imageUrls: rdProjectImageUrls && rdProjectImageUrls.length > 0 ? rdProjectImageUrls : null
+                    imageUrls: rdProjectImageUrls && rdProjectImageUrls.length > 0 ? rdProjectImageUrls : null,
+                    fileUrls: rdProjectFileUrls && rdProjectFileUrls.length > 0 ? rdProjectFileUrls : null
                 }
 
                 const response = await fetch('/api/rdproject', {
@@ -11247,6 +11364,11 @@
             
             // Clear image and upload state
             removeRawMatImage()
+            rawMatFileUrls = []
+            const rawMatFileInput = document.getElementById('rawMatFileInput')
+            if (rawMatFileInput) rawMatFileInput.value = ''
+            const rawMatFilePreview = document.getElementById('rawMatFilePreview')
+            if (rawMatFilePreview) rawMatFilePreview.style.display = 'none'
             
             updateTypeCheckboxStyle()
             showStatus('statusRawMat', '', '')
@@ -11526,7 +11648,8 @@
                     price: getElementValue('rawMatPrice'),
                     moq: getElementValue('rawMatMOQ'),
                     description: getElementValue('rawMatDescription'),
-                    imageUrls: rawMatImageUrls && rawMatImageUrls.length > 0 ? rawMatImageUrls : null
+                    imageUrls: rawMatImageUrls && rawMatImageUrls.length > 0 ? rawMatImageUrls : null,
+                    fileUrls: rawMatFileUrls && rawMatFileUrls.length > 0 ? rawMatFileUrls : null
                     // Approvers are now fetched from admin-configured roles on the server
                 }
                 
@@ -11636,6 +11759,11 @@
             
             // Clear image and upload state
             removeRDProjectImage()
+            rdProjectFileUrls = []
+            const rdProjectFileInput = document.getElementById('rdProjectFileInput')
+            if (rdProjectFileInput) rdProjectFileInput.value = ''
+            const rdProjectFilePreview = document.getElementById('rdProjectFilePreview')
+            if (rdProjectFilePreview) rdProjectFilePreview.style.display = 'none'
             
             // Clear status message
             removeElementClass('statusRDProject', 'show')
@@ -11966,6 +12094,14 @@
             })
         }
 
+        // Helper to convert content to searchable string
+        function getContentForSearch(content) {
+            if (!content) return ''
+            if (typeof content === 'string') return content
+            if (Array.isArray(content)) return content.map(c => typeof c === 'string' ? c : c.text || JSON.stringify(c)).join(' ')
+            return JSON.stringify(content)
+        }
+
         // Filter and render sent memos
         function filterAndRenderSentMemos() {
             const query = getSearchQuery()
@@ -11976,7 +12112,7 @@
                     const docNumber = (memo.docNumber || '').toLowerCase().normalize('NFC')
                     const recipientName = (memo.recipientName || '').toLowerCase().normalize('NFC')
                     const recipientNames = (memo.recipientNames || []).join(' ').toLowerCase().normalize('NFC')
-                    const content = (memo.content || '').toLowerCase().normalize('NFC')
+                    const content = getContentForSearch(memo.content).toLowerCase().normalize('NFC')
                     return title.includes(query) || docNumber.includes(query) || recipientName.includes(query) || recipientNames.includes(query) || content.includes(query)
                 })
             }
@@ -11992,7 +12128,7 @@
                     const title = (memo.title || '').toLowerCase().normalize('NFC')
                     const docNumber = (memo.docNumber || '').toLowerCase().normalize('NFC')
                     const senderName = (memo.senderName || '').toLowerCase().normalize('NFC')
-                    const content = (memo.content || '').toLowerCase().normalize('NFC')
+                    const content = getContentForSearch(memo.content).toLowerCase().normalize('NFC')
                     return title.includes(query) || docNumber.includes(query) || senderName.includes(query) || content.includes(query)
                 })
             }
@@ -12008,7 +12144,7 @@
                     const title = (memo.title || '').toLowerCase().normalize('NFC')
                     const docNumber = (memo.docNumber || '').toLowerCase().normalize('NFC')
                     const senderName = (memo.senderName || '').toLowerCase().normalize('NFC')
-                    const content = (memo.content || '').toLowerCase().normalize('NFC')
+                    const content = getContentForSearch(memo.content).toLowerCase().normalize('NFC')
                     return title.includes(query) || docNumber.includes(query) || senderName.includes(query) || content.includes(query)
                 })
             }
@@ -13644,6 +13780,11 @@
 
         async function openMemoDetail(memo) {
             try {
+                // DEBUG: Log memo object to check if fileUrls exists
+                console.log('📄 DEBUG openMemoDetail - Full memo object:', memo)
+                console.log('📄 DEBUG - fileUrls:', memo.fileUrls)
+                console.log('📄 DEBUG - imageUrls:', memo.imageUrls)
+                
                 // Make showMemoDetail globally available for HTML onclick
                 window.showMemoDetail = function (memoId, memoObj) {
                     // If memoObj is a string, parse it
@@ -14057,6 +14198,87 @@
                 imageField.style.display = 'block'
             } else {
                 imageField.style.display = 'none'
+            }
+
+            // Display files if available (supports fileUrls array)
+            const fileField = document.getElementById('memoDetailFileField')
+            const filesToDisplay = memo.fileUrls || []
+            
+            if (filesToDisplay && filesToDisplay.length > 0) {
+                const fileList = document.getElementById('memoDetailFileList')
+                fileList.innerHTML = ''
+                
+                filesToDisplay.forEach((fileObj, idx) => {
+                    const fileUrl = typeof fileObj === 'string' ? fileObj : fileObj.url
+                    const fileName = typeof fileObj === 'string' ? `File ${idx + 1}` : (fileObj.name || `File ${idx + 1}`)
+                    const fileSize = typeof fileObj === 'string' ? 0 : (fileObj.size || 0)
+                    
+                    const fileItem = document.createElement('div')
+                    fileItem.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.2s ease;'
+                    fileItem.onmouseover = () => {
+                        fileItem.style.background = 'rgba(201, 168, 76, 0.05)'
+                        fileItem.style.borderColor = 'var(--accent-2)'
+                    }
+                    fileItem.onmouseout = () => {
+                        fileItem.style.background = 'var(--surface)'
+                        fileItem.style.borderColor = 'var(--border)'
+                    }
+                    
+                    const fileInfo = document.createElement('div')
+                    fileInfo.style.cssText = 'display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;'
+                    
+                    const fileIcon = document.createElement('span')
+                    fileIcon.className = 'material-symbols-outlined'
+                    fileIcon.textContent = 'description'
+                    fileIcon.style.cssText = 'color: var(--accent); font-size: 20px; flex-shrink: 0;'
+                    
+                    const fileDetails = document.createElement('div')
+                    fileDetails.style.cssText = 'min-width: 0;'
+                    
+                    const fileNameDiv = document.createElement('div')
+                    fileNameDiv.textContent = escHtml(fileName)
+                    fileNameDiv.style.cssText = 'font-weight: 500; color: var(--ink); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+                    
+                    const fileSizeDiv = document.createElement('div')
+                    fileSizeDiv.textContent = fileSize > 0 ? `${(fileSize / 1024).toFixed(2)} KB` : 'Download'
+                    fileSizeDiv.style.cssText = 'font-size: 12px; color: var(--ink-faint); margin-top: 2px;'
+                    
+                    fileDetails.appendChild(fileNameDiv)
+                    fileDetails.appendChild(fileSizeDiv)
+                    fileInfo.appendChild(fileIcon)
+                    fileInfo.appendChild(fileDetails)
+                    
+                    const downloadBtn = document.createElement('a')
+                    downloadBtn.href = fileUrl
+                    downloadBtn.target = '_blank'
+                    downloadBtn.rel = 'noopener noreferrer'
+                    downloadBtn.style.cssText = 'display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: white; text-decoration: none; flex-shrink: 0; transition: all 0.2s ease;'
+                    downloadBtn.title = 'Download / Open file'
+                    
+                    const downloadIcon = document.createElement('span')
+                    downloadIcon.className = 'material-symbols-outlined'
+                    downloadIcon.textContent = 'download'
+                    downloadIcon.style.cssText = 'font-size: 16px;'
+                    
+                    downloadBtn.appendChild(downloadIcon)
+                    
+                    downloadBtn.onmouseover = () => {
+                        downloadBtn.style.background = 'var(--accent-2)'
+                        downloadBtn.style.transform = 'scale(1.1)'
+                    }
+                    downloadBtn.onmouseout = () => {
+                        downloadBtn.style.background = 'var(--accent)'
+                        downloadBtn.style.transform = 'scale(1)'
+                    }
+                    
+                    fileItem.appendChild(fileInfo)
+                    fileItem.appendChild(downloadBtn)
+                    fileList.appendChild(fileItem)
+                })
+                
+                fileField.style.display = 'block'
+            } else {
+                fileField.style.display = 'none'
             }
 
             // Hide approval sections by defaultb
@@ -19088,6 +19310,471 @@ function printMemoDetail() {
             if (progress) progress.style.display = 'none';
             const progressBar = document.getElementById('rawMatUploadProgressBar');
             if (progressBar) progressBar.style.width = '0%';
+        }
+
+        // ═════════════════════════════════════════════════════════════════
+        // FILE UPLOAD FUNCTIONS FOR MEMO, R&D PROJECT, AND RAW MATERIAL
+        // ═════════════════════════════════════════════════════════════════
+
+        let memoFileUrls = [];
+        let rdProjectFileUrls = [];
+        let rawMatFileUrls = [];
+
+        const ALLOWED_FILE_TYPES = {
+            'application/pdf': '.pdf',
+            'application/msword': '.doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+            'application/vnd.ms-excel': '.xls',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+            'text/plain': '.txt',
+            'application/vnd.ms-powerpoint': '.ppt',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx'
+        };
+
+        // Handle Memo File Upload
+        async function handleMemoFileUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const filesToUpload = [];
+            for (let file of files) {
+                // Validate file type
+                if (!ALLOWED_FILE_TYPES[file.type]) {
+                    showStatus('statusSingleSend', `"${file.name}" file type not allowed`, 'error');
+                    continue;
+                }
+
+                // Validate file size (max 10MB per file)
+                if (file.size > 10 * 1024 * 1024) {
+                    showStatus('statusSingleSend', `"${file.name}" exceeds 10MB limit`, 'error');
+                    continue;
+                }
+
+                filesToUpload.push(file);
+            }
+
+            if (filesToUpload.length === 0) return;
+
+            document.getElementById('memoFileUploadProgress').style.display = 'block';
+            document.getElementById('memoFileUploadProgressBar').style.width = '0%';
+
+            let uploadedCount = 0;
+            const totalFiles = filesToUpload.length;
+
+            try {
+                for (const file of filesToUpload) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+                    formData.append('folder', CLOUDINARY_CONFIG.folder + '/files');
+                    formData.append('resource_type', 'auto');
+
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                                const fileProgress = (e.loaded / e.total) * 100;
+                                const totalProgress = ((uploadedCount + fileProgress / 100) / totalFiles) * 100;
+                                document.getElementById('memoFileUploadProgressBar').style.width = totalProgress + '%';
+                            }
+                        });
+
+                        xhr.addEventListener('load', () => {
+                            if (xhr.status === 200) {
+                                const response = JSON.parse(xhr.responseText);
+                                memoFileUrls.push({
+                                    url: response.secure_url,
+                                    name: file.name,
+                                    size: file.size
+                                });
+                                uploadedCount++;
+
+                                const totalProgress = (uploadedCount / totalFiles) * 100;
+                                document.getElementById('memoFileUploadProgressBar').style.width = totalProgress + '%';
+
+                                updateMemoFileGallery();
+                                resolve();
+                            } else {
+                                reject(new Error(`Upload failed for ${file.name}`));
+                            }
+                        });
+
+                        xhr.addEventListener('error', () => {
+                            reject(new Error(`Upload error for ${file.name}`));
+                        });
+
+                        xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
+                        xhr.send(formData);
+                    });
+                }
+
+                setTimeout(() => {
+                    document.getElementById('memoFileUploadProgress').style.display = 'none';
+                    document.getElementById('memoFileUploadProgressBar').style.width = '0%';
+                }, 500);
+
+                showStatus('statusSingleSend', `${uploadedCount} file(s) uploaded successfully`, 'success');
+            } catch (error) {
+                console.error('Upload error:', error);
+                showStatus('statusSingleSend', 'Error uploading files: ' + error.message, 'error');
+                document.getElementById('memoFileUploadProgress').style.display = 'none';
+            }
+        }
+
+        // Update Memo File Gallery
+        function updateMemoFileGallery() {
+            const fileList = document.getElementById('memoFileList');
+            const previewContainer = document.getElementById('memoFilePreview');
+
+            if (memoFileUrls.length === 0) {
+                previewContainer.style.display = 'none';
+                return;
+            }
+
+            fileList.innerHTML = '';
+            memoFileUrls.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);';
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.style.cssText = 'display: flex; align-items: center; gap: 12px; flex: 1;';
+                
+                const fileIcon = document.createElement('span');
+                fileIcon.className = 'material-symbols-outlined';
+                fileIcon.textContent = 'description';
+                fileIcon.style.cssText = 'color: var(--accent); font-size: 20px;';
+                
+                const fileDetails = document.createElement('div');
+                const fileName = document.createElement('div');
+                fileName.textContent = file.name;
+                fileName.style.cssText = 'font-weight: 500; color: var(--ink); font-size: 13px;';
+                
+                const fileSize = document.createElement('div');
+                fileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+                fileSize.style.cssText = 'font-size: 12px; color: var(--ink-faint);';
+                
+                fileDetails.appendChild(fileName);
+                fileDetails.appendChild(fileSize);
+                fileInfo.appendChild(fileIcon);
+                fileInfo.appendChild(fileDetails);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.style.cssText = 'width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s ease;';
+                removeBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 14px;">close</span>';
+                removeBtn.onclick = () => removeMemoFileFromGallery(index);
+                
+                fileItem.appendChild(fileInfo);
+                fileItem.appendChild(removeBtn);
+                fileList.appendChild(fileItem);
+            });
+
+            previewContainer.style.display = 'block';
+        }
+
+        function removeMemoFileFromGallery(index) {
+            memoFileUrls.splice(index, 1);
+            updateMemoFileGallery();
+            const inputElement = document.getElementById('memoFileInput');
+            if (inputElement) inputElement.value = '';
+            showStatus('statusSingleSend', 'File removed', 'info');
+        }
+
+        // Handle R&D Project File Upload
+        async function handleRDProjectFileUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const filesToUpload = [];
+            for (let file of files) {
+                if (!ALLOWED_FILE_TYPES[file.type]) {
+                    showStatus('statusRDProject', `"${file.name}" file type not allowed`, 'error');
+                    continue;
+                }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    showStatus('statusRDProject', `"${file.name}" exceeds 10MB limit`, 'error');
+                    continue;
+                }
+
+                filesToUpload.push(file);
+            }
+
+            if (filesToUpload.length === 0) return;
+
+            document.getElementById('rdProjectFileUploadProgress').style.display = 'block';
+            document.getElementById('rdProjectFileUploadProgressBar').style.width = '0%';
+
+            let uploadedCount = 0;
+            const totalFiles = filesToUpload.length;
+
+            try {
+                for (const file of filesToUpload) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+                    formData.append('folder', CLOUDINARY_CONFIG.folder + '/files');
+                    formData.append('resource_type', 'auto');
+
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                                const fileProgress = (e.loaded / e.total) * 100;
+                                const totalProgress = ((uploadedCount + fileProgress / 100) / totalFiles) * 100;
+                                document.getElementById('rdProjectFileUploadProgressBar').style.width = totalProgress + '%';
+                            }
+                        });
+
+                        xhr.addEventListener('load', () => {
+                            if (xhr.status === 200) {
+                                const response = JSON.parse(xhr.responseText);
+                                rdProjectFileUrls.push({
+                                    url: response.secure_url,
+                                    name: file.name,
+                                    size: file.size
+                                });
+                                uploadedCount++;
+
+                                const totalProgress = (uploadedCount / totalFiles) * 100;
+                                document.getElementById('rdProjectFileUploadProgressBar').style.width = totalProgress + '%';
+
+                                updateRDProjectFileGallery();
+                                resolve();
+                            } else {
+                                reject(new Error(`Upload failed for ${file.name}`));
+                            }
+                        });
+
+                        xhr.addEventListener('error', () => {
+                            reject(new Error(`Upload error for ${file.name}`));
+                        });
+
+                        xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
+                        xhr.send(formData);
+                    });
+                }
+
+                setTimeout(() => {
+                    document.getElementById('rdProjectFileUploadProgress').style.display = 'none';
+                    document.getElementById('rdProjectFileUploadProgressBar').style.width = '0%';
+                }, 500);
+
+                showStatus('statusRDProject', `${uploadedCount} file(s) uploaded successfully`, 'success');
+            } catch (error) {
+                console.error('Upload error:', error);
+                showStatus('statusRDProject', 'Error uploading files: ' + error.message, 'error');
+                document.getElementById('rdProjectFileUploadProgress').style.display = 'none';
+            }
+        }
+
+        // Update R&D Project File Gallery
+        function updateRDProjectFileGallery() {
+            const fileList = document.getElementById('rdProjectFileList');
+            const previewContainer = document.getElementById('rdProjectFilePreview');
+
+            if (rdProjectFileUrls.length === 0) {
+                previewContainer.style.display = 'none';
+                return;
+            }
+
+            fileList.innerHTML = '';
+            rdProjectFileUrls.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);';
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.style.cssText = 'display: flex; align-items: center; gap: 12px; flex: 1;';
+                
+                const fileIcon = document.createElement('span');
+                fileIcon.className = 'material-symbols-outlined';
+                fileIcon.textContent = 'description';
+                fileIcon.style.cssText = 'color: var(--accent); font-size: 20px;';
+                
+                const fileDetails = document.createElement('div');
+                const fileName = document.createElement('div');
+                fileName.textContent = file.name;
+                fileName.style.cssText = 'font-weight: 500; color: var(--ink); font-size: 13px;';
+                
+                const fileSize = document.createElement('div');
+                fileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+                fileSize.style.cssText = 'font-size: 12px; color: var(--ink-faint);';
+                
+                fileDetails.appendChild(fileName);
+                fileDetails.appendChild(fileSize);
+                fileInfo.appendChild(fileIcon);
+                fileInfo.appendChild(fileDetails);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.style.cssText = 'width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s ease;';
+                removeBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 14px;">close</span>';
+                removeBtn.onclick = () => removeRDProjectFileFromGallery(index);
+                
+                fileItem.appendChild(fileInfo);
+                fileItem.appendChild(removeBtn);
+                fileList.appendChild(fileItem);
+            });
+
+            previewContainer.style.display = 'block';
+        }
+
+        function removeRDProjectFileFromGallery(index) {
+            rdProjectFileUrls.splice(index, 1);
+            updateRDProjectFileGallery();
+            const inputElement = document.getElementById('rdProjectFileInput');
+            if (inputElement) inputElement.value = '';
+            showStatus('statusRDProject', 'File removed', 'info');
+        }
+
+        // Handle Raw Material File Upload
+        async function handleRawMatFileUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const filesToUpload = [];
+            for (let file of files) {
+                if (!ALLOWED_FILE_TYPES[file.type]) {
+                    showStatus('statusRawMat', `"${file.name}" file type not allowed`, 'error');
+                    continue;
+                }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    showStatus('statusRawMat', `"${file.name}" exceeds 10MB limit`, 'error');
+                    continue;
+                }
+
+                filesToUpload.push(file);
+            }
+
+            if (filesToUpload.length === 0) return;
+
+            document.getElementById('rawMatFileUploadProgress').style.display = 'block';
+            document.getElementById('rawMatFileUploadProgressBar').style.width = '0%';
+
+            let uploadedCount = 0;
+            const totalFiles = filesToUpload.length;
+
+            try {
+                for (const file of filesToUpload) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+                    formData.append('folder', CLOUDINARY_CONFIG.folder + '/files');
+                    formData.append('resource_type', 'auto');
+
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                                const fileProgress = (e.loaded / e.total) * 100;
+                                const totalProgress = ((uploadedCount + fileProgress / 100) / totalFiles) * 100;
+                                document.getElementById('rawMatFileUploadProgressBar').style.width = totalProgress + '%';
+                            }
+                        });
+
+                        xhr.addEventListener('load', () => {
+                            if (xhr.status === 200) {
+                                const response = JSON.parse(xhr.responseText);
+                                rawMatFileUrls.push({
+                                    url: response.secure_url,
+                                    name: file.name,
+                                    size: file.size
+                                });
+                                uploadedCount++;
+
+                                const totalProgress = (uploadedCount / totalFiles) * 100;
+                                document.getElementById('rawMatFileUploadProgressBar').style.width = totalProgress + '%';
+
+                                updateRawMatFileGallery();
+                                resolve();
+                            } else {
+                                reject(new Error(`Upload failed for ${file.name}`));
+                            }
+                        });
+
+                        xhr.addEventListener('error', () => {
+                            reject(new Error(`Upload error for ${file.name}`));
+                        });
+
+                        xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl);
+                        xhr.send(formData);
+                    });
+                }
+
+                setTimeout(() => {
+                    document.getElementById('rawMatFileUploadProgress').style.display = 'none';
+                    document.getElementById('rawMatFileUploadProgressBar').style.width = '0%';
+                }, 500);
+
+                showStatus('statusRawMat', `${uploadedCount} file(s) uploaded successfully`, 'success');
+            } catch (error) {
+                console.error('Upload error:', error);
+                showStatus('statusRawMat', 'Error uploading files: ' + error.message, 'error');
+                document.getElementById('rawMatFileUploadProgress').style.display = 'none';
+            }
+        }
+
+        // Update Raw Material File Gallery
+        function updateRawMatFileGallery() {
+            const fileList = document.getElementById('rawMatFileList');
+            const previewContainer = document.getElementById('rawMatFilePreview');
+
+            if (rawMatFileUrls.length === 0) {
+                previewContainer.style.display = 'none';
+                return;
+            }
+
+            fileList.innerHTML = '';
+            rawMatFileUrls.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);';
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.style.cssText = 'display: flex; align-items: center; gap: 12px; flex: 1;';
+                
+                const fileIcon = document.createElement('span');
+                fileIcon.className = 'material-symbols-outlined';
+                fileIcon.textContent = 'description';
+                fileIcon.style.cssText = 'color: var(--accent); font-size: 20px;';
+                
+                const fileDetails = document.createElement('div');
+                const fileName = document.createElement('div');
+                fileName.textContent = file.name;
+                fileName.style.cssText = 'font-weight: 500; color: var(--ink); font-size: 13px;';
+                
+                const fileSize = document.createElement('div');
+                fileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+                fileSize.style.cssText = 'font-size: 12px; color: var(--ink-faint);';
+                
+                fileDetails.appendChild(fileName);
+                fileDetails.appendChild(fileSize);
+                fileInfo.appendChild(fileIcon);
+                fileInfo.appendChild(fileDetails);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.style.cssText = 'width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s ease;';
+                removeBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 14px;">close</span>';
+                removeBtn.onclick = () => removeRawMatFileFromGallery(index);
+                
+                fileItem.appendChild(fileInfo);
+                fileItem.appendChild(removeBtn);
+                fileList.appendChild(fileItem);
+            });
+
+            previewContainer.style.display = 'block';
+        }
+
+        function removeRawMatFileFromGallery(index) {
+            rawMatFileUrls.splice(index, 1);
+            updateRawMatFileGallery();
+            const inputElement = document.getElementById('rawMatFileInput');
+            if (inputElement) inputElement.value = '';
+            showStatus('statusRawMat', 'File removed', 'info');
         }
 
         // Add drag & drop support once DOM is ready
