@@ -12375,55 +12375,108 @@
         // ── Deduplicate and Group Memos by ID ──────────────
         function deduplicateAndGroupMemos(memos) {
             const grouped = {}
-            
-            for (let memo of memos) {
-                // For CC memos, use original memo ID as unique identifier to group all CCs from same memo
-                // For regular memos, use memoId
-                let id
-                if (memo.isCC) {
-                    // For CC memos, group by original memo ID (memoId field contains the original memo's ID)
-                    // The memoKey contains extra info like _cc_<timestamp>_<random> so extract the base ID
-                    id = memo.memoId  // This is the original memo ID for CC memos
-                } else {
-                    id = memo.memoId || memo.id
-                }
-                
-                if (!grouped[id]) {
-                    // First occurrence - create a new entry
-                    grouped[id] = { ...memo }
-                } else {
-                    // Duplicate - merge recipients
-                    if (memo.isCC && memo.ccRecipientObjects && Array.isArray(memo.ccRecipientObjects)) {
-                        // For CC memos, merge ccRecipientObjects
-                        if (!grouped[id].ccRecipientObjects) {
-                            grouped[id].ccRecipientObjects = []
-                        }
-                        // Add unique recipients
-                        for (let recipient of memo.ccRecipientObjects) {
-                            const recipientId = recipient.userId || recipient.systemUserId
-                            if (!grouped[id].ccRecipientObjects.find(r => (r.userId || r.systemUserId) === recipientId)) {
-                                grouped[id].ccRecipientObjects.push(recipient)
-                            }
-                        }
-                    }
-                    // Merge regular recipient names
-                    if (memo.recipientNames && Array.isArray(memo.recipientNames)) {
-                        if (!grouped[id].recipientNames) {
-                            grouped[id].recipientNames = []
-                        }
-                        // Add unique recipients
-                        for (let name of memo.recipientNames) {
-                            if (!grouped[id].recipientNames.includes(name)) {
-                                grouped[id].recipientNames.push(name)
-                            }
-                        }
-                    }
-                    if (memo.recipientName && !grouped[id].recipientNames) {
-                        grouped[id].recipientName = memo.recipientName
-                    }
-                }
+
+            const addUniqueValue = (target, value) => {
+                if (!value) return target
+                if (!Array.isArray(target)) return [value]
+                if (!target.includes(value)) target.push(value)
+                return target
             }
-            
+
+            const addUniqueRecipient = (target, recipient) => {
+                if (!recipient) return target
+                if (!Array.isArray(target)) return [recipient]
+                const recipientId = recipient.userId || recipient.systemUserId || recipient.id
+                if (!recipientId) return target
+                const exists = target.some(r => (r.userId || r.systemUserId || r.id) === recipientId)
+                if (!exists) target.push(recipient)
+                return target
+            }
+
+            const addUniqueId = (target, id) => {
+                if (!id) return target
+                if (!Array.isArray(target)) return [id]
+                if (!target.includes(id)) target.push(id)
+                return target
+            }
+
+            for (let memo of memos) {
+                const memoId = memo?.memoId || memo?.id
+                if (!memoId) continue
+
+                const isCC = !!memo.isCC
+                const groupKey = isCC ? `cc:${memoId}` : memoId
+                const existing = grouped[groupKey]
+
+                if (!existing) {
+                    grouped[groupKey] = { ...memo }
+                    continue
+                }
+
+                const merged = { ...existing }
+
+                if (Array.isArray(existing.recipientNames) || Array.isArray(memo.recipientNames)) {
+                    merged.recipientNames = [...(existing.recipientNames || [])]
+                    for (let name of memo.recipientNames || []) {
+                        addUniqueValue(merged.recipientNames, name)
+                    }
+                } else if (!merged.recipientNames && (existing.recipientName || memo.recipientName)) {
+                    merged.recipientName = existing.recipientName || memo.recipientName
+                }
+
+                if (Array.isArray(existing.recipientObjects) || Array.isArray(memo.recipientObjects)) {
+                    merged.recipientObjects = [...(existing.recipientObjects || [])]
+                    for (let recipient of memo.recipientObjects || []) {
+                        addUniqueRecipient(merged.recipientObjects, recipient)
+                    }
+                }
+
+                if (Array.isArray(existing.recipientIds) || Array.isArray(memo.recipientIds)) {
+                    merged.recipientIds = [...(existing.recipientIds || [])]
+                    for (let recipientId of memo.recipientIds || []) {
+                        addUniqueId(merged.recipientIds, recipientId)
+                    }
+                }
+
+                if (Array.isArray(existing.ccRecipientObjects) || Array.isArray(memo.ccRecipientObjects)) {
+                    merged.ccRecipientObjects = [...(existing.ccRecipientObjects || [])]
+                    for (let recipient of memo.ccRecipientObjects || []) {
+                        addUniqueRecipient(merged.ccRecipientObjects, recipient)
+                    }
+                }
+
+                if (Array.isArray(existing.ccRecipientIds) || Array.isArray(memo.ccRecipientIds)) {
+                    merged.ccRecipientIds = [...(existing.ccRecipientIds || [])]
+                    for (let recipientId of memo.ccRecipientIds || []) {
+                        addUniqueId(merged.ccRecipientIds, recipientId)
+                    }
+                }
+
+                if (!merged.ccSenderName && (existing.ccSenderName || memo.ccSenderName)) {
+                    merged.ccSenderName = existing.ccSenderName || memo.ccSenderName
+                }
+                if (!merged.ccSenderId && (existing.ccSenderId || memo.ccSenderId)) {
+                    merged.ccSenderId = existing.ccSenderId || memo.ccSenderId
+                }
+                if (!merged.senderName && (existing.senderName || memo.senderName)) {
+                    merged.senderName = existing.senderName || memo.senderName
+                }
+                if (!merged.senderUserId && (existing.senderUserId || memo.senderUserId)) {
+                    merged.senderUserId = existing.senderUserId || memo.senderUserId
+                }
+                if (!merged.docNumber && (existing.docNumber || memo.docNumber)) {
+                    merged.docNumber = existing.docNumber || memo.docNumber
+                }
+                if (!merged.documentNo && (existing.documentNo || memo.documentNo)) {
+                    merged.documentNo = existing.documentNo || memo.documentNo
+                }
+                if (!merged.ccAcknowledgments && (existing.ccAcknowledgments || memo.ccAcknowledgments)) {
+                    merged.ccAcknowledgments = existing.ccAcknowledgments || memo.ccAcknowledgments
+                }
+
+                grouped[groupKey] = merged
+            }
+
             return Object.values(grouped)
         }
 

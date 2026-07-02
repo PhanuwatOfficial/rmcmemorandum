@@ -49,8 +49,6 @@ function addLog(level, messageKey, data = null) {
    channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
  }
 
-
-
 //Line Official Account Test
 // const config = {
 //   channelAccessToken: "26QcmPpK39AJ60Mg9tnk9sorWmm9DhOv70KjkSradTe3UGenhIlhUrLii4kWukxF0BWOA/3FNhlZUQ25rMiS+cdsz33h/esKxpyXEEJx3i9Xv755YQABvc61s63yenpEmyvMC9ZUwFDTcAz/2ERAYQdB04t89/1O/w1cDnyilFU=",
@@ -60,7 +58,7 @@ function addLog(level, messageKey, data = null) {
 const client = new line.Client(config)
 
 // Firebase Realtime Database (ใช้ REST API แทน Admin SDK)
-//const FIREBASE_PROJECT_ID = "line-6191d"
+// const FIREBASE_PROJECT_ID = "line-6191d"
 const FIREBASE_PROJECT_ID = "test2-a3a49"
 // const FIREBASE_PROJECT_ID = "leave-10269"
 // const FIREBASE_PROJECT_ID = "keyproject-84461"
