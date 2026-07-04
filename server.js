@@ -44,6 +44,37 @@ function addLog(level, messageKey, data = null) {
   })
 }
 
+function getContentPreviewText(content, maxLength = 200) {
+  if (content === null || content === undefined) return ''
+
+  if (typeof content === 'string') {
+    return content.length > maxLength ? `${content.substring(0, maxLength)}...` : content
+  }
+
+  if (Array.isArray(content)) {
+    const text = content.map(item => getContentPreviewText(item, 40)).join(', ')
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
+  }
+
+  if (typeof content === 'object') {
+    try {
+      const text = Object.entries(content)
+        .filter(([, value]) => value !== undefined && value !== null && value !== '')
+        .slice(0, 4)
+        .map(([key, value]) => `${key}: ${getContentPreviewText(value, 40)}`)
+        .join(' | ')
+
+      return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
+    } catch (err) {
+      const text = String(content)
+      return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
+    }
+  }
+
+  const text = String(content)
+  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
+}
+
  const config = {
    channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
    channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
@@ -982,7 +1013,7 @@ app.get("/api/memo/:memoId", verifyToken, async (req, res) => {
       )
     }
 
-    // Also enrich sender and approvedBy with signatures
+    // Also enrich sender and assigned approver with signatures
     if (foundMemo.senderUserId) {
       const senderUser = await firebase_get(`users/${foundMemo.senderUserId}`)
       if (senderUser) {
@@ -990,10 +1021,14 @@ app.get("/api/memo/:memoId", verifyToken, async (req, res) => {
       }
     }
 
-    if (foundMemo.approvedByUserId) {
-      const approverUser = await firebase_get(`users/${foundMemo.approvedByUserId}`)
+    const approverUserId = foundMemo.approvedByUserId || foundMemo.approverId || foundMemo.approverUserId || (foundMemo.approvers && foundMemo.approvers[0]?.approverId)
+    if (approverUserId) {
+      const approverUser = await firebase_get(`users/${approverUserId}`)
       if (approverUser) {
         foundMemo.approverSignatureImageUrl = approverUser.signatureImageUrl || null
+        if (!foundMemo.approverName && approverUser.name) {
+          foundMemo.approverName = `${approverUser.name} ${approverUser.surname || ''}`.trim()
+        }
       }
     }
 
@@ -1182,6 +1217,12 @@ app.get("/user/is-approver", verifyToken, async (req, res) => {
           approvalCount++
         }
       }
+    }
+
+    // Check if the user is configured as the Sample Product Approver
+    const rolesData = await firebase_get('rd_project_roles')
+    if (rolesData && rolesData.sampleProdApproverId === userId) {
+      isApprover = true
     }
 
     res.json({ isApprover, approvalCount })
@@ -2293,7 +2334,7 @@ app.post("/send", async (req, res) => {
                     },
                     {
                       type: "text",
-                      text: content.substring(0, 150) + (content.length > 150 ? '...' : ''),
+                      text: getContentPreviewText(content, 150),
                       size: "sm",
                       color: "#1e2c4e",
                       wrap: true,
@@ -2429,7 +2470,7 @@ app.post("/send", async (req, res) => {
                 },
                 {
                   type: "text",
-                  text: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+                  text: getContentPreviewText(content, 200),
                   size: "sm",
                   color: "#666666",
                   wrap: true,
@@ -2630,12 +2671,15 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
       const rolesData = await firebase_get('rd_project_roles')
       const isRDProjectApprover = rolesData && rolesData.approverUserId === userId
 
+      // Check if user is Sample Product approver
+      const isSampleProductApprover = rolesData && rolesData.sampleProdApproverId === userId
+
       // Check if user is Raw Material approver (first or second step)
       const isRawMatFirstApprover = rolesData && rolesData.rawMatFirstApproverId === userId
       const isRawMatSecondApprover = rolesData && rolesData.rawMatApproverId === userId
 
-      // If user is not a memo approver and not an R&D project approver and not a raw material approver, return empty list
-      if (userApprovals.length === 0 && !isRDProjectApprover && !isRawMatFirstApprover && !isRawMatSecondApprover) {
+      // If user is not a memo approver and not an R&D project approver and not a sample product approver and not a raw material approver, return empty list
+      if (userApprovals.length === 0 && !isRDProjectApprover && !isSampleProductApprover && !isRawMatFirstApprover && !isRawMatSecondApprover) {
         return res.json({ pendingMemos: [], count: 0 })
       }
 
@@ -2696,6 +2740,21 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
                 recipientObjects: memo.recipientObjects || []
               })
               addedMemoIds.add(memoId)  // Mark as added to prevent duplicate
+            }
+            else if (memo.isSampleProductRequest && memo.approverId === userId) {
+              pendingMemos.push({
+                ...memo,
+                senderObject: {
+                  userId: sender.userId,
+                  name: sender.name,
+                  surname: sender.surname,
+                  department: sender.department,
+                  department2: sender.department2,
+                  username: sender.username
+                },
+                recipientObjects: memo.recipientObjects || []
+              })
+              addedMemoIds.add(memoId)
             }
             else if (!memo.isRDProject && !memo.isRawMaterialRequest) {
               // Regular memo only - check memoApprovers (skip raw materials - they use received_memos)
@@ -2864,6 +2923,9 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
           isAuthorizedApprover = true
         }
       }
+    } else if (memoData.isSampleProductRequest && memoData.approverId === req.userId) {
+      // Sample Product Approver can approve assigned sample requests
+      isAuthorizedApprover = true
     } else {
       // Verify current user is an authorized approver via memoApprovers
       // AND is not the sender (user cannot approve their own memo)
@@ -2931,6 +2993,17 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
     })
 
     await firebase_set(`sent_memos/${memoSenderId}/${memoId}`, memoData)
+
+    // Keep the approver's own copy in received_memos in sync so the received-memo view reflects the new status
+    const approverReceivedMemo = {
+      ...memoData,
+      status: 'approved',
+      approvalPending: false,
+      approvedBy: req.userId,
+      approvedByName: `${currentUser.name} ${currentUser.surname}`,
+      approvedAt: memoData.approvedAt
+    }
+    await firebase_set(`received_memos/${req.userId}/${memoId}`, approverReceivedMemo)
 
     // Get sender info for notifications
     const senderUser = await firebase_get(`users/${memoSenderId}`)
@@ -3029,7 +3102,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
                 },
                 {
                   type: "text",
-                  text: memoData.content.substring(0, 200) + (memoData.content.length > 200 ? '...' : ''),
+                  text: getContentPreviewText(memoData.content, 200),
                   size: "sm",
                   color: "#666666",
                   wrap: true,
@@ -3174,7 +3247,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
                 },
                 {
                   type: "text",
-                  text: memoData.content.substring(0, 150) + (memoData.content.length > 150 ? '...' : ''),
+                  text: getContentPreviewText(memoData.content, 150),
                   size: "sm",
                   color: "#666666",
                   wrap: true,
@@ -3337,6 +3410,17 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
     memoData.rejectionReason = rejectionReason
 
     await firebase_set(`sent_memos/${memoSenderId}/${memoId}`, memoData)
+
+    // Keep the approver's own copy in received_memos in sync for the rejected state as well
+    const approverReceivedMemo = {
+      ...memoData,
+      status: 'rejected',
+      approvalPending: false,
+      rejectedBy: req.userId,
+      rejectedByName: `${currentUser.name} ${currentUser.surname}`,
+      rejectedAt: memoData.rejectedAt
+    }
+    await firebase_set(`received_memos/${req.userId}/${memoId}`, approverReceivedMemo)
 
     // Update received_memos for all recipients
     const recipientIdsList = memoData.recipientIds && Array.isArray(memoData.recipientIds)
@@ -4267,7 +4351,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
     const memoId = req.params.memoId
-    const { docNumber, title, type, content } = req.body
+    const { docNumber, title, type, content, items } = req.body
 
     // Get current user
     const user = await firebase_get(`users/${userId}`)
@@ -4356,6 +4440,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
       title: title,
       type: type || 'เพื่อโปรดทราบ',
       content: content,
+      ...(items !== undefined ? { items } : {}),
       updatedAt: new Date().toISOString(),
       updatedBy: userId
     }
@@ -4379,6 +4464,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
                   title: title,
                   type: type || 'เพื่อโปรดทราบ',
                   content: content,
+                  ...(items !== undefined ? { items } : {}),
                   updatedAt: new Date().toISOString(),
                   updatedBy: userId
                 }
@@ -4700,7 +4786,7 @@ app.post("/memo/:memoId/cc", verifyToken, async (req, res) => {
                 const memoTitle = memo.title || 'Untitled Memo'
                 const ccSenderName = sender ? `${sender.name} ${sender.surname}` : 'Unknown'
                 const memoContent = typeof memo.content === 'string'
-                  ? memo.content.substring(0, 100)
+                  ? getContentPreviewText(memo.content, 100)
                   : JSON.stringify(memo.content).substring(0, 100)
 
                 const lineMessage = {
@@ -5205,7 +5291,7 @@ app.post("/send-system-memo", verifyToken, async (req, res) => {
                     },
                     {
                       type: "text",
-                      text: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+                      text: getContentPreviewText(content, 200),
                       size: "sm",
                       color: "#1e2c4e",
                       wrap: true,
@@ -5696,10 +5782,10 @@ app.post("/api/rdproject/roles/set", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Admin access required" })
     }
 
-    const { approverUserId, engineerUserId, rawMatFirstApproverId } = req.body
+    const { approverUserId, engineerUserId, rawMatFirstApproverId, sampleProdApproverId } = req.body
 
-    // Check if at least one approver/engineer pair or a rawmat approver is provided
-    if (!approverUserId && !engineerUserId && !rawMatFirstApproverId) {
+    // Check if at least one approver/engineer pair, rawmat approver, or sample product approver is provided
+    if (!approverUserId && !engineerUserId && !rawMatFirstApproverId && !sampleProdApproverId) {
       return res.status(400).json({ error: "Must provide at least one role assignment" })
     }
 
@@ -5720,6 +5806,9 @@ app.post("/api/rdproject/roles/set", verifyToken, async (req, res) => {
       rawMatFirstApproverId: rawMatFirstApproverId || existingRoles.rawMatFirstApproverId || null,
       rawMatFirstApproverName: existingRoles.rawMatFirstApproverName || null,
       rawMatFirstApproverUsername: existingRoles.rawMatFirstApproverUsername || null,
+      sampleProdApproverId: sampleProdApproverId || existingRoles.sampleProdApproverId || null,
+      sampleProdApproverName: existingRoles.sampleProdApproverName || null,
+      sampleProdApproverUsername: existingRoles.sampleProdApproverUsername || null,
       updatedAt: new Date().toISOString(),
       updatedBy: req.userId
     }
@@ -5753,6 +5842,16 @@ app.post("/api/rdproject/roles/set", verifyToken, async (req, res) => {
       rolesData.rawMatFirstApproverUsername = firstApprover.username
     }
 
+    // Verify and fetch details for sample product approver if provided
+    if (sampleProdApproverId) {
+      const sampleApprover = await firebase_get(`users/${sampleProdApproverId}`)
+      if (!sampleApprover) {
+        return res.status(404).json({ error: "Sample Product Approver user not found" })
+      }
+      rolesData.sampleProdApproverName = `${sampleApprover.name} ${sampleApprover.surname}`
+      rolesData.sampleProdApproverUsername = sampleApprover.username
+    }
+
 
 
     await firebase_set('rd_project_roles', rolesData)
@@ -5781,7 +5880,10 @@ app.get("/api/rdproject/roles", verifyToken, async (req, res) => {
         rawMatApproverSignatureImageUrl: null,
         rawMatFirstApproverId: null,
         rawMatFirstApproverName: "Not assigned",
-        rawMatFirstApproverSignatureImageUrl: null
+        rawMatFirstApproverSignatureImageUrl: null,
+        sampleProdApproverId: null,
+        sampleProdApproverName: "Not assigned",
+        sampleProdApproverSignatureImageUrl: null
       })
     }
 
@@ -5819,13 +5921,22 @@ app.get("/api/rdproject/roles", verifyToken, async (req, res) => {
       }
     }
 
+    let sampleProdApproverSignatureImageUrl = null
+    if (rolesData.sampleProdApproverId) {
+      const sampleProdApproverUser = await firebase_get(`users/${rolesData.sampleProdApproverId}`)
+      if (sampleProdApproverUser) {
+        sampleProdApproverSignatureImageUrl = sampleProdApproverUser.signatureImageUrl || null
+      }
+    }
+
     // Return roles data with signature image URLs
     const enrichedRolesData = {
       ...rolesData,
       approverSignatureImageUrl,
       engineerSignatureImageUrl,
       rawMatApproverSignatureImageUrl,
-      rawMatFirstApproverSignatureImageUrl
+      rawMatFirstApproverSignatureImageUrl,
+      sampleProdApproverSignatureImageUrl
     }
 
     res.json(enrichedRolesData)
@@ -8401,6 +8512,363 @@ app.post("/api/rdproject/:projectId/approve", verifyToken, async (req, res) => {
         stage: 'completed'
       })
     }
+
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── SAMPLE PRODUCT REQUEST NUMBER ENDPOINT ──
+app.get("/next-sample-prod-number", verifyToken, async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear().toString().slice(-2)
+    const allUsersData = await firebase_get('users')
+    const allRequests = []
+
+    if (allUsersData && typeof allUsersData === 'object') {
+      for (let userId in allUsersData) {
+        try {
+          const sentMemosData = await firebase_get(`sent_memos/${userId}`)
+          if (sentMemosData && typeof sentMemosData === 'object') {
+            const memos = Object.values(sentMemosData)
+            const sampleRequests = memos.filter(memo => memo.isSampleProductRequest)
+            allRequests.push(...sampleRequests)
+          }
+        } catch (err) {
+          continue
+        }
+      }
+    }
+
+    const currentYearRequests = allRequests.filter(request => {
+      if (!request.documentNo) return false
+      const requestYear = request.documentNo.replace(/[^0-9]/g, '').substring(0, 2)
+      return requestYear === currentYear
+    })
+
+    let nextNumber = 1
+    if (currentYearRequests.length > 0) {
+      const docNumbers = currentYearRequests.map(request => {
+        const match = request.documentNo.match(/(\d+)$/)
+        return match ? parseInt(match[1]) : 0
+      })
+      const maxNumber = Math.max(...docNumbers)
+      nextNumber = maxNumber + 1
+    }
+
+    const documentNumber = `S${currentYear}-${String(nextNumber).padStart(4, '0')}`
+    res.json({ docNumber: documentNumber })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── SAMPLE PRODUCT REQUEST SUBMISSION ENDPOINT ──
+app.post("/api/sample-product-request", verifyToken, async (req, res) => {
+  try {
+    const initiatorUserId = req.userId
+    const initiatorUser = await firebase_get(`users/${initiatorUserId}`)
+
+    if (!initiatorUser) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    const { documentNo, purpose, customerName, requiredDate, productType, items, remarks, imageUrls, fileUrls } = req.body
+
+    if (!documentNo || !purpose || !requiredDate || !productType) {
+      return res.status(400).json({ error: "Missing required fields" })
+    }
+
+    // Get admin-configured approver for sample product requests
+    const rolesData = await firebase_get('rd_project_roles')
+    const approverUserId = rolesData?.sampleProdApproverId
+    const approverName = rolesData?.sampleProdApproverName
+
+    const senderName = `${initiatorUser.name} ${initiatorUser.surname || ''}`.trim()
+    const currentDate = new Date().toISOString()
+    const memoId = `sample_prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+    // Build content
+    const content = {
+      'Document No': documentNo,
+      'Date': new Date(currentDate).toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      'Purpose': purpose || '—',
+      'Customer Name': customerName || '—',
+      'Required Date': requiredDate || '—',
+      'Product Type': productType || '—',
+      'Remarks': remarks || '—'
+    }
+
+    const recipientIdsFromBody = req.body.recipients && Array.isArray(req.body.recipients) ? req.body.recipients : []
+    let recipientNamesFromBody = req.body.recipientNames && Array.isArray(req.body.recipientNames) ? req.body.recipientNames : null
+    let recipientObjectsFromBody = req.body.recipientObjects && Array.isArray(req.body.recipientObjects) ? req.body.recipientObjects : null
+
+    console.log('DEBUG sample-product-request body:', {
+      documentNo,
+      purpose,
+      customerName,
+      requiredDate,
+      productType,
+      recipientIds: recipientIdsFromBody,
+      recipientNames: recipientNamesFromBody,
+      recipientObjects: recipientObjectsFromBody && recipientObjectsFromBody.length
+    })
+
+    if ((!recipientObjectsFromBody || recipientObjectsFromBody.length === 0) && recipientIdsFromBody.length > 0) {
+      recipientObjectsFromBody = []
+      recipientNamesFromBody = []
+      for (let rid of recipientIdsFromBody) {
+        try {
+          const recipientUser = await firebase_get(`users/${rid}`)
+          const name = recipientUser ? `${recipientUser.name || ''} ${recipientUser.surname || ''}`.trim() : 'Unknown'
+          const department = recipientUser?.department || ''
+          const department2 = recipientUser?.department2 || ''
+          recipientNamesFromBody.push(name || 'Unknown')
+          recipientObjectsFromBody.push({
+            userId: rid,
+            systemUserId: rid,
+            name: name || 'Unknown',
+            department: department,
+            department2: department2
+          })
+        } catch (err) {
+          recipientNamesFromBody.push('Unknown')
+          recipientObjectsFromBody.push({
+            userId: rid,
+            systemUserId: rid,
+            name: 'Unknown'
+          })
+        }
+      }
+    }
+
+    // Create memo record
+    const sentMemoData = {
+      memoId,
+      type: 'Sample Product Request',
+      title: 'ขอสินค้าตัวอย่าง',
+      content: content,
+      isSampleProductRequest: true,
+      senderId: initiatorUserId,
+      senderUserId: initiatorUserId,
+      senderName: senderName,
+      senderDepartment: initiatorUser.department || '—',
+      timestamp: currentDate,
+      date: currentDate,
+      sentAt: currentDate,
+      documentNo: documentNo,
+      purpose: purpose,
+      customerName: customerName,
+      requiredDate: requiredDate,
+      productType: productType,
+      items: items || [],
+      remarks: remarks,
+      status: 'sent',
+      approverRequired: approverUserId ? true : false,
+      approverId: approverUserId,
+      approverName: approverName,
+      imageUrls: imageUrls && imageUrls.length > 0 ? imageUrls : null,
+      fileUrls: fileUrls && fileUrls.length > 0 ? fileUrls : null,
+      recipientIds: recipientIdsFromBody.length > 0 ? recipientIdsFromBody : null,
+      recipientNames: recipientNamesFromBody,
+      recipientObjects: recipientObjectsFromBody
+    }
+
+    // Store in sent_memos
+    await firebase_set(`sent_memos/${initiatorUserId}/${memoId}`, sentMemoData)
+
+    const recipientIds = req.body.recipients && Array.isArray(req.body.recipients) ? req.body.recipients : []
+
+    // If approver is assigned and is not the sender, create a pending approval memo
+    if (approverUserId && approverUserId !== initiatorUserId) {
+      sentMemoData.status = 'pending_approval'
+      sentMemoData.approvalPending = true
+      sentMemoData.approverId = approverUserId
+      sentMemoData.approverName = approverName
+      await firebase_set(`sent_memos/${initiatorUserId}/${memoId}`, sentMemoData)
+
+      const approverMemoData = {
+        ...sentMemoData,
+        receivedBy: approverUserId,
+        isRead: false,
+        acknowledged: false,
+        acknowledgedAt: null
+      }
+      await firebase_set(`received_memos/${approverUserId}/${memoId}`, approverMemoData)
+
+      // Create notification for approver
+      const notificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const notification = {
+        id: notificationId,
+        type: 'sample_product_request',
+        title: `ขอสินค้าตัวอย่างจาก ${senderName}`,
+        message: `ขอสินค้าตัวอย่างสำหรับ ${customerName ? `ลูกค้า: ${customerName}` : `วัตถุประสงค์: ${purpose || 'ไม่ระบุ'}`}`,
+        timestamp: currentDate,
+        memoId: memoId,
+        isRead: false,
+        fromUser: senderName,
+        documentNo: documentNo,
+        status: 'pending',
+        navigateTo: 'pending-approvals'
+      }
+
+      await firebase_set(`notifications/${approverUserId}/${notificationId}`, notification)
+
+      // Send LINE notification to approver followers if any are linked
+      try {
+        const approverUser = await firebase_get(`users/${approverUserId}`)
+        const approverFollowerIds = approverUser && approverUser.linkedFollowers
+          ? Object.keys(approverUser.linkedFollowers)
+          : []
+
+        if (approverFollowerIds.length > 0) {
+          const approverLineMessage = {
+            type: 'flex',
+            altText: `ขออนุมัติขอสินค้าตัวอย่างจาก ${senderName}`,
+            contents: {
+              type: 'bubble',
+              header: {
+                type: 'box',
+                layout: 'vertical',
+                contents: [
+                  {
+                    type: 'text',
+                    text: 'ขออนุมัติสินค้าตัวอย่าง',
+                    weight: 'bold',
+                    size: 'xl',
+                    color: '#1e2c4e'
+                  }
+                ]
+              },
+              body: {
+                type: 'box',
+                layout: 'vertical',
+                spacing: 'md',
+                contents: [
+                  {
+                    type: 'text',
+                    text: `จาก: ${senderName}`,
+                    size: 'sm',
+                    color: '#1e2c4e',
+                    weight: 'bold'
+                  },
+                  {
+                    type: 'text',
+                    text: `เลขที่เอกสาร: ${documentNo}`,
+                    size: 'sm',
+                    color: '#1e2c4e',
+                    wrap: true
+                  },
+                  {
+                    type: 'text',
+                    text: `วัตถุประสงค์: ${purpose || 'ไม่ระบุ'}`,
+                    size: 'sm',
+                    color: '#1e2c4e',
+                    wrap: true
+                  },
+                  {
+                    type: 'text',
+                    text: `วันที่ต้องการ: ${requiredDate || 'ไม่ระบุ'}`,
+                    size: 'sm',
+                    color: '#1e2c4e',
+                    wrap: true
+                  },
+                  {
+                    type: 'text',
+                    text: `ประเภทสินค้า: ${productType || 'ไม่ระบุ'}`,
+                    size: 'sm',
+                    color: '#1e2c4e',
+                    wrap: true
+                  }
+                ]
+              },
+              footer: {
+                type: 'box',
+                layout: 'vertical',
+                contents: [
+                  {
+                    type: 'button',
+                    action: {
+                      type: 'uri',
+                      label: 'ดูรายละเอียด',
+                      uri: 'https://rmcmemorandum.onrender.com/'
+                    },
+                    style: 'primary',
+                    color: '#1e2c4e'
+                  }
+                ]
+              }
+            }
+          }
+
+          for (const approverFollowerId of approverFollowerIds) {
+            try {
+              await client.pushMessage(approverFollowerId, approverLineMessage)
+            } catch (lineErr) {
+              console.warn('Failed to send LINE notification to sample product approver follower:', lineErr.message)
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to send LINE notification for sample product approver:', err.message)
+      }
+    } else {
+      // No approver required, or sender is the approver; send immediately
+      sentMemoData.status = 'sent'
+      sentMemoData.approvalPending = false
+      await firebase_set(`sent_memos/${initiatorUserId}/${memoId}`, sentMemoData)
+
+      if (recipientIds.length > 0) {
+        for (let rid of recipientIds) {
+          try {
+            if (!rid || rid === initiatorUserId) continue
+            const recipientMemoData = {
+              ...sentMemoData,
+              receivedBy: rid,
+              isRead: false,
+              acknowledged: false,
+              acknowledgedAt: null
+            }
+            await firebase_set(`received_memos/${rid}/${memoId}`, recipientMemoData)
+
+            const rNotifId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+            const rNotification = {
+              id: rNotifId,
+              type: 'sample_product_request',
+              title: `ขอสินค้าตัวอย่างจาก ${senderName}`,
+              message: `ขอสินค้าตัวอย่างสำหรับ ${customerName ? `ลูกค้า: ${customerName}` : `วัตถุประสงค์: ${purpose || 'ไม่ระบุ'}`}`,
+              timestamp: currentDate,
+              memoId: memoId,
+              isRead: false,
+              fromUser: senderName,
+              documentNo: documentNo,
+              status: 'pending',
+              navigateTo: 'received-memos'
+            }
+            await firebase_set(`notifications/${rid}/${rNotifId}`, rNotification)
+          } catch (err) {
+            console.warn('Failed to add recipient received_memo or notification for', rid, err.message)
+          }
+        }
+      }
+    }
+
+    addLog('info', 'sample_product_request_submitted', {
+      memoId,
+      customerName,
+      documentNo,
+      senderName
+    })
+
+    res.json({
+      status: "Sample product request submitted successfully",
+      memoId,
+      documentNo
+    })
 
   } catch (err) {
     res.status(500).json({ error: err.message })
