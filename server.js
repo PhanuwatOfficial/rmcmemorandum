@@ -75,16 +75,16 @@ function getContentPreviewText(content, maxLength = 200) {
   return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
 }
 
-//  const config = {
-//    channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
-//    channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
-//  }
+ const config = {
+   channelAccessToken: "b2fh2LSS5Tol02wcgAaglG69RToFh2PBEJ0rmt+2+usd1j9QnOdlo9iQav/mgM9WqTGTfbqPFNGlyy2dc3/4VJge9GCvwHhgPsWNzdk+b+n8/m/wfW91odnR57Y6T32Ibj6i6p3DOv8ujtXzybwdtgdB04t89/1O/w1cDnyilFU=",
+   channelSecret: "8b11f8b0519a6b827f6c0c69664cf207"
+ }
 
 //Line Official Account Test
-const config = {
-  channelAccessToken: "26QcmPpK39AJ60Mg9tnk9sorWmm9DhOv70KjkSradTe3UGenhIlhUrLii4kWukxF0BWOA/3FNhlZUQ25rMiS+cdsz33h/esKxpyXEEJx3i9Xv755YQABvc61s63yenpEmyvMC9ZUwFDTcAz/2ERAYQdB04t89/1O/w1cDnyilFU=",
-  channelSecret: "3e94265fab13b7b71fb338a355d4fc9d"
-}
+// const config = {
+//   channelAccessToken: "26QcmPpK39AJ60Mg9tnk9sorWmm9DhOv70KjkSradTe3UGenhIlhUrLii4kWukxF0BWOA/3FNhlZUQ25rMiS+cdsz33h/esKxpyXEEJx3i9Xv755YQABvc61s63yenpEmyvMC9ZUwFDTcAz/2ERAYQdB04t89/1O/w1cDnyilFU=",
+//   channelSecret: "3e94265fab13b7b71fb338a355d4fc9d"
+// }
 
 const client = new line.Client(config)
 
