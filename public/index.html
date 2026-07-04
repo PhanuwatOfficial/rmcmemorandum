@@ -21283,10 +21283,22 @@ function printMemoDetail() {
 
             const uploadProgress = document.getElementById('sampleProdUploadProgress')
             const progressBar = document.getElementById('sampleProdUploadProgressBar')
+            const preview = document.getElementById('sampleProdImagePreview')
             if (uploadProgress) uploadProgress.style.display = 'block'
+            if (progressBar) progressBar.style.width = '0%'
+            if (preview) preview.style.display = 'block'
 
             let uploadedCount = 0
             const totalFiles = files.length
+
+            const finalizeProgress = () => {
+                uploadedCount++
+                if (uploadedCount >= totalFiles) {
+                    if (progressBar) progressBar.style.width = '0%'
+                    if (uploadProgress) uploadProgress.style.display = 'none'
+                    if (preview) preview.style.display = sampleProdImageUrls.length > 0 ? 'block' : 'none'
+                }
+            }
 
             for (let file of files) {
                 try {
@@ -21306,21 +21318,21 @@ function printMemoDetail() {
                         if (xhr.status === 200) {
                             const response = JSON.parse(xhr.responseText)
                             sampleProdImageUrls.push(response.secure_url)
-                            uploadedCount++
-                            const totalProgress = (uploadedCount / totalFiles) * 100
-                            if (progressBar) progressBar.style.width = totalProgress + '%'
                             updateSampleProdImageGallery()
                         }
+                        finalizeProgress()
                     })
 
                     xhr.addEventListener('error', () => {
                         console.error('Upload error for ' + file.name)
+                        finalizeProgress()
                     })
 
                     xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl)
                     xhr.send(formData)
                 } catch (e) {
                     console.error('Error uploading image:', e)
+                    finalizeProgress()
                 }
             }
         }
@@ -21332,10 +21344,22 @@ function printMemoDetail() {
 
             const uploadProgress = document.getElementById('sampleProdFileUploadProgress')
             const progressBar = document.getElementById('sampleProdFileUploadProgressBar')
+            const preview = document.getElementById('sampleProdFilePreview')
             if (uploadProgress) uploadProgress.style.display = 'block'
+            if (progressBar) progressBar.style.width = '0%'
+            if (preview) preview.style.display = 'block'
 
             let uploadedCount = 0
             const totalFiles = files.length
+
+            const finalizeProgress = () => {
+                uploadedCount++
+                if (uploadedCount >= totalFiles) {
+                    if (progressBar) progressBar.style.width = '0%'
+                    if (uploadProgress) uploadProgress.style.display = 'none'
+                    if (preview) preview.style.display = sampleProdFileUrls.length > 0 ? 'block' : 'none'
+                }
+            }
 
             for (let file of files) {
                 try {
@@ -21359,21 +21383,21 @@ function printMemoDetail() {
                                 name: file.name,
                                 size: file.size
                             })
-                            uploadedCount++
-                            const totalProgress = (uploadedCount / totalFiles) * 100
-                            if (progressBar) progressBar.style.width = totalProgress + '%'
                             updateSampleProdFileGallery()
                         }
+                        finalizeProgress()
                     })
 
                     xhr.addEventListener('error', () => {
                         console.error('Upload error for ' + file.name)
+                        finalizeProgress()
                     })
 
                     xhr.open('POST', CLOUDINARY_CONFIG.uploadUrl)
                     xhr.send(formData)
                 } catch (e) {
                     console.error('Error uploading file:', e)
+                    finalizeProgress()
                 }
             }
         }
