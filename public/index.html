@@ -6291,8 +6291,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
         const firebaseApp = firebase.initializeApp({
-            databaseURL: 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app'
-            // databaseURL: 'ttps://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app'
+           databaseURL: 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app'
+            //  databaseURL: 'ttps://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app'
         })
         const database = firebaseApp.database()
 
@@ -7423,6 +7423,7 @@
                 clickUploadDragDrop: "คลิกเพื่ออัปโหลดหรือลากและวาง",
                 imageLimitations: "(PNG, JPG ขนาดไม่เกิน 5MB)",
                 sampleProductRequest: "ขอสินค้าตัวอย่าง",
+                pleaseSelectSampleProductRecipient: "กรุณาเลือกผู้รับ",
                 withdrawForCustomer: "เบิกไปให้ลูกค้า",
                 customerName: "ชื่อลูกค้าที่ร้องขอ",
                 enterCustomerName: "กรอกชื่อลูกค้า...",
@@ -8021,6 +8022,7 @@
                 clickUploadDragDrop: "Click to upload or drag and drop",
                 imageLimitations: "(PNG, JPG up to 5MB)",
                 sampleProductRequest: "Sample Product Request",
+                pleaseSelectSampleProductRecipient: "Please select a recipient",
                 withdrawForCustomer: "Withdraw for customer",
                 customerName: "Customer Name",
                 enterCustomerName: "Enter customer name...",
@@ -21483,6 +21485,11 @@ document.addEventListener('click', function (e) {
                 }
 
                 const selectedRecipientObjects = getSampleProdSelectedRecipientObjects()
+                if (selectedRecipientObjects.length === 0) {
+                    setStatus('statusSampleProd', 'error', 'error', 'pleaseSelectSampleProductRecipient')
+                    return
+                }
+
                 const requestData = {
                     documentNo: docNo,
                     purpose: purpose,
