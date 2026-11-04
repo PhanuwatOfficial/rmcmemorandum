@@ -88,6 +88,11 @@
             left: 0;
             z-index: 100;
             padding: 0;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
         }
 
         .sidebar-brand {
@@ -2825,6 +2830,14 @@
                     <span class="material-symbols-outlined">card_giftcard</span>
                     <span data-translate="sampleProductRequest">Sample Product Request</span>
                 </a>
+                <a class="nav-item" data-view="petty-cash" onclick="showView('petty-cash')">
+                    <span class="material-symbols-outlined">payments</span>
+                    <span data-translate="pettyCashVoucher">Petty Cash Voucher</span>
+                </a>
+                <a class="nav-item" data-view="receipt-cert" onclick="showView('receipt-cert')">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    <span data-translate="receiptCertificate">Certificate in Lieu of Receipt</span>
+                </a>
                 <!-- <a class="nav-item" data-view="sent-memos" onclick="showView('sent-memos')">
                     <span class="material-symbols-outlined">send</span>
                     <span data-translate="sentMemos">Sent Memos</span>
@@ -3666,7 +3679,7 @@
             <!-- ── COMPOSE VIEW ───────────────────── -->
             <div id="view-compose" class="view" style="display:none;">
                 <div class="page-header">
-                    <h2 data-translate="composeMemorandum">Compose Memorandum</h2>
+                    <h2 id="composePageTitle" data-translate="composeMemorandum">Compose Memorandum</h2>
                     <!-- <p data-translate="createAndDispatch">Create and dispatch formal memorandums to selected recipients. -->
                     </p>
                 </div>
@@ -3689,7 +3702,7 @@
                             <div style="padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-weight: 600; color: var(--accent); font-family: 'Courier New', monospace;"
                                 id="memoDocNumber">—</div>
                         </div>
-                        <div class="field">
+                        <div class="field compose-std-field" id="composeTitleField">
                             <label data-translate="memoTitle"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">edit_note</span>Memorandum
                                 Title</label>
@@ -3697,7 +3710,7 @@
                                 data-translate="enterMemoTitle">
                         </div>
 
-                        <div class="field">
+                        <div class="field compose-std-field" id="composeTypeField">
                             <label data-translate="memoPurpose"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">category</span>Purpose</label>
                             <div class="memo-type-container">
@@ -3725,6 +3738,99 @@
                                         onchange="updateTypeCheckboxStyle()">
                                     <span data-translate="memoTypeConsider">เพื่อโปรดพิจารณา</span>
                                 </label>
+                            </div>
+                        </div>
+
+                        <!-- ═══ Petty Cash Voucher fields (ใบสำคัญจ่ายเงินสดย่อย) ═══ -->
+                        <div id="composeFormPetty" style="display:none;">
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="field">
+                                    <label data-translate="formDate">Date</label>
+                                    <input id="pcDate" type="date">
+                                </div>
+                                <div class="field">
+                                    <label data-translate="pcBookDept">Book to department</label>
+                                    <input id="pcDepartment" type="text">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label data-translate="pcPayTo">Pay To</label>
+                                <input id="pcPayTo" type="text" placeholder="ชื่อผู้รับเงิน / ร้านค้า...">
+                            </div>
+                            <div class="field">
+                                <label data-translate="formItems">Items</label>
+                                <div style="display:grid; grid-template-columns: 1fr 150px 36px; gap: 8px; font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                    <span data-translate="formItemDesc">Description</span>
+                                    <span style="text-align:right;" data-translate="formAmountBaht">Amount (THB)</span>
+                                    <span></span>
+                                </div>
+                                <div id="pcItems"></div>
+                                <button type="button" class="btn btn-ghost" onclick="cfAddRow('pc')" style="margin-top:4px;">
+                                    <span class="material-symbols-outlined">add</span>
+                                    <span data-translate="formAddItem">Add item</span>
+                                </button>
+                                <div style="margin-top:12px; padding:10px 14px; background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);">
+                                    <div style="display:flex; justify-content:space-between; font-weight:600;">
+                                        <span data-translate="formTotal">Total</span>
+                                        <span id="pcTotal">0.00</span>
+                                    </div>
+                                    <div id="pcTotalText" style="font-size:13px; color: var(--ink-muted); margin-top:4px;">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ═══ Certificate in lieu of receipt fields (ใบรับรองแทนใบเสร็จรับเงิน) ═══ -->
+                        <div id="composeFormCert" style="display:none;">
+                            <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+                                <div class="field">
+                                    <label data-translate="rcCompanyBuyer">บจ./หจก. (ผู้ซื้อ/ผู้รับบริการ)</label>
+                                    <input id="rcCompany" type="text" placeholder="ชื่อบริษัท / ห้างหุ้นส่วน...">
+                                </div>
+                                <div class="field">
+                                    <label data-translate="formDate">Date</label>
+                                    <input id="rcDate" type="date">
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="field">
+                                    <label data-translate="rcName">ข้าพเจ้า (ผู้เบิกจ่าย)</label>
+                                    <input id="rcName" type="text">
+                                </div>
+                                <div class="field">
+                                    <label data-translate="rcPosition">Position</label>
+                                    <input id="rcPosition" type="text">
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="field">
+                                    <label data-translate="rcFromDate">จ่ายในงานของบริษัทตั้งแต่วันที่</label>
+                                    <input id="rcFromDate" type="date">
+                                </div>
+                                <div class="field">
+                                    <label data-translate="rcToDate">ถึงวันที่</label>
+                                    <input id="rcToDate" type="date">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label data-translate="formItems">Items</label>
+                                <div style="display:grid; grid-template-columns: 1fr 140px 1fr 36px; gap: 8px; font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                    <span data-translate="rcItemDesc">รายละเอียดรายจ่าย</span>
+                                    <span style="text-align:right;" data-translate="formAmountBaht">Amount (THB)</span>
+                                    <span data-translate="formRemarks">Remarks</span>
+                                    <span></span>
+                                </div>
+                                <div id="rcItems"></div>
+                                <button type="button" class="btn btn-ghost" onclick="cfAddRow('rc')" style="margin-top:4px;">
+                                    <span class="material-symbols-outlined">add</span>
+                                    <span data-translate="formAddItem">Add item</span>
+                                </button>
+                                <div style="margin-top:12px; padding:10px 14px; background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);">
+                                    <div style="display:flex; justify-content:space-between; font-weight:600;">
+                                        <span data-translate="formTotal">Total</span>
+                                        <span id="rcTotal">0.00</span>
+                                    </div>
+                                    <div id="rcTotalText" style="font-size:13px; color: var(--ink-muted); margin-top:4px;">-</div>
+                                </div>
                             </div>
                         </div>
 
@@ -3773,7 +3879,7 @@
                             </div>
                         </div>
 
-                        <div class="field">
+                        <div class="field compose-std-field" id="composeMsgField">
                             <label data-translate="messageBody"><span class="material-symbols-outlined"
                                     style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: #c8a96e;">message</span>Message
                                 Body</label>
@@ -3844,7 +3950,7 @@
                         </div>
 
                         <div class="btn-row" style="margin-top: 20px;">
-                            <button class="btn btn-primary" onclick="send()" data-translate="sendMemorandum">
+                            <button id="composeSendBtn" class="btn btn-primary" onclick="send()" data-translate="sendMemorandum">
                                 <span class="material-symbols-outlined">send</span>
                                 Send Memorandum
                             </button>
@@ -5586,6 +5692,18 @@
                                                     style="width: 16px; height: 16px; cursor: pointer;">
                                                 <span data-translate="sampleProductRequest">Sample Product Request</span>
                                             </label>
+                                            <label
+                                                style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                                <input type="checkbox" class="tab-checkbox" value="petty-cash"
+                                                    style="width: 16px; height: 16px; cursor: pointer;">
+                                                <span data-translate="pettyCashVoucher">Petty Cash Voucher</span>
+                                            </label>
+                                            <label
+                                                style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                                <input type="checkbox" class="tab-checkbox" value="receipt-cert"
+                                                    style="width: 16px; height: 16px; cursor: pointer;">
+                                                <span data-translate="receiptCertificate">Certificate in Lieu of Receipt</span>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
@@ -5786,6 +5904,100 @@
                 </div>
             </div>
 
+
+            <!-- ── EDIT PETTY CASH / RECEIPT CERTIFICATE MODAL ──────────── -->
+            <div id="view-edit-form-memo" class="view"
+                style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 500; overflow-y: auto; padding: 20px;">
+                <div style="background: white; border-radius: var(--radius); width: min(860px, 96vw); margin: 20px auto; box-shadow: var(--shadow-lg);">
+                    <div class="page-header"
+                        style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); margin-bottom: 0;">
+                        <div>
+                            <h2 data-translate="editMemorandum">Edit Memorandum</h2>
+                            <p id="editFormTitle"></p>
+                        </div>
+                        <button class="btn btn-ghost" onclick="closeEditFormModal()"
+                            style="position: relative; width: auto; padding: 8px 12px;">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+                        <div class="section-card" style="max-width: 100%;">
+                            <div class="section-body">
+                                <div class="field">
+                                    <label data-translate="documentNumber">Document Number</label>
+                                    <input id="editFormDocNumber" type="text" disabled style="font-family: 'Courier New', monospace;">
+                                </div>
+
+                                <!-- Petty cash voucher -->
+                                <div id="editFormPetty" style="display:none;">
+                                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                        <div class="field"><label data-translate="formDate">Date</label><input id="epcDate" type="date"></div>
+                                        <div class="field"><label data-translate="pcBookDept">Book to department</label><input id="epcDepartment" type="text"></div>
+                                    </div>
+                                    <div class="field"><label data-translate="pcPayTo">Pay To</label><input id="epcPayTo" type="text"></div>
+                                    <div class="field">
+                                        <label data-translate="formItems">Items</label>
+                                        <div style="display:grid; grid-template-columns: 1fr 150px 36px; gap: 8px; font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                            <span data-translate="formItemDesc">Description</span>
+                                            <span style="text-align:right;" data-translate="formAmountBaht">Amount (THB)</span><span></span>
+                                        </div>
+                                        <div id="epcItems"></div>
+                                        <button type="button" class="btn btn-ghost" onclick="cfAddRow('epc')" style="margin-top:4px;">
+                                            <span class="material-symbols-outlined">add</span><span data-translate="formAddItem">Add item</span>
+                                        </button>
+                                        <div style="margin-top:12px; padding:10px 14px; background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);">
+                                            <div style="display:flex; justify-content:space-between; font-weight:600;"><span data-translate="formTotal">Total</span><span id="epcTotal">0.00</span></div>
+                                            <div id="epcTotalText" style="font-size:13px; color: var(--ink-muted); margin-top:4px;">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Certificate in lieu of receipt -->
+                                <div id="editFormCert" style="display:none;">
+                                    <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+                                        <div class="field"><label data-translate="rcCompanyBuyer">บจ./หจก. (ผู้ซื้อ/ผู้รับบริการ)</label><input id="ercCompany" type="text"></div>
+                                        <div class="field"><label data-translate="formDate">Date</label><input id="ercDate" type="date"></div>
+                                    </div>
+                                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                        <div class="field"><label data-translate="rcName">ข้าพเจ้า (ผู้เบิกจ่าย)</label><input id="ercName" type="text"></div>
+                                        <div class="field"><label data-translate="rcPosition">Position</label><input id="ercPosition" type="text"></div>
+                                    </div>
+                                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                        <div class="field"><label data-translate="rcFromDate">จ่ายในงานของบริษัทตั้งแต่วันที่</label><input id="ercFromDate" type="date"></div>
+                                        <div class="field"><label data-translate="rcToDate">ถึงวันที่</label><input id="ercToDate" type="date"></div>
+                                    </div>
+                                    <div class="field">
+                                        <label data-translate="formItems">Items</label>
+                                        <div style="display:grid; grid-template-columns: 1fr 140px 1fr 36px; gap: 8px; font-size: 12px; color: var(--ink-muted); margin-bottom: 4px;">
+                                            <span data-translate="rcItemDesc">รายละเอียดรายจ่าย</span>
+                                            <span style="text-align:right;" data-translate="formAmountBaht">Amount (THB)</span>
+                                            <span data-translate="formRemarks">Remarks</span><span></span>
+                                        </div>
+                                        <div id="ercItems"></div>
+                                        <button type="button" class="btn btn-ghost" onclick="cfAddRow('erc')" style="margin-top:4px;">
+                                            <span class="material-symbols-outlined">add</span><span data-translate="formAddItem">Add item</span>
+                                        </button>
+                                        <div style="margin-top:12px; padding:10px 14px; background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);">
+                                            <div style="display:flex; justify-content:space-between; font-weight:600;"><span data-translate="formTotal">Total</span><span id="ercTotal">0.00</span></div>
+                                            <div id="ercTotalText" style="font-size:13px; color: var(--ink-muted); margin-top:4px;">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="status-msg" id="statusEditForm" style="margin-top: 12px;">
+                                    <span class="material-symbols-outlined"></span>
+                                    <span class="msg-text"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end;">
+                        <button class="btn btn-ghost" onclick="closeEditFormModal()" data-translate="cancel">Cancel</button>
+                        <button class="btn btn-primary" onclick="saveEditedFormMemo()" data-translate="save">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- ── EDIT MEMO MODAL ──────────── -->
             <div id="view-edit-memo" class="view"
                 style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 500; overflow-y: auto; padding: 20px;">
@@ -5888,6 +6100,16 @@
                 onclick="showView('sample-product-request'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">card_giftcard</span>
                 <span data-translate="sampleProductRequest">Sample Product Request</span>
+            </button>
+            <button class="mobile-bottom-nav-item" data-view="petty-cash" style="display:none;"
+                onclick="showView('petty-cash'); activateMobileNavItem(this)">
+                <span class="material-symbols-outlined">payments</span>
+                <span data-translate="pettyCashVoucher">Petty Cash Voucher</span>
+            </button>
+            <button class="mobile-bottom-nav-item" data-view="receipt-cert" style="display:none;"
+                onclick="showView('receipt-cert'); activateMobileNavItem(this)">
+                <span class="material-symbols-outlined">receipt_long</span>
+                <span data-translate="receiptCertificate">Certificate in Lieu of Receipt</span>
             </button>
             <button class="mobile-bottom-nav-item" data-view="manage-user"
                 onclick="showView('manage-user'); activateMobileNavItem(this)">
@@ -6300,6 +6522,49 @@
         let presenceConnectedCallback = null
         let userPresenceRef = null
 
+        // ── Realtime tab access (sidebar updates without refresh) ──
+        let tabAccessRef = null
+        let tabAccessCb = null
+        let tabAccessPollTimer = null
+        let tabAccessInitial = true
+
+        function stopTabAccessSync() {
+            if (tabAccessRef && tabAccessCb) tabAccessRef.off('value', tabAccessCb)
+            tabAccessRef = null
+            tabAccessCb = null
+            if (tabAccessPollTimer) { clearInterval(tabAccessPollTimer); tabAccessPollTimer = null }
+        }
+
+        function startTabAccessSync(userId) {
+            stopTabAccessSync()
+            if (!userId) return
+            tabAccessInitial = true
+            // Fallback when Firebase client can't read tabAccess (rules/offline): poll the server
+            const startPolling = () => {
+                if (tabAccessPollTimer) return
+                tabAccessPollTimer = setInterval(() => {
+                    if (document.visibilityState === 'visible') void applyTabAccessRestrictions()
+                }, 8000)
+            }
+            try {
+                tabAccessRef = database.ref('tabAccess/' + userId)
+                tabAccessCb = () => {
+                    if (tabAccessInitial) { tabAccessInitial = false; return }  // initial snapshot: already applied at login
+                    void applyTabAccessRestrictions()
+                }
+                tabAccessRef.on('value', tabAccessCb, err => {
+                    console.warn('tabAccess listener unavailable, falling back to polling:', err && err.message)
+                    startPolling()
+                })
+            } catch (e) {
+                startPolling()
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && tabAccessRef) void applyTabAccessRestrictions()
+        })
+
         function setupPresence(userObj) {
             if (presenceConnectedRef && presenceConnectedCallback) {
                 presenceConnectedRef.off('value', presenceConnectedCallback)
@@ -6309,6 +6574,9 @@
                 userPresenceRef.remove().catch(() => {})
                 userPresenceRef = null
             }
+
+            // Realtime tab-access sync follows the logged-in user (start on login, stop on logout)
+            startTabAccessSync(userObj && userObj.userId)
 
             presenceConnectedRef = database.ref('.info/connected')
             presenceConnectedCallback = null
@@ -7423,6 +7691,26 @@
                 clickUploadDragDrop: "คลิกเพื่ออัปโหลดหรือลากและวาง",
                 imageLimitations: "(PNG, JPG ขนาดไม่เกิน 5MB)",
                 sampleProductRequest: "ขอสินค้าตัวอย่าง",
+                pettyCashVoucher: "ใบสำคัญจ่ายเงินสดย่อย",
+                receiptCertificate: "ใบรับรองแทนใบเสร็จรับเงิน",
+                formDate: "วันที่",
+                formDepartment: "แผนก / ฝ่าย",
+                pcPayTo: "จ่ายให้",
+                formItems: "รายการ",
+                formItemDesc: "รายละเอียด",
+                formItemDate: "วันที่",
+                formAmountBaht: "จำนวนเงิน (บาท)",
+                formAddItem: "เพิ่มรายการ",
+                formTotal: "รวมเป็นเงินทั้งสิ้น",
+                formRemarks: "หมายเหตุ",
+                formCompany: "บริษัท",
+                rcName: "ข้าพเจ้า (ผู้เบิกจ่าย)",
+                rcPosition: "ตำแหน่ง",
+                rcCompanyBuyer: "บจ./หจก. (ผู้ซื้อ/ผู้รับบริการ)",
+                rcFromDate: "จ่ายในงานของบริษัทตั้งแต่วันที่",
+                rcToDate: "ถึงวันที่",
+                rcItemDesc: "รายละเอียดรายจ่าย",
+                pcBookDept: "บันทึกเข้าแผนก",
                 pleaseSelectSampleProductRecipient: "กรุณาเลือกผู้รับ",
                 withdrawForCustomer: "เบิกไปให้ลูกค้า",
                 customerName: "ชื่อลูกค้าที่ร้องขอ",
@@ -8022,6 +8310,26 @@
                 clickUploadDragDrop: "Click to upload or drag and drop",
                 imageLimitations: "(PNG, JPG up to 5MB)",
                 sampleProductRequest: "Sample Product Request",
+                pettyCashVoucher: "Petty Cash Voucher",
+                receiptCertificate: "Certificate in Lieu of Receipt",
+                formDate: "Date",
+                formDepartment: "Department",
+                pcPayTo: "Pay To",
+                formItems: "Items",
+                formItemDesc: "Description",
+                formItemDate: "Date",
+                formAmountBaht: "Amount (THB)",
+                formAddItem: "Add item",
+                formTotal: "Grand Total",
+                formRemarks: "Remarks",
+                formCompany: "Company",
+                rcName: "Payer (ผู้เบิกจ่าย)",
+                rcPosition: "Position",
+                rcCompanyBuyer: "Company (buyer / service recipient)",
+                rcFromDate: "Paid for company work from",
+                rcToDate: "To date",
+                rcItemDesc: "Expense description",
+                pcBookDept: "Book to department",
                 pleaseSelectSampleProductRecipient: "Please select a recipient",
                 withdrawForCustomer: "Withdraw for customer",
                 customerName: "Customer Name",
@@ -8528,6 +8836,10 @@
         // ──────────────────────────────────────────────
         // View Management (Must be declared before auth)
         // ──────────────────────────────────────────────
+        // Sidebar entries that reuse the Compose view in "form mode" (same recipients, approval flow, attachments)
+        const COMPOSE_FORM_MODES = { 'petty-cash': 'petty_cash', 'receipt-cert': 'receipt_cert' }
+        let composeFormMode = ''
+
         const views = ['login', 'register', 'manage-user', 'dashboard', 'compose', 'rdproject', 'raw-material-request', 'sample-product-request', 'sent-memos', 'received-memos', 'pending-approvals', 'broadcast', 'followers', 'logs', 'memo-approvers', 'tab-access']
         
         // Function to manually refresh a view's data
@@ -8546,6 +8858,11 @@
         }
         
         function showView(name) {
+            const requestedView = name
+            const composeFormKey = COMPOSE_FORM_MODES[name] || ''
+            if (composeFormKey) name = 'compose'
+            if (name === 'compose') setComposeFormMode(composeFormKey)
+
             // Reset engineering edit mode when leaving rdproject view
             if (name !== 'rdproject' && rdProjectEngineeringEditMode) {
                 rdProjectEngineeringEditMode = false
@@ -8630,12 +8947,17 @@
                 )
             )
             if (activeLink) activeLink.classList.add('active')
+            if (composeFormKey) {
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'))
+                const formLink = document.querySelector(`.nav-item[data-view="${requestedView}"]`)
+                if (formLink) formLink.classList.add('active')
+            }
 
             // Update mobile bottom nav active item
             document.querySelectorAll('.mobile-bottom-nav-item').forEach(item => {
                 item.classList.remove('active')
             })
-            const mobileNavItem = document.querySelector(`.mobile-bottom-nav-item[data-view="${name}"]`)
+            const mobileNavItem = document.querySelector(`.mobile-bottom-nav-item[data-view="${requestedView}"]`)
             if (mobileNavItem) mobileNavItem.classList.add('active')
 
             // Handle admin menu button visibility
@@ -8911,7 +9233,14 @@
                 })
                 if (res.ok) {
                     const data = await res.json()
-                    const allowedTabs = data.tabs || []
+                    let allowedTabs = data.tabs || []
+
+                    // Admins always see every tab (no configuration needed)
+                    if (currentUser && currentUser.role === 'admin') {
+                        const allViews = Array.from(document.querySelectorAll('#mainNav a.nav-item[data-view], .mobile-bottom-nav-item[data-view]'))
+                            .map(el => el.getAttribute('data-view'))
+                        allowedTabs = Array.from(new Set([...allowedTabs, ...allViews, 'manage-user']))
+                    }
 
                     // Hide all nav items in mainNav first
                     const mainNav = document.getElementById('mainNav')
@@ -8949,6 +9278,21 @@
                             item.style.display = allowedTabs.includes(viewName) ? '' : 'none'
                         })
                     }
+
+                    // If the user is currently on a tab that was just revoked, send them to the dashboard
+                    try {
+                        const reverseForm = { petty_cash: 'petty-cash', receipt_cert: 'receipt-cert' }
+                        const visibleView = views.find(v => {
+                            const el = document.getElementById('view-' + v)
+                            return el && el.style.display !== 'none'
+                        })
+                        const currentKey = visibleView === 'compose' && composeFormMode ? reverseForm[composeFormMode] : visibleView
+                        const navKeys = Array.from(mainNav ? mainNav.querySelectorAll('a.nav-item[data-view]') : []).map(a => a.getAttribute('data-view'))
+                        if (currentKey && navKeys.includes(currentKey) && currentKey !== 'pending-approvals' &&
+                            !allowedTabs.includes(currentKey) && allowedTabs.includes('dashboard')) {
+                            showView('dashboard')
+                        }
+                    } catch (e) { console.warn('tab redirect check failed', e) }
 
                 }
             } catch (err) {
@@ -10745,7 +11089,9 @@
         async function loadMemoDocNumber() {
             try {
                 
-                const res = await fetch('/next-doc-number', {
+                // Petty cash / receipt certificate forms run their own separate number series (PC26-0001 / RC26-0001)
+                const docNumUrl = composeFormMode ? `/next-form-number?type=${composeFormMode}` : '/next-doc-number'
+                const res = await fetch(docNumUrl, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
                 const data = await res.json()
@@ -11204,6 +11550,7 @@
             }
             updateTypeCheckboxStyle()
             updateRecipientsCount()
+            if (composeFormMode) resetComposeFormFields()
         }
 
         // ── Toggle Shop/Company Name Field for R&D Project ────────
@@ -11245,16 +11592,497 @@
             })
         }
 
+
+        // ══════════════════════════════════════════════════════════
+        // Petty Cash Voucher / Certificate in Lieu of Receipt
+        // (compose view in "form mode": same recipients + approval as a regular memo)
+        // ══════════════════════════════════════════════════════════
+        const COMPOSE_FORM_META = {
+            petty_cash: { key: 'pettyCashVoucher', title: 'ใบสำคัญจ่ายเงินสดย่อย', prefix: 'pc' },
+            receipt_cert: { key: 'receiptCertificate', title: 'ใบรับรองแทนใบเสร็จรับเงิน', prefix: 'rc' }
+        }
+
+        function cfTodayISO() {
+            const d = new Date()
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        }
+
+        function cfFormatThaiDate(iso) {
+            const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/)
+            if (!m) return iso || ''
+            return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
+        }
+
+        function cfMoney(n) {
+            return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        }
+
+        // Thai baht text, e.g. 1250.50 -> "หนึ่งพันสองร้อยห้าสิบบาทห้าสิบสตางค์"
+        function bahtText(amount) {
+            const num = Math.round((Number(amount) || 0) * 100) / 100
+            if (num === 0) return 'ศูนย์บาทถ้วน'
+            const digits = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']
+            const places = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน']
+            const readBlock = (str) => {
+                let out = ''
+                const len = str.length
+                for (let i = 0; i < len; i++) {
+                    const d = +str[i]
+                    const pos = len - i - 1
+                    if (d === 0) continue
+                    if (pos === 0 && d === 1 && len > 1) out += 'เอ็ด'
+                    else if (pos === 1 && d === 2) out += 'ยี่สิบ'
+                    else if (pos === 1 && d === 1) out += 'สิบ'
+                    else out += digits[d] + places[pos]
+                }
+                return out
+            }
+            const readInt = (n) => {
+                let str = String(n)
+                if (str === '0') return ''
+                let result = ''
+                while (str.length > 6) {
+                    const head = str.slice(0, str.length - 6)
+                    str = str.slice(-6)
+                    result += readInt(head) + 'ล้าน'
+                }
+                return result + readBlock(str.replace(/^0+(?=\d)/, '').padStart(str.length, '0'))
+            }
+            const [bahtStr, satangStr] = num.toFixed(2).split('.')
+            const baht = parseInt(bahtStr, 10)
+            const satang = parseInt(satangStr, 10)
+            let text = baht > 0 ? readInt(baht) + 'บาท' : ''
+            text += satang > 0 ? readInt(satang) + 'สตางค์' : (baht > 0 ? 'ถ้วน' : '')
+            return text
+        }
+
+        function cfRowHTML(prefix) {
+            const row = document.createElement('div')
+            row.className = 'cf-row'
+            const hasNote = prefix.endsWith('rc')
+            const cols = hasNote ? '1fr 140px 1fr 36px' : '1fr 150px 36px'
+            row.style.cssText = `display:grid; grid-template-columns:${cols}; gap:8px; margin-bottom:8px; align-items:center;`
+            row.innerHTML = `
+                <input type="text" class="cf-desc" placeholder="รายการ...">
+                <input type="number" class="cf-amount" min="0" step="0.01" placeholder="0.00" style="text-align:right;" oninput="cfRecalc('${prefix}')">
+                ${hasNote ? '<input type="text" class="cf-note" placeholder="หมายเหตุ...">' : ''}
+                <button type="button" class="btn btn-ghost" style="padding:4px;" title="ลบ" onclick="cfRemoveRow(this, '${prefix}')">
+                    <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+                </button>`
+            return row
+        }
+
+        function cfAddRow(prefix) {
+            const box = document.getElementById(prefix + 'Items')
+            if (!box) return
+            box.appendChild(cfRowHTML(prefix))
+            cfRecalc(prefix)
+        }
+
+        function cfRemoveRow(btn, prefix) {
+            const box = document.getElementById(prefix + 'Items')
+            const row = btn.closest('.cf-row')
+            if (box && row) {
+                if (box.children.length <= 1) {   // keep at least one row, just clear it
+                    row.querySelectorAll('input').forEach(i => { i.value = '' })
+                } else {
+                    row.remove()
+                }
+            }
+            cfRecalc(prefix)
+        }
+
+        function cfReadItems(prefix) {
+            const box = document.getElementById(prefix + 'Items')
+            if (!box) return []
+            return Array.from(box.querySelectorAll('.cf-row')).map(row => ({
+                description: row.querySelector('.cf-desc').value.trim(),
+                note: row.querySelector('.cf-note')?.value.trim() || '',
+                amount: Math.round((parseFloat(row.querySelector('.cf-amount').value) || 0) * 100) / 100
+            })).filter(it => it.description || it.amount)
+        }
+
+        function cfRecalc(prefix) {
+            const total = Math.round(cfReadItems(prefix).reduce((sum, it) => sum + it.amount, 0) * 100) / 100
+            const totalEl = document.getElementById(prefix + 'Total')
+            const textEl = document.getElementById(prefix + 'TotalText')
+            if (totalEl) totalEl.textContent = cfMoney(total)
+            if (textEl) textEl.textContent = total > 0 ? `(${bahtText(total)})` : '-'
+            return total
+        }
+
+        function resetComposeFormFields() {
+            const fullName = currentUser ? `${currentUser.name || ''} ${currentUser.surname || ''}`.trim() : ''
+            const dept = currentUser?.department || ''
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v }
+            // Petty cash
+            setVal('pcDate', cfTodayISO()); setVal('pcDepartment', dept); setVal('pcPayTo', '')
+            const pcBox = document.getElementById('pcItems')
+            if (pcBox) { pcBox.innerHTML = ''; cfAddRow('pc') }
+            // Certificate in lieu of receipt
+            setVal('rcCompany', ''); setVal('rcDate', cfTodayISO()); setVal('rcName', fullName)
+            setVal('rcPosition', currentUser?.position || ''); setVal('rcFromDate', cfTodayISO()); setVal('rcToDate', cfTodayISO())
+            const rcBox = document.getElementById('rcItems')
+            if (rcBox) { rcBox.innerHTML = ''; cfAddRow('rc') }
+        }
+
+        function setComposeFormMode(mode) {
+            const changed = mode !== composeFormMode
+            composeFormMode = mode || ''
+            document.querySelectorAll('.compose-std-field').forEach(el => { el.style.display = composeFormMode ? 'none' : '' })
+            const petty = document.getElementById('composeFormPetty')
+            const cert = document.getElementById('composeFormCert')
+            if (petty) petty.style.display = composeFormMode === 'petty_cash' ? '' : 'none'
+            if (cert) cert.style.display = composeFormMode === 'receipt_cert' ? '' : 'none'
+
+            const h2 = document.getElementById('composePageTitle')
+            if (h2) {
+                const key = composeFormMode ? COMPOSE_FORM_META[composeFormMode].key : 'composeMemorandum'
+                h2.setAttribute('data-translate', key)
+                h2.textContent = (translations[currentLanguage] && translations[currentLanguage][key]) || key
+            }
+            if (changed) {
+                if (composeFormMode) resetComposeFormFields()
+                currentDocNumber = ''
+                const docEl = document.getElementById('memoDocNumber')
+                if (docEl) docEl.textContent = '—'
+            }
+        }
+
+        // Validate the form and build the payload (for /send and for the edit modal).
+        // pfx: element-id prefix of the form inputs ('pc'/'rc' = compose page, 'epc'/'erc' = edit modal)
+        function buildFormPayloadFor(formType, pfx, docNumber) {
+            const meta = COMPOSE_FORM_META[formType]
+            if (!meta) return { error: 'Invalid form' }
+            const v = (name) => (document.getElementById(pfx + name)?.value || '').trim()
+            const items = cfReadItems(pfx)
+            if (items.length === 0 || items.some(it => !it.description || !(it.amount > 0))) {
+                return { error: 'กรุณากรอกรายการและจำนวนเงินให้ครบถ้วน' }
+            }
+            const total = Math.round(items.reduce((sum, it) => sum + it.amount, 0) * 100) / 100
+            const totalText = bahtText(total)
+            let formData, lines
+
+            if (formType === 'petty_cash') {
+                if (!v('Date')) return { error: 'กรุณาเลือกวันที่' }
+                if (!v('PayTo')) return { error: 'กรุณากรอกชื่อผู้รับเงิน (จ่ายให้)' }
+                formData = {
+                    date: v('Date'), department: v('Department'), payTo: v('PayTo'),
+                    items: items.map(it => ({ description: it.description, amount: it.amount })),
+                    total, totalText
+                }
+                lines = [
+                    `ใบสำคัญจ่ายเงินสดย่อย เลขที่ ${docNumber}`,
+                    `วันที่: ${cfFormatThaiDate(formData.date)}`,
+                    `จ่ายให้: ${formData.payTo}${formData.department ? ` | บันทึกเข้าแผนก: ${formData.department}` : ''}`,
+                    '',
+                    ...items.map((it, i) => `${i + 1}. ${it.description} — ${cfMoney(it.amount)} บาท`),
+                    '',
+                    `รวมเงิน ${cfMoney(total)} บาท (${totalText})`
+                ]
+            } else {
+                if (!v('Company')) return { error: 'กรุณากรอกชื่อ บจ./หจก. (ผู้ซื้อ/ผู้รับบริการ)' }
+                if (!v('Date')) return { error: 'กรุณาเลือกวันที่' }
+                if (!v('Name')) return { error: 'กรุณากรอกชื่อผู้เบิกจ่าย' }
+                if (!v('FromDate') || !v('ToDate')) return { error: 'กรุณาเลือกช่วงวันที่จ่าย (ตั้งแต่วันที่ - ถึงวันที่)' }
+                formData = {
+                    company: v('Company'), date: v('Date'), name: v('Name'), position: v('Position'),
+                    fromDate: v('FromDate'), toDate: v('ToDate'),
+                    items: items.map(it => ({ description: it.description, amount: it.amount, note: it.note })),
+                    total, totalText
+                }
+                lines = [
+                    `ใบรับรองแทนใบเสร็จรับเงิน เลขที่ ${docNumber}`,
+                    `บจ./หจก. ${formData.company} (ผู้ซื้อ/ผู้รับบริการ)`,
+                    `วันที่: ${cfFormatThaiDate(formData.date)}`,
+                    '',
+                    ...items.map((it, i) => `${i + 1}. ${it.description} — ${cfMoney(it.amount)} บาท${it.note ? ` (${it.note})` : ''}`),
+                    '',
+                    `รวมทั้งสิ้น ${cfMoney(total)} บาท (${totalText})`,
+                    `ข้าพเจ้า ${formData.name} (ผู้เบิกจ่าย)${formData.position ? ` ตำแหน่ง ${formData.position}` : ''}`,
+                    `ขอรับรองว่ารายจ่ายข้างต้นไม่อาจเรียกใบเสร็จรับเงินจากผู้รับได้ และได้จ่ายไปในงานของบริษัทโดยแท้ ตั้งแต่วันที่ ${cfFormatThaiDate(formData.fromDate)} ถึงวันที่ ${cfFormatThaiDate(formData.toDate)}`
+                ]
+            }
+            return { formType, formData, title: meta.title, type: meta.title, content: lines.join('\n') }
+        }
+
+        function buildComposeFormPayload() {
+            const meta = COMPOSE_FORM_META[composeFormMode]
+            if (!meta) return { error: 'Invalid form' }
+            return buildFormPayloadFor(composeFormMode, meta.prefix, currentDocNumber)
+        }
+
+        // ── Print layout for the two forms: reproduces the company's pre-printed half-A4 forms ──
+        function buildFormPrintHTML(memo, ctx) {
+            ctx = ctx || {}
+            const d = memo.formData || {}
+            const items = Array.isArray(d.items) ? d.items : []
+            const isPetty = memo.formType === 'petty_cash'
+            const approved = memo.status === 'approved' || (memo.isCC && !!memo.approvedByName && memo.status !== 'rejected')
+            const rejected = memo.status === 'rejected'
+            const split = (n) => {
+                const [b, st] = (Number(n) || 0).toFixed(2).split('.')
+                return [Number(b).toLocaleString('en-US'), st]
+            }
+            const shortDate = (iso) => {
+                const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/)
+                return m ? `${+m[3]}/${+m[2]}/${+m[1] + 543}` : (iso || '')
+            }
+            const senderName = (memo.isCC ? (memo.originalSenderName || '') : memo.senderName) || ''
+            const approverNameRaw = (approved || rejected) ? (ctx.approverNameRaw || '') : ''
+            const approverSign = approved ? ctx.approverSignatureUrl : ''
+
+            const styles = `
+                <style>
+                    .fx { font-size: 10pt; line-height: 1.35; color: #000; border: 1.5px solid #000; height: 141mm; display: flex; flex-direction: column; }
+                    .fx.fx-auto { height: auto; min-height: 141mm; }
+                    .fx-grow { flex: 1; min-height: 0; display: flex; }
+                    .fx-grow > table { height: 100%; }
+                    .fx table { width: 100%; border-collapse: collapse; }
+                    .fx th, .fx td { border: 1px solid #000; padding: 0 2.6mm; font-size: 10pt; font-weight: 400; }
+                    .fx th { font-weight: 600; text-align: center; height: 5.6mm; }
+                    .fx td { height: 5.6mm; }
+                    .fx td.r { text-align: right; } .fx td.c { text-align: center; }
+                    .fx tr > :first-child { border-left: 0; } .fx tr > :last-child { border-right: 0; }
+                    .fx .sat { width: 9mm; }
+                    .fx td.amt { width: 26mm; padding-right: 5mm; }
+                    .fx td.stg { text-align: center; padding: 0; width: 12mm; }
+                    .fx .bt { width: 24mm; }
+                    .fx-fill { display:inline-block; border-bottom: 1px dotted #000; padding: 0 5px; font-weight: 600; min-width: 20mm; text-align:center; }
+                    /* petty cash */
+                    .fx-ptop { padding: 2mm 3.5mm; }
+                    .fx-ptitle { font-size: 14.5pt; font-weight: 700; line-height: 1.15; text-align: center; }
+                    .fx-pdate { border: 1px solid #000; margin-top: 1.5mm; padding: 1mm 3mm; width: 62mm; text-align: left; }
+                    .fx-prow { display:flex; border-top: 1px solid #000; }
+                    .fx-prow > div { padding: 1.6mm 3.5mm; }
+                    .fx-prow > div:first-child { flex: 0 0 43%; border-right: 1px solid #000; }
+                    .fx-prow > div:last-child { flex: 1; }
+                    .fx .nb { border-left: 0; border-right: 0; }
+                    .fx-band { border-top: 1px solid #000; border-bottom: 1px solid #000; text-align:center; font-weight:600; padding: 1.3mm 0; }
+                    .fx-sigs { display:flex; border-top: 1px solid #000; }
+                    .fx-sigs > div { flex:1; padding: 1.5mm 3.5mm; border-right: 1px solid #000; min-height: 21mm; display:flex; flex-direction:column; justify-content:space-between; }
+                    .fx-sigs .row1 { display:flex; align-items:center; justify-content:flex-start; gap: 4px; min-height: 14mm; }
+                    .fx-sigs > div > div:last-child { text-align: center; }
+                    .fx-sigs > div:last-child { border-right: 0; }
+                    .fx-sigs .lab { font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+                    .fx-sigs .val { font-weight: 400; margin-left: 4px; }
+                    .fx-sigs img { max-height: 14mm; max-width: 100%; display:block; min-width: 0; }
+                    .fx-sigs .row1 .val { min-width: 0; }
+                    /* certificate */
+                    .fx-ctitle { text-align:center; font-size: 13pt; font-weight: 700; padding: 2mm 0 1mm; }
+                    .fx-cline { padding: 1.8mm 5mm; }
+                    .fx-sigcols { display:flex; justify-content:space-around; padding: 1mm 4mm 3mm; }
+                    .fx-sigcols > div { flex: 0 0 44%; text-align:center; }
+                    .fx-sigbox { display:flex; align-items:flex-end; justify-content:center; gap: 4px; min-height: 15mm; }
+                    .fx-sigbox .dots { display:inline-flex; align-items:flex-end; justify-content:center; min-width: 40mm; border-bottom: 1px dotted #000; min-height: 13mm; }
+                    .fx-sigbox img { max-height: 13mm; max-width: 48mm; display:block; margin: 0 auto; }
+                </style>`
+
+            if (isPetty) {
+                let rows = ''
+                for (let i = 0; i < Math.max(4, items.length); i++) {
+                    const it = items[i]
+                    rows += `<tr><td>${it ? escHtml(it.description) : ''}</td><td class="r amt">${it ? cfMoney(it.amount) : ''}</td><td class="stg">${it ? 'บาท' : ''}</td></tr>`
+                }
+                const accRows = '<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr>'.repeat(3)
+                const sig = (label, inner, date) => `<div><div class="row1"><span class="lab">${label} :</span>${inner}</div><div><span class="val" style="margin-left:0;">${date ? escHtml(date) : '&nbsp;'}</span></div></div>`
+                const senderInner = ctx.senderSignatureUrl ? `<img src="${escHtml(ctx.senderSignatureUrl)}" alt="">` : `<span class="val">${escHtml(senderName)}</span>`
+                const approverInner = approverSign ? `<img src="${escHtml(approverSign)}" alt="">` : `<span class="val">${escHtml(approverNameRaw)}</span>`
+                return `${styles}
+                <div class="section-block memo-content">
+                  <div class="fx${items.length > 5 ? ' fx-auto' : ''}">
+                    <div class="fx-ptop">
+                        <div class="fx-ptitle">ใบสำคัญจ่ายเงินสดย่อย</div>
+                        <div class="fx-pdate">วันที่ : <strong>${escHtml(cfFormatThaiDate(d.date))}</strong></div>
+                    </div>
+                    <div class="fx-prow">
+                        <div>จ่ายให้ <strong>${escHtml(d.payTo || '')}</strong></div>
+                        <div>บันทึกเข้าแผนก <strong>${escHtml(d.department || '')}</strong></div>
+                    </div>
+                    <div class="fx-grow" style="flex:1.3;"><table style="border-left:0;border-right:0;">
+                        <thead>
+                            <tr><th class="nb">รายละเอียดรายการ</th><th colspan="2" style="width:38mm;border-right:0;">จำนวนเงิน</th></tr>
+                        </thead>
+                        <tbody>${rows}
+                            <tr><td class="r nb" style="border-left:0;">รวมเงิน</td><td class="r amt"><strong>${cfMoney(d.total)}</strong></td><td class="stg" style="border-right:0;">บาท</td></tr>
+                        </tbody>
+                    </table></div>
+                    <div class="fx-band" style="border-top:0;">สำหรับแผนกบัญชี</div>
+                    <div class="fx-grow" style="flex:1;"><table style="border-left:0;border-right:0;border-bottom:0;">
+                        <thead>
+                            <tr>
+                                <th style="border-left:0;">ชื่อบัญชี</th><th style="width:26mm;">รหัสบัญชี</th>
+                                <th colspan="2" style="width:33mm;">เดบิท</th><th colspan="2" style="width:33mm;border-right:0;">เครดิต</th>
+                            </tr>
+                        </thead>
+                        <tbody>${accRows}
+                            <tr><td style="border-left:0;">&nbsp;</td><td class="r"><strong>ยอดรวม</strong></td><td class="bt"></td><td class="sat"></td><td class="bt"></td><td class="sat" style="border-right:0;"></td></tr>
+                        </tbody>
+                    </table></div>
+                    <div class="fx-sigs">
+                        ${sig('รับเงินโดย', '', '')}
+                        ${sig('จัดทำโดย', senderInner, ctx.senderDate)}
+                        ${sig('อนุมัติโดย', approverInner, (approved || rejected) ? ctx.approverDate : '')}
+                        ${sig('บันทึกบัญชีโดย', '', '')}
+                    </div>
+                  </div>
+                </div>`
+            }
+
+            // ใบรับรองแทนใบเสร็จรับเงิน
+            const dateCell = shortDate(d.date)
+            let rows = ''
+            for (let i = 0; i < Math.max(7, items.length); i++) {
+                const it = items[i]
+                rows += `<tr><td class="c" style="width:24mm;">${it ? escHtml(dateCell) : ''}</td><td>${it ? escHtml(it.description) : ''}</td><td class="r" style="width:30mm;">${it ? cfMoney(it.amount) : ''}</td><td style="width:42mm;">${it ? escHtml(it.note || '') : ''}</td></tr>`
+            }
+            const sigBlock = (signUrl, dateText, caption, rejectedNote, fallbackName) => `
+                <div>
+                    <div class="fx-sigbox"><span>ลงชื่อ</span><span class="dots">${signUrl ? `<img src="${escHtml(signUrl)}" alt="">` : `<strong>${escHtml(fallbackName || '')}</strong>`}</span><span>${caption}</span></div>
+                    <div style="margin-top:3mm;">( ${dateText ? `<strong>${escHtml(dateText)}</strong>` : '..................................................'} )</div>
+                    ${rejectedNote ? `<div><strong>ไม่อนุมัติ</strong></div>` : ''}
+                </div>`
+            return `${styles}
+                <div class="section-block memo-content">
+                  <div class="fx${items.length > 7 ? ' fx-auto' : ''}">
+                    <div class="fx-ctitle">ใบรับรองแทนใบเสร็จรับเงิน</div>
+                    <div class="fx-cline" style="text-align:left;">บจ./หจก. <span class="fx-fill" style="min-width:110mm;">${escHtml(d.company || '')}</span> (ผู้ซื้อ/ผู้รับบริการ)</div>
+                    <div class="fx-grow"><table style="border-left:0;border-right:0;">
+                        <thead><tr><th style="border-left:0;">วัน/เดือน/ปี</th><th>รายละเอียดรายจ่าย</th><th>จำนวนเงิน</th><th style="border-right:0;">หมายเหตุ</th></tr></thead>
+                        <tbody>${rows}
+                            <tr><td style="border-left:0;"></td><td class="c"><strong>รวมเป็นเงิน</strong></td><td class="r"><strong>${cfMoney(d.total)}</strong></td><td style="border-right:0;"></td></tr>
+                        </tbody>
+                    </table></div>
+                    <div class="fx-cline" style="padding-left:20mm;">รวมทั้งสิ้น (ตัวอักษร) <span class="fx-fill" style="min-width:120mm;">${escHtml(d.totalText || bahtText(d.total))}</span></div>
+                    <div class="fx-cline">ข้าพเจ้า <span class="fx-fill" style="min-width:75mm;">${escHtml(d.name || '')}</span> (ผู้เบิกจ่าย) ตำแหน่ง <span class="fx-fill" style="min-width:55mm;">${escHtml(d.position || '')}</span></div>
+                    <div class="fx-cline"><span style="white-space:nowrap;font-size:9.6pt;">ขอรับรองว่า รายจ่ายข้างต้นนี้ไม่อาจเรียกใบเสร็จรับเงินจากผู้รับได้ และข้าพเจ้าได้จ่ายไปในงานของบริษัท/ห้างหุ้นส่วนจำกัด โดยแท้</span></div>
+                    <div class="fx-cline">ตั้งแต่วันที่
+                        <span class="fx-fill" style="min-width:42mm;">${escHtml(cfFormatThaiDate(d.fromDate))}</span> ถึงวันที่ <span class="fx-fill" style="min-width:42mm;">${escHtml(cfFormatThaiDate(d.toDate))}</span></div>
+                    <div class="fx-sigcols">
+                        ${sigBlock(ctx.senderSignatureUrl, ctx.senderDate, '(ผู้เบิกจ่าย)', false, d.name || senderName)}
+                        ${sigBlock(approverSign, (approved || rejected) ? ctx.approverDate : '', '(ผู้อนุมัติ)', rejected)}
+                    </div>
+                  </div>
+                </div>`
+        }
+
+
+        // ── Edit petty cash / receipt certificate memos in a modal (like other memos) ──
+        let editingFormMemo = null   // { memoId, docNumber, formType, source }
+
+        function editFormMemo(memoId, memo) {
+            const isAdmin = currentUser && currentUser.role === 'admin'
+            const isSender = currentUser && memo.senderUserId === currentUser.userId
+            if (!(isAdmin || (isSender && memo.status === 'pending_approval'))) {
+                alert('เฉพาะแอดมินหรือผู้ส่ง (ก่อนอนุมัติ) เท่านั้นที่แก้ไขได้')
+                return
+            }
+            const fd = memo.formData
+            if (!fd || !COMPOSE_FORM_META[memo.formType]) {
+                alert('ไม่พบข้อมูลฟอร์มสำหรับแก้ไข')
+                return
+            }
+            editingFormMemo = { memoId, docNumber: memo.docNumber, formType: memo.formType, source: memo.source || 'sent' }
+
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v == null ? '' : v }
+            const fillItems = (prefix) => {
+                const box = document.getElementById(prefix + 'Items')
+                box.innerHTML = ''
+                const list = Array.isArray(fd.items) && fd.items.length ? fd.items : [{}]
+                list.forEach(it => {
+                    cfAddRow(prefix)
+                    const row = box.lastElementChild
+                    row.querySelector('.cf-desc').value = it.description || ''
+                    row.querySelector('.cf-amount').value = it.amount != null ? it.amount : ''
+                    const note = row.querySelector('.cf-note')
+                    if (note) note.value = it.note || ''
+                })
+                cfRecalc(prefix)
+            }
+            const isPetty = memo.formType === 'petty_cash'
+            document.getElementById('editFormPetty').style.display = isPetty ? '' : 'none'
+            document.getElementById('editFormCert').style.display = isPetty ? 'none' : ''
+            document.getElementById('editFormTitle').textContent = COMPOSE_FORM_META[memo.formType].title
+            setVal('editFormDocNumber', memo.docNumber || '')
+            if (isPetty) {
+                setVal('epcDate', fd.date); setVal('epcDepartment', fd.department); setVal('epcPayTo', fd.payTo)
+                fillItems('epc')
+            } else {
+                setVal('ercCompany', fd.company); setVal('ercDate', fd.date); setVal('ercName', fd.name); setVal('ercPosition', fd.position)
+                setVal('ercFromDate', fd.fromDate); setVal('ercToDate', fd.toDate)
+                fillItems('erc')
+            }
+            document.getElementById('statusEditForm').className = 'status-msg'
+            document.getElementById('view-edit-form-memo').style.display = 'flex'
+        }
+
+        function closeEditFormModal() {
+            document.getElementById('view-edit-form-memo').style.display = 'none'
+            editingFormMemo = null
+        }
+
+        async function saveEditedFormMemo() {
+            const editing = editingFormMemo
+            if (!editing) return
+            const pfx = editing.formType === 'petty_cash' ? 'epc' : 'erc'
+            const built = buildFormPayloadFor(editing.formType, pfx, editing.docNumber)
+            if (built.error) { showStatus('statusEditForm', 'error', built.error); return }
+            showStatus('statusEditForm', 'loading', 'Saving changes...')
+            try {
+                const res = await fetch(`/memo/${editing.memoId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({
+                        docNumber: editing.docNumber, title: built.title, type: built.type,
+                        content: built.content, formData: built.formData
+                    })
+                })
+                const data = await res.json().catch(() => ({}))
+                if (!res.ok) {
+                    showStatus('statusEditForm', 'error', data.error || 'Failed to save memo')
+                    return
+                }
+                // Keep the in-memory lists in sync, then re-render them
+                const patch = (m) => { if (m && m.memoId === editing.memoId) { m.title = built.title; m.type = built.type; m.content = built.content; m.formData = built.formData } }
+                try { (cachedSentMemos || []).forEach(patch); renderSentMemos(cachedSentMemos) } catch (e) {}
+                try { (cachedReceivedMemos || []).forEach(patch); renderReceivedMemos(cachedReceivedMemos) } catch (e) {}
+                try { (cachedPendingApprovals || []).forEach(patch); renderPendingApprovals(cachedPendingApprovals) } catch (e) {}
+                viewLoadStatus['dashboard'] = false
+                viewLoadStatus['sent-memos'] = false
+                viewLoadStatus['received-memos'] = false
+
+                showStatus('statusEditForm', 'success', 'Memo updated successfully')
+                // Refresh the memo detail if it's open
+                if (currentMemoDetail && currentMemoDetail.memoId === editing.memoId) {
+                    currentMemoDetail = { ...currentMemoDetail, title: built.title, type: built.type, content: built.content, formData: built.formData }
+                    try { openMemoDetail(currentMemoDetail) } catch (e) {}
+                }
+                setTimeout(closeEditFormModal, 800)
+            } catch (e) {
+                showStatus('statusEditForm', 'error', e.message)
+            }
+        }
+
         // ── Send Memorandum ─────────────────────────
         async function send() {
-            const title = document.getElementById('memoTitle').value.trim()
-            const type = document.querySelector('.memo-type-checkbox:checked')?.value || ''
-            const text = document.getElementById('msg').value.trim()
+            let title = document.getElementById('memoTitle').value.trim()
+            let type = document.querySelector('.memo-type-checkbox:checked')?.value || ''
+            let text = document.getElementById('msg').value.trim()
             const recipients = Array.from(document.querySelectorAll('.recipient-item.selected')).map(item => ({
                 id: item.getAttribute('data-value'),
                 userId: item.getAttribute('data-user-id'),
                 recipientType: item.getAttribute('data-recipient-type') || 'line_follower'
             }))
+
+            let formPayload = null
+            if (composeFormMode) {
+                const built = buildComposeFormPayload()
+                if (built.error) { setStatus('statusSingleSend', 'error', 'error', built.error); return }
+                formPayload = built
+                title = built.title
+                type = built.type
+                text = built.content
+            }
 
             if (!title) { setStatus('statusSingleSend', 'error', 'error', 'Please enter a memorandum title.'); return }
             if (!type) { setStatus('statusSingleSend', 'error', 'error', 'Please select a memorandum type.'); return }
@@ -11289,6 +12117,7 @@
                         content: text,
                         docNumber: currentDocNumber,
                         senderUserId: currentUser?.userId,
+                        ...(formPayload ? { formType: formPayload.formType, formData: formPayload.formData } : {}),
                         imageUrls: memoImageUrls && memoImageUrls.length > 0 ? memoImageUrls : null,
                         fileUrls: memoFileUrls && memoFileUrls.length > 0 ? memoFileUrls : null
                     }
@@ -14870,6 +15699,9 @@
                 const sampleProdPurpose = memo.content?.['Purpose'] || memo.purpose || 'Not specified'
                 typeElement.setAttribute('data-translate-key', '')
                 typeElement.textContent = sampleProdPurpose
+            } else if (memo.formType) {
+                typeElement.setAttribute('data-translate-key', '')
+                typeElement.textContent = memo.type || ''
             } else {
                 const memoType = memo.type || 'Memorandum'
                 
@@ -17220,6 +18052,17 @@ function printMemoDetail() {
 
                 .body-content { flex: 1; }
 
+                /* Petty cash / receipt certificate: half of an A4 sheet (top half) */
+                .page.form-half {
+                    max-width: none;
+                    width: 100%;
+                    margin: 0 !important;
+                    min-height: 0;
+                    padding: 3mm 3mm !important;
+                }
+                .page.form-half .body-content { flex: 0 0 auto; }
+                .page.form-half .memo-content { padding: 0 !important; line-height: 1.35; font-size: 10pt; }
+
                 /* LETTERHEAD */
                 .letterhead {
                     display: flex;
@@ -17530,8 +18373,9 @@ function printMemoDetail() {
             </style>
         </head>
         <body>
-            <div class="page">
+            <div class="page${memo.formType ? ' form-half' : ''}">
                 <div class="body-content">
+                    ${memo.formType ? buildFormPrintHTML(memo, { senderSignatureUrl: memo.isCC ? (memo.originalSenderSignatureImageUrl || '') : senderSignatureUrl, approverSignatureUrl, approverNameRaw: memo.approvedByName || memo.rejectedByName || '', approverDate: approverDate || (memo.isCC && memo.approvedAt ? new Date(memo.approvedAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : ''), senderDate: memo.isCC && memo.originalSentAt ? new Date(memo.originalSentAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : dateStr }) : `
                     <div class="letterhead">
                         <div class="org-logo"><img src="rmc-logob.png" alt="RMC Logo" style="width:100%;height:100%;object-fit:cover;object-position:center;"></div>
                         <div class="org-info">
@@ -17573,12 +18417,14 @@ function printMemoDetail() {
                         }</div>
                     </div>
 
+`}
+
                     ${imageHTML}
 
                  
                 </div>
 
-                <div id="sigFooterBlock">${signatureFooterHTML}</div>
+                <div id="sigFooterBlock">${memo.formType ? '' : signatureFooterHTML}</div>
 
   
             </div>
@@ -17622,7 +18468,7 @@ function printMemoDetail() {
                 setTimeout(() => {
                     // Measure one A4 page's height in px as rendered by this window
                     const ruler = doc.createElement('div')
-                    ruler.style.cssText = 'height:297mm;width:0;position:absolute;visibility:hidden;'
+                    ruler.style.cssText = `height:${memo.formType ? '148.5mm' : '297mm'};width:0;position:absolute;visibility:hidden;`
                     doc.body.appendChild(ruler)
                     const pagePx = ruler.offsetHeight
                     doc.body.removeChild(ruler)
@@ -17631,7 +18477,7 @@ function printMemoDetail() {
                     const originalAttachmentsDisplay = attachmentsBlock ? attachmentsBlock.style.display : ''
                     if (attachmentsBlock) attachmentsBlock.style.display = 'none'
 
-                    if (memoContentEl) {
+                    if (memoContentEl && !memo.formType) {
                         const supportsZoom = 'zoom' in doc.documentElement.style
                         const MIN_SCALE = 0.65
 
@@ -18800,7 +19646,7 @@ document.addEventListener('click', function (e) {
         function setDefaultTabs() {
             const userRole = document.getElementById('tabAccessModal').dataset.userRole || 'user'
             const defaultTabs = userRole === 'admin'
-                ? ['rdproject', 'raw-material-request', 'sample-product-request', 'dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs', 'manage-user']
+                ? ['rdproject', 'raw-material-request', 'sample-product-request', 'petty-cash', 'receipt-cert', 'dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs', 'manage-user']
                 : ['dashboard', 'compose', 'sent-memos', 'received-memos']
 
             // Uncheck all first
@@ -18862,6 +19708,7 @@ document.addEventListener('click', function (e) {
                 const data = await res.json()
                 if (res.ok) {
                     closeTabAccessModal()
+                    if (currentUser && userId === currentUser.userId) void applyTabAccessRestrictions()
                     await showAlertModal('tabAccessConfigured', 'success')
                     loadTabAccess()
                 } else {
@@ -19739,6 +20586,9 @@ document.addEventListener('click', function (e) {
         }
 
         function editMemo(memoId, memoData) {
+            if (memoData && memoData.formType) {
+                return editFormMemo(memoId, memoData)
+            }
             // Allow edit if: admin OR (sender of memo AND status is pending_approval)
             const isAdmin = currentUser && currentUser.role === 'admin'
             const isSender = currentUser && memoData.senderUserId === currentUser.userId

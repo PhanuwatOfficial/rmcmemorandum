@@ -1142,6 +1142,51 @@ app.get("/next-doc-number", verifyToken, async (req, res) => {
   }
 })
 
+// ── Petty Cash Voucher / Certificate-in-lieu-of-Receipt forms ──────────
+// These forms are sent through the normal /send flow (same approval as a regular memo),
+// but have their OWN running document numbers, separate from regular memos:
+//   petty_cash   -> PC26-0001
+//   receipt_cert -> RC26-0001
+const FORM_TYPE_CONFIG = {
+  petty_cash: { prefix: 'PC', title: 'ใบสำคัญจ่ายเงินสดย่อย', type: 'ใบสำคัญจ่ายเงินสดย่อย' },
+  receipt_cert: { prefix: 'RC', title: 'ใบรับรองแทนใบเสร็จรับเงิน', type: 'ใบรับรองแทนใบเสร็จรับเงิน' }
+}
+
+app.get("/next-form-number", verifyToken, async (req, res) => {
+  try {
+    const formType = req.query.type
+    const cfg = FORM_TYPE_CONFIG[formType]
+    if (!cfg) return res.status(400).json({ error: 'Invalid form type' })
+
+    const yy = new Date().getFullYear().toString().slice(-2)
+    const prefixYear = `${cfg.prefix}${yy}`
+    const allUsersData = await firebase_get_cached('users', 10000)
+
+    let maxNumber = 0
+    if (allUsersData && typeof allUsersData === 'object') {
+      for (const userId in allUsersData) {
+        try {
+          const sentMemosData = await firebase_get(`sent_memos/${userId}`)
+          if (!sentMemosData || typeof sentMemosData !== 'object') continue
+          for (const memo of Object.values(sentMemosData)) {
+            if (!memo || memo.formType !== formType || !memo.docNumber) continue
+            const parts = String(memo.docNumber).split('-')
+            if (parts[0] !== prefixYear) continue
+            const n = parseInt(parts[1]) || 0
+            if (n > maxNumber) maxNumber = n
+          }
+        } catch (err) {
+          continue
+        }
+      }
+    }
+
+    res.json({ docNumber: `${prefixYear}-${String(maxNumber + 1).padStart(4, '0')}` })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // ── Get Next R&D Project Number (P26-0001 format) ──────────────────────
 app.get("/next-rdproject-number", verifyToken, async (req, res) => {
   try {
@@ -2083,6 +2128,10 @@ app.post("/send", async (req, res) => {
 
   const { title, type, content, senderUserId, docNumber, imageUrl, imageUrls, fileUrl, fileUrls } = req.body
 
+  // Optional structured form (petty cash voucher / certificate in lieu of receipt)
+  const formType = FORM_TYPE_CONFIG[req.body.formType] ? req.body.formType : null
+  const formData = formType && req.body.formData && typeof req.body.formData === 'object' ? req.body.formData : null
+
   // Support both old format (imageUrl) and new format (imageUrls)
   const finalImageUrls = imageUrls || (imageUrl ? [imageUrl] : []);
   
@@ -2158,6 +2207,7 @@ app.post("/send", async (req, res) => {
       type,
       content,
       docNumber: resolvedDocNumber || '',
+      ...(formType && formData ? { formType, formData } : {}),
       imageUrls: finalImageUrls && finalImageUrls.length > 0 ? finalImageUrls : null,
       fileUrls: finalFileUrls && finalFileUrls.length > 0 ? finalFileUrls : null,
       // Multi-recipient support
@@ -3834,10 +3884,22 @@ app.post("/admin/user-tabs/set", verifyToken, async (req, res) => {
   }
 })
 
+// Admins always see every tab automatically (no tab-access configuration needed)
+const ADMIN_ALL_TABS = [
+  'dashboard', 'compose', 'rdproject', 'raw-material-request', 'sample-product-request',
+  'petty-cash', 'receipt-cert', 'sent-memos', 'received-memos', 'pending-approvals',
+  'broadcast', 'followers', 'logs', 'manage-user'
+]
+
 // Get user's allowed tabs
 app.get("/user/allowed-tabs", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
+
+    const meUser = await firebase_get(`users/${userId}`)
+    if (meUser && meUser.role === 'admin') {
+      return res.json({ tabs: ADMIN_ALL_TABS, isCustom: false, isAdminAll: true })
+    }
 
     const tabAccess = await firebase_get(`tabAccess/${userId}`)
 
@@ -3877,7 +3939,9 @@ app.get("/admin/user-tabs", verifyToken, async (req, res) => {
 
         // If no custom access, return default tabs based on role
         let tabs
-        if (!userTabAccess) {
+        if (user.role === 'admin') {
+          tabs = ADMIN_ALL_TABS
+        } else if (!userTabAccess) {
           tabs = user.role === 'admin'
             ? ['dashboard', 'compose', 'sent-memos', 'received-memos', 'broadcast', 'followers', 'logs', 'manage-user']
             : ['dashboard', 'compose', 'sent-memos', 'received-memos', 'manage-user']
@@ -4397,6 +4461,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
     const userId = req.userId
     const memoId = req.params.memoId
     const { docNumber, title, type, content, items } = req.body
+    const bodyFormData = req.body.formData && typeof req.body.formData === 'object' ? req.body.formData : null
 
     // Get current user
     const user = await firebase_get(`users/${userId}`)
@@ -4486,6 +4551,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
       type: type || 'เพื่อโปรดทราบ',
       content: content,
       ...(items !== undefined ? { items } : {}),
+      ...(bodyFormData && existingMemo.formType ? { formData: bodyFormData } : {}),
       updatedAt: new Date().toISOString(),
       updatedBy: userId
     }
@@ -4510,6 +4576,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
                   type: type || 'เพื่อโปรดทราบ',
                   content: content,
                   ...(items !== undefined ? { items } : {}),
+                  ...(bodyFormData && receivedMemo.formType ? { formData: bodyFormData } : {}),
                   updatedAt: new Date().toISOString(),
                   updatedBy: userId
                 }
@@ -4727,6 +4794,21 @@ app.post("/memo/:memoId/cc", verifyToken, async (req, res) => {
 
     const sender = currentUser  // Use already fetched currentUser
 
+    // For petty cash / receipt certificate forms: keep original sender & approver signatures for printing
+    let originalSenderSignatureImageUrl = null
+    let ccApproverSignatureImageUrl = memo.approverSignatureImageUrl || null
+    if (memo.formType) {
+      try {
+        const origSender = await firebase_get(`users/${memo.senderUserId || memo.senderId}`)
+        originalSenderSignatureImageUrl = origSender ? (origSender.signatureImageUrl || null) : null
+        const apprId = memo.approvedByUserId || memo.approverId || memo.approverUserId || (memo.approvers && memo.approvers[0] && memo.approvers[0].approverId)
+        if (!ccApproverSignatureImageUrl && apprId) {
+          const apprUser = await firebase_get(`users/${apprId}`)
+          ccApproverSignatureImageUrl = apprUser ? (apprUser.signatureImageUrl || null) : null
+        }
+      } catch (e) { /* signatures are optional */ }
+    }
+
     // Build CC recipient objects array with full user information
     const ccRecipientObjects = []
     for (const recipientId of recipientIds) {
@@ -4752,6 +4834,13 @@ app.post("/memo/:memoId/cc", verifyToken, async (req, res) => {
         memoKey: ccMemoKey,
         type: memo.type || 'Memorandum',
         isSampleProductRequest: memo.isSampleProductRequest || false,
+        ...(memo.formType && memo.formData ? {
+          formType: memo.formType,
+          formData: memo.formData,
+          originalSentAt: memo.sentAt || null,
+          originalSenderSignatureImageUrl,
+          approverSignatureImageUrl: ccApproverSignatureImageUrl
+        } : {}),
         title: memo.title,
         content: memo.content,
         items: memo.items || [],
