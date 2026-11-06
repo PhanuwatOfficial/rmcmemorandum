@@ -6086,31 +6086,6 @@
                 <span class="material-symbols-outlined">pending_actions</span>
                 <span data-translate="pendingApprovals">Pending</span>
             </button>
-            <button class="mobile-bottom-nav-item" data-view="rdproject" style="display:none;"
-                onclick="showView('rdproject'); activateMobileNavItem(this)">
-                <span class="material-symbols-outlined">shopping_bag</span>
-                <span data-translate="rdProject">R&D Project</span>
-            </button>
-            <button class="mobile-bottom-nav-item" data-view="raw-material-request" style="display:none;"
-                onclick="showView('raw-material-request'); activateMobileNavItem(this)">
-                <span class="material-symbols-outlined">inventory_2</span>
-                <span data-translate="rawMaterialRequest">Raw Material</span>
-            </button>
-            <button class="mobile-bottom-nav-item" data-view="sample-product-request" style="display:none;"
-                onclick="showView('sample-product-request'); activateMobileNavItem(this)">
-                <span class="material-symbols-outlined">card_giftcard</span>
-                <span data-translate="sampleProductRequest">Sample Product Request</span>
-            </button>
-            <button class="mobile-bottom-nav-item" data-view="petty-cash" style="display:none;"
-                onclick="showView('petty-cash'); activateMobileNavItem(this)">
-                <span class="material-symbols-outlined">payments</span>
-                <span data-translate="pettyCashVoucher">Petty Cash Voucher</span>
-            </button>
-            <button class="mobile-bottom-nav-item" data-view="receipt-cert" style="display:none;"
-                onclick="showView('receipt-cert'); activateMobileNavItem(this)">
-                <span class="material-symbols-outlined">receipt_long</span>
-                <span data-translate="receiptCertificate">Certificate in Lieu of Receipt</span>
-            </button>
             <button class="mobile-bottom-nav-item" data-view="manage-user"
                 onclick="showView('manage-user'); activateMobileNavItem(this)">
                 <span class="material-symbols-outlined">account_circle</span>
@@ -6131,19 +6106,44 @@
             <div style="font-size: 12px; color: var(--ink-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 12px; padding: 0 8px;"
                 data-translate="moreOptions">
                 More Options</div>
-            <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('broadcast')"
+            <button class="mobile-admin-menu-item mobile-more-form-item" data-view="rdproject" onclick="toggleMobileAdminMenu(); showView('rdproject')"
+                style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; width: 100%; display: none; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);">
+                <span class="material-symbols-outlined">shopping_bag</span>
+                <span data-translate="rdProject">R&D Project</span>
+            </button>
+            <button class="mobile-admin-menu-item mobile-more-form-item" data-view="raw-material-request" onclick="toggleMobileAdminMenu(); showView('raw-material-request')"
+                style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; width: 100%; display: none; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);">
+                <span class="material-symbols-outlined">inventory_2</span>
+                <span data-translate="rawMaterialRequest">Raw Material</span>
+            </button>
+            <button class="mobile-admin-menu-item mobile-more-form-item" data-view="sample-product-request" onclick="toggleMobileAdminMenu(); showView('sample-product-request')"
+                style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; width: 100%; display: none; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);">
+                <span class="material-symbols-outlined">card_giftcard</span>
+                <span data-translate="sampleProductRequest">Sample Product Request</span>
+            </button>
+            <button class="mobile-admin-menu-item mobile-more-form-item" data-view="petty-cash" onclick="toggleMobileAdminMenu(); showView('petty-cash')"
+                style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; width: 100%; display: none; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);">
+                <span class="material-symbols-outlined">payments</span>
+                <span data-translate="pettyCashVoucher">Petty Cash Voucher</span>
+            </button>
+            <button class="mobile-admin-menu-item mobile-more-form-item" data-view="receipt-cert" onclick="toggleMobileAdminMenu(); showView('receipt-cert')"
+                style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; width: 100%; display: none; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);">
+                <span class="material-symbols-outlined">receipt_long</span>
+                <span data-translate="receiptCertificate">Certificate in Lieu of Receipt</span>
+            </button>
+            <button class="mobile-admin-menu-item mobile-admin-only" onclick="toggleMobileAdminMenu(); showView('broadcast')"
                 style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);"
                 onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                 <span class="material-symbols-outlined">campaign</span>
                 <span data-translate="broadcastMemorandum">Broadcast</span>
             </button>
-            <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('followers')"
+            <button class="mobile-admin-menu-item mobile-admin-only" onclick="toggleMobileAdminMenu(); showView('followers')"
                 style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; border-radius: var(--radius);"
                 onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                 <span class="material-symbols-outlined">group</span>
                 <span data-translate="followerRegistry">Users Management</span>
             </button>
-            <button class="mobile-admin-menu-item" onclick="toggleMobileAdminMenu(); showView('logs'); loadLogs()"
+            <button class="mobile-admin-menu-item mobile-admin-only" onclick="toggleMobileAdminMenu(); showView('logs'); loadLogs()"
                 style="padding: 12px 16px; background: var(--accent); color: #fff; border: none; text-align: left; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; width: 100%; display: flex; align-items: center; gap: 8px; border-radius: var(--radius);"
                 onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                 <span class="material-symbols-outlined">event_note</span>
@@ -8631,6 +8631,25 @@
         // Initialize language when page loads
         window.addEventListener('load', initializeLanguage)
 
+        // Show "More" button for admins, or for users who may open any of the form tabs inside it.
+        // Admin-only entries (broadcast / users / logs) are hidden for non-admins.
+        function updateMobileMoreMenu(allowedTabs) {
+            if (Array.isArray(allowedTabs)) window._mobileAllowedTabs = allowedTabs
+            const allowed = window._mobileAllowedTabs || []
+            const isAdmin = !!(currentUser && currentUser.role === 'admin')
+            let anyForm = false
+            document.querySelectorAll('#mobileAdminMenuModal .mobile-more-form-item').forEach(el => {
+                const ok = isAdmin || allowed.includes(el.getAttribute('data-view'))
+                el.style.display = ok ? 'flex' : 'none'
+                if (ok) anyForm = true
+            })
+            document.querySelectorAll('#mobileAdminMenuModal .mobile-admin-only').forEach(el => {
+                el.style.display = isAdmin ? 'flex' : 'none'
+            })
+            const btn = document.getElementById('mobileAdminMenuBtn')
+            if (btn) btn.style.display = (isAdmin || anyForm) ? 'flex' : 'none'
+        }
+
         function toggleMobileAdminMenu() {
             const modal = document.getElementById('mobileAdminMenuModal')
             const isVisible = modal.style.display === 'block'
@@ -8829,7 +8848,7 @@
         window.addEventListener('resize', () => {
             if (currentUser) {
                 document.getElementById('mobileBottomNav').style.display = window.innerWidth <= 480 ? 'block' : 'none'
-                document.getElementById('mobileAdminMenuBtn').style.display = (currentUser.role === 'admin') ? 'flex' : 'none'
+                updateMobileMoreMenu()
             }
         })
 
@@ -8961,10 +8980,9 @@
             if (mobileNavItem) mobileNavItem.classList.add('active')
 
             // Handle admin menu button visibility
-            const adminMenuBtn = document.getElementById('mobileAdminMenuBtn')
-            if (adminMenuBtn) {
-                adminMenuBtn.style.display = (currentUser && currentUser.role === 'admin') ? 'flex' : 'none'
-            }
+            updateMobileMoreMenu()
+            const moreBtn = document.getElementById('mobileAdminMenuBtn')
+            if (moreBtn) moreBtn.classList.toggle('active', !!document.querySelector(`#mobileAdminMenuModal .mobile-more-form-item[data-view="${requestedView}"]`))
 
             // Trigger view-specific setup
             if (name === 'register') {
@@ -9174,7 +9192,7 @@
             // Only show mobile bottom nav on mobile screens (max-width: 480px)
             document.getElementById('mobileBottomNav').style.display = window.innerWidth <= 480 ? 'block' : 'none'
             // Show admin menu button on mobile for admin users
-            document.getElementById('mobileAdminMenuBtn').style.display = (currentUser && currentUser.role === 'admin') ? 'flex' : 'none'
+            updateMobileMoreMenu()
 
             // Initialize pending-approvals button visibility (will be updated by checkApproverStatusAndLoadPending)
             const pendingApprovalsBtn = document.querySelector('.mobile-bottom-nav-item[data-view="pending-approvals"]')
@@ -9278,6 +9296,9 @@
                             item.style.display = allowedTabs.includes(viewName) ? '' : 'none'
                         })
                     }
+
+                    // Form tabs now live inside the "More" menu
+                    updateMobileMoreMenu(allowedTabs)
 
                     // If the user is currently on a tab that was just revoked, send them to the dashboard
                     try {
