@@ -15990,9 +15990,10 @@
                                 if (value !== undefined && value !== null && value !== '') {
                                     const label = sampleProdFieldLabels[key] || key
                                     const displayValue = formatSampleProdDateValue(key, value)
-                                    contentHTML += `<div class="content-grid-item">
-                                        <div class="content-grid-label">${escHtml(label)}</div>
-                                        <div class="content-grid-value">${escHtml(displayValue)}</div>
+                                    const isRemarks = key === 'Remarks'
+                                    contentHTML += `<div class="content-grid-item" style="${isRemarks ? 'grid-column: 1 / -1; border-right: none;' : ''}">
+                                        <div class="content-grid-label" style="${isRemarks ? 'width: 20%;' : ''}">${escHtml(label)}</div>
+                                        <div class="content-grid-value" style="${isRemarks ? 'width: 80%; white-space: pre-wrap;' : ''}">${escHtml(displayValue)}</div>
                                     </div>`
                                 }
                             })
@@ -18182,6 +18183,20 @@ function printMemoDetail() {
                     border-right: 1px solid #d0d8e88e;
                 }
 
+                .print-content-grid-item-full {
+                    grid-column: 1 / -1;
+                    border-right: none !important;
+                }
+
+                .print-content-grid-item-full .print-content-grid-label {
+                    width: 20%;
+                }
+
+                .print-content-grid-item-full .print-content-grid-value {
+                    width: 80%;
+                    white-space: pre-wrap;
+                }
+
                 .print-content-grid-label {
                     font-weight: 700;
                     color: #1a3a6b;
@@ -19218,7 +19233,8 @@ document.addEventListener('click', function (e) {
                             const displayValue = key === 'Date' || key === 'Required Date'
                                 ? formatSampleProductDateForDisplay(value)
                                 : value
-                            result += `<div class="print-content-grid-item">
+                            const remarksClass = key === 'Remarks' ? ' print-content-grid-item-full' : ''
+                            result += `<div class="print-content-grid-item${remarksClass}">
                                 <div class="print-content-grid-label">${escHtml(translatedLabel)}</div>
                                 <div class="print-content-grid-value">${escHtml(displayValue)}</div>
                             </div>`
