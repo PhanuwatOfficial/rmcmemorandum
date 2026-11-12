@@ -5675,6 +5675,20 @@
                                     Refresh
                                 </button>
                             </div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; padding: 14px 16px; border-bottom: 1px solid var(--border);">
+                                <input id="tabAccessSearch" type="text" oninput="renderTabAccessList()"
+                                    data-translate="tabAccessSearchPlaceholder"
+                                    placeholder="Search name, department, sub-department..."
+                                    style="flex: 2; min-width: 200px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit;">
+                                <select id="tabAccessDeptFilter" onchange="onTabAccessDeptFilterChange()"
+                                    style="flex: 1; min-width: 150px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit;">
+                                    <option value="" data-translate="tabAccessAllDepts">All Departments</option>
+                                </select>
+                                <select id="tabAccessDept2Filter" onchange="renderTabAccessList()"
+                                    style="flex: 1; min-width: 150px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit;">
+                                    <option value="" data-translate="tabAccessAllDepts2">All Sub-departments</option>
+                                </select>
+                            </div>
                             <div class="section-body" style="padding: 0;">
                                 <div id="tabAccessList">
                                     <div style="color: #4a5568; font-style: italic; padding: 24px 28px;">Loading user
@@ -7609,6 +7623,9 @@
                 assignApprover: "กำหนดผู้อนุมัติ",
                 currentApprovers: "ผู้อนุมัติปัจจุบัน",
                 tabAccessDesc: "กำหนดแท็บที่ผู้ใช้แต่ละคนสามารถเข้าถึงได้",
+                tabAccessSearchPlaceholder: "ค้นหาชื่อ, ฝ่าย, แผนก...",
+                tabAccessAllDepts: "ทุกฝ่าย",
+                tabAccessAllDepts2: "ทุกแผนก",
                 userAccessConfig: "การกำหนดการเข้าถึงผู้ใช้",
                 configTabAccess: "กำหนดการเข้าถึงแท็บ",
                 tabAccessConfigured: "กำหนดการเข้าถึงแท็บสำเร็จ",
@@ -8237,6 +8254,9 @@
                 assignApprover: "Assign Approver",
                 currentApprovers: "Current Approvers",
                 tabAccessDesc: "Configure which tabs each user can access.",
+                tabAccessSearchPlaceholder: "Search name, department, sub-department...",
+                tabAccessAllDepts: "All Departments",
+                tabAccessAllDepts2: "All Sub-departments",
                 userAccessConfig: "User Access Configuration",
                 configTabAccess: "Configure Tab Access",
                 tabAccessConfigured: "Tab access configured successfully",
@@ -19893,37 +19913,89 @@ document.addEventListener('click', function (e) {
         }
 
         // ── Tab Access Control ──────────────────
+        let tabAccessUsersCache = []
+
         async function loadTabAccess() {
             try {
                 const res = await fetch('/admin/user-tabs', {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 })
                 const data = await res.json()
-
-                const list = document.getElementById('tabAccessList')
-                if (data.users && data.users.length > 0) {
-                    list.innerHTML = data.users.map(u => `
-                        <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 600; color: var(--ink);">${u.name}</div>
-                                <div style="font-size: 12px; color: var(--ink-faint);">@${u.username} (${u.role})</div>
-                                <div style="font-size: 11px; color: var(--ink-muted); margin-top: 4px;">
-                                    ${u.role === 'admin' ? `Can view all tabs` : (u.isCustom ? `Tabs: ${u.tabs.join(', ')}` : 'Using default access')}
-                                </div>
-                            </div>
-                            <button class="btn btn-primary btn-sm" onclick="openTabAccessEditor('${u.userId}', '${u.username}', ${JSON.stringify(u.tabs).replace(/"/g, '&quot;')}, '${u.role}')">
-                                <span class="material-symbols-outlined">edit</span>
-                                Edit
-                            </button>
-                        </div>
-                    `).join('')
-                } else {
-                    list.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--ink-faint);">No users found</div>'
-                }
+                tabAccessUsersCache = data.users || []
+                rebuildTabAccessFilterOptions()
+                renderTabAccessList()
             } catch (err) {
                 console.error('Error loading tab access:', err)
                 document.getElementById('tabAccessList').innerHTML = '<div style="color: red; padding: 16px;">Error loading tab access</div>'
             }
+        }
+
+        // Fill the department / sub-department dropdowns from the loaded users
+        function rebuildTabAccessFilterOptions() {
+            const t = translations[currentLanguage] || {}
+            const deptSel = document.getElementById('tabAccessDeptFilter')
+            if (!deptSel) return
+            const prev = deptSel.value
+            const depts = Array.from(new Set(tabAccessUsersCache.map(u => u.department).filter(Boolean))).sort((a, b) => a.localeCompare(b))
+            deptSel.innerHTML = `<option value="">${escHtml(t['tabAccessAllDepts'] || 'All Departments')}</option>` +
+                depts.map(d => `<option value="${escHtml(d)}">${escHtml(t['dept_' + d] || d)}</option>`).join('')
+            deptSel.value = depts.includes(prev) ? prev : ''
+            rebuildTabAccessDept2Options()
+        }
+
+        // Sub-department options follow the selected department
+        function rebuildTabAccessDept2Options() {
+            const t = translations[currentLanguage] || {}
+            const dept = document.getElementById('tabAccessDeptFilter').value
+            const sel = document.getElementById('tabAccessDept2Filter')
+            const prev = sel.value
+            const pool = tabAccessUsersCache.filter(u => !dept || u.department === dept)
+            const subs = Array.from(new Set(pool.map(u => u.department2).filter(Boolean))).sort((a, b) => a.localeCompare(b))
+            sel.innerHTML = `<option value="">${escHtml(t['tabAccessAllDepts2'] || 'All Sub-departments')}</option>` +
+                subs.map(d => `<option value="${escHtml(d)}">${escHtml(d)}</option>`).join('')
+            sel.value = subs.includes(prev) ? prev : ''
+        }
+
+        function onTabAccessDeptFilterChange() {
+            rebuildTabAccessDept2Options()
+            renderTabAccessList()
+        }
+
+        function renderTabAccessList() {
+            const list = document.getElementById('tabAccessList')
+            if (!list) return
+            const q = (document.getElementById('tabAccessSearch').value || '').trim().toLowerCase()
+            const dept = document.getElementById('tabAccessDeptFilter').value
+            const dept2 = document.getElementById('tabAccessDept2Filter').value
+
+            const users = tabAccessUsersCache.filter(u => {
+                if (dept && u.department !== dept) return false
+                if (dept2 && u.department2 !== dept2) return false
+                if (!q) return true
+                return [u.name, u.username, u.department, u.department2]
+                    .some(v => (v || '').toLowerCase().includes(q))
+            })
+
+            if (users.length === 0) {
+                list.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--ink-faint);">No users found</div>'
+                return
+            }
+            list.innerHTML = users.map(u => `
+                <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--ink);">${escHtml(u.name)}</div>
+                        <div style="font-size: 12px; color: var(--ink-faint);">@${escHtml(u.username)} (${escHtml(u.role)})</div>
+                        ${(u.department || u.department2) ? `<div style="font-size: 12px; color: var(--ink-muted);">${escHtml([u.department, u.department2].filter(Boolean).join(' / '))}</div>` : ''}
+                        <div style="font-size: 11px; color: var(--ink-muted); margin-top: 4px;">
+                            ${u.role === 'admin' ? `Can view all tabs` : (u.isCustom ? `Tabs: ${escHtml(u.tabs.join(', '))}` : 'Using default access')}
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openTabAccessEditor('${escHtml(u.userId)}', '${escHtml(u.username)}', ${JSON.stringify(u.tabs).replace(/"/g, '&quot;')}, '${escHtml(u.role)}')">
+                        <span class="material-symbols-outlined">edit</span>
+                        Edit
+                    </button>
+                </div>
+            `).join('')
         }
         function openTabAccessEditor(userId, username, currentTabs, userRole) {
             document.getElementById('tabAccessModal').style.display = 'flex'

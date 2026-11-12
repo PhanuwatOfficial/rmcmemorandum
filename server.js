@@ -3930,6 +3930,11 @@ app.get("/admin/user-tabs", verifyToken, async (req, res) => {
     const allTabAccess = await firebase_get('tabAccess')
     const allUsers = await firebase_get_cached('users', 10000)
 
+    // Resolve department / sub-department (stored as name or id) to display names for filtering
+    const deptNames = (await firebase_get_cached('departments', 30000)) || {}
+    const dept2Names = (await firebase_get_cached('departments2', 30000)) || {}
+    const nameOf = (map, v) => (v && map[v] && map[v].name) ? map[v].name : (v || '')
+
     let tabAccessList = []
 
     // Get all users and their tab access
@@ -3954,6 +3959,8 @@ app.get("/admin/user-tabs", verifyToken, async (req, res) => {
           username: user.username,
           name: `${user.name} ${user.surname}`,
           role: user.role || 'user',
+          department: nameOf(deptNames, user.department),
+          department2: nameOf(dept2Names, user.department2),
           tabs: tabs,
           isCustom: !!userTabAccess
         })
