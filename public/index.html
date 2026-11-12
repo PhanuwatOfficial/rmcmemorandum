@@ -5959,6 +5959,42 @@
                             </div>
                         </div>
 
+                        <!-- Sample Product Approver per department -->
+                        <div class="section-card" style="max-width: 100%; margin-bottom: 20px;">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <span class="material-symbols-outlined">groups</span>
+                                    <span data-translate="sampleProdDeptApproverTitle">Sample Product Approvers by Department</span>
+                                </div>
+                            </div>
+                            <div class="section-body">
+                                <div style="font-size: 13px; color: var(--ink-muted); margin-bottom: 12px;" data-translate="sampleProdDeptApproverHint">
+                                    Requests are sent to the approver of the requester's department. Departments without one use the default approver above.
+                                </div>
+                                <div class="field">
+                                    <label data-translate="sampleProdDeptLabel">Department</label>
+                                    <select id="sampleProdDeptSelect" onchange="onSampleProdDeptChange()">
+                                        <option value="" data-translate="sampleProdSelectDeptOption">-- Select department --</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label data-translate="sampleProdDeptApproverLabel">Approver for this department</label>
+                                    <select id="sampleProdDeptApproverSelect">
+                                        <option value="" data-translate="selectSampleProdApproverOption">-- Select user --</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" onclick="addSampleProdDeptApprover()">
+                                    <span class="material-symbols-outlined">add</span>
+                                    <span data-translate="sampleProdDeptApproverAdd">Add / Update Approver</span>
+                                </button>
+                                <div class="status-msg" id="statusSampleProdDeptApprover">
+                                    <span class="material-symbols-outlined"></span>
+                                    <span class="msg-text"></span>
+                                </div>
+                                <div id="sampleProdDeptApproverList" style="display: grid; gap: 8px; margin-top: 16px;"></div>
+                            </div>
+                        </div>
+
                         <div class="section-subheader" style="margin: 24px 0 10px; font-size: 1.4rem; font-weight: 800; letter-spacing: 0.02rem; color: var(--accent); text-transform: uppercase;">
                             <span data-translate="engineerSectionTitle">วิศวกร</span>
                         </div>
@@ -7756,6 +7792,18 @@
                 sampleProdApproverSelectError: "กรุณาเลือกผู้อนุมัติ",
                 sampleProdApproverSetSuccess: "กำหนดผู้อนุมัติสำเร็จ",
                 sampleProdApproverSetFailed: "ไม่สามารถกำหนดผู้อนุมัติได้",
+                sampleProdDeptApproverTitle: "ผู้อนุมัติสินค้าตัวอย่างแยกตามฝ่าย",
+                sampleProdDeptApproverHint: "คำขอจะส่งไปยังผู้อนุมัติของฝ่ายที่ผู้ขอสังกัด หากฝ่ายใดยังไม่กำหนด จะใช้ผู้อนุมัติเริ่มต้นด้านบน",
+                sampleProdDeptLabel: "ฝ่าย",
+                sampleProdSelectDeptOption: "-- เลือกฝ่าย --",
+                sampleProdDeptApproverLabel: "ผู้อนุมัติของฝ่ายนี้",
+                sampleProdDeptApproverAdd: "เพิ่ม / เปลี่ยนผู้อนุมัติ",
+                sampleProdDeptApproverSelectError: "กรุณาเลือกฝ่ายและผู้อนุมัติ",
+                sampleProdDeptApproverSetSuccess: "บันทึกผู้อนุมัติของฝ่ายสำเร็จ",
+                sampleProdDeptApproverRemoved: "ลบผู้อนุมัติของฝ่ายแล้ว",
+                sampleProdDeptApproverNone: "ยังไม่ได้กำหนดผู้อนุมัติรายฝ่าย",
+                sampleProdDeptUsersInDept: "พนักงานในฝ่ายนี้",
+                sampleProdDeptUsersOthers: "พนักงานฝ่ายอื่น",
                 setAsFirstApprover: "กำหนดเป็นผู้อนุมัติคนที่ 1",
                 setAsSecondApprover: "กำหนดเป็นผู้อนุมัติคนที่ 2",
                 rdProjectEngineerTitle: "วิศวกร",
@@ -8104,6 +8152,18 @@
                 sampleProdApproverSelectError: "Please select an approver",
                 sampleProdApproverSetSuccess: "Approver set successfully!",
                 sampleProdApproverSetFailed: "Failed to set approver",
+                sampleProdDeptApproverTitle: "Sample Product Approvers by Department",
+                sampleProdDeptApproverHint: "Requests are sent to the approver of the requester's department. Departments without one use the default approver above.",
+                sampleProdDeptLabel: "Department",
+                sampleProdSelectDeptOption: "-- Select department --",
+                sampleProdDeptApproverLabel: "Approver for this department",
+                sampleProdDeptApproverAdd: "Add / Update Approver",
+                sampleProdDeptApproverSelectError: "Please select a department and an approver",
+                sampleProdDeptApproverSetSuccess: "Department approver saved!",
+                sampleProdDeptApproverRemoved: "Department approver removed",
+                sampleProdDeptApproverNone: "No department-specific approvers yet",
+                sampleProdDeptUsersInDept: "Users in this department",
+                sampleProdDeptUsersOthers: "Other users",
                 logFollowerLinked: "Follower Linked",
                 logFollowerUnlinked: "Follower Unlinked",
                 for: "for",
@@ -13709,6 +13769,18 @@
                     }
                 }
 
+                // Per-department Sample Product approvers
+                try {
+                    const deptRes = await fetch('/departments')
+                    const deptData = await deptRes.json()
+                    sampleProdDeptRoleState.departments = deptData.departments || []
+                } catch (e) {
+                    sampleProdDeptRoleState.departments = []
+                }
+                sampleProdDeptRoleState.users = users.filter(u => u.username !== 'RMCadmin')
+                sampleProdDeptRoleState.approvers = roles.sampleProdApprovers || {}
+                renderSampleProdDeptApprovers()
+
                 // Display current Sample Product Approver
                 if (roles.sampleProdApproverId && sampleProdApproverSelect) {
                     sampleProdApproverSelect.value = roles.sampleProdApproverId
@@ -13888,6 +13960,117 @@
                 }
             } catch (err) {
                 setStatus('statusSampleProdApprover', 'error', 'error', err.message)
+            }
+        }
+
+        // ── Sample Product Request: approvers per department ──
+        const sampleProdDeptRoleState = { departments: [], users: [], approvers: {} }
+
+        function sampleProdDeptDisplayName(dept) {
+            return translations[currentLanguage]['dept_' + dept.name] || dept.name
+        }
+
+        function renderSampleProdDeptApprovers() {
+            const deptSelect = document.getElementById('sampleProdDeptSelect')
+            const listEl = document.getElementById('sampleProdDeptApproverList')
+            if (!deptSelect || !listEl) return
+            const t = translations[currentLanguage] || {}
+            const selectedDept = deptSelect.value
+
+            deptSelect.innerHTML = `<option value="">${t['sampleProdSelectDeptOption'] || '-- Select department --'}</option>` +
+                sampleProdDeptRoleState.departments.map(d =>
+                    `<option value="${escHtml(d.id)}">${escHtml(sampleProdDeptDisplayName(d))}${sampleProdDeptRoleState.approvers[d.id] ? ' ✓' : ''}</option>`
+                ).join('')
+            deptSelect.value = selectedDept
+            onSampleProdDeptChange()
+
+            const entries = Object.entries(sampleProdDeptRoleState.approvers)
+            if (entries.length === 0) {
+                listEl.innerHTML = `<div style="padding: 12px; background: var(--surface); border-radius: var(--radius); color: var(--ink-muted); font-size: 13px;">${t['sampleProdDeptApproverNone'] || 'No department-specific approvers yet'}</div>`
+                return
+            }
+            listEl.innerHTML = entries.map(([deptId, e]) => {
+                const dept = sampleProdDeptRoleState.departments.find(d => d.id === deptId)
+                const deptName = dept ? sampleProdDeptDisplayName(dept) : (e.departmentName || deptId)
+                return `
+                    <div style="display: flex; gap: 8px; align-items: center; padding: 8px 16px; background: var(--surface); border-radius: var(--radius); font-size: 13px;">
+                        <span style="flex: 1; font-weight: 600;">${escHtml(deptName)}</span>
+                        <span style="flex: 2; color: var(--blue);">${escHtml(e.approverName || '')} <span style="color: var(--ink-muted);">(${escHtml(e.approverUsername || '')})</span></span>
+                        <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="removeSampleProdDeptApprover('${escHtml(deptId)}')">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">delete</span> <span data-translate="delete">Delete</span>
+                        </button>
+                    </div>`
+            }).join('')
+        }
+
+        // Rebuild the user dropdown for the chosen department: its own users first
+        function onSampleProdDeptChange() {
+            const deptSelect = document.getElementById('sampleProdDeptSelect')
+            const userSelect = document.getElementById('sampleProdDeptApproverSelect')
+            if (!deptSelect || !userSelect) return
+            const t = translations[currentLanguage] || {}
+            const dept = sampleProdDeptRoleState.departments.find(d => d.id === deptSelect.value)
+            const inDept = u => dept && (u.department === dept.id || u.department === dept.name)
+            const opt = u => `<option value="${escHtml(u.userId)}">${escHtml(`${u.name} ${u.surname || ''}`.trim())} (${escHtml(u.username)})</option>`
+            const users = sampleProdDeptRoleState.users
+            const mine = users.filter(inDept)
+            const others = users.filter(u => !inDept(u))
+
+            let html = `<option value="">${t['selectSampleProdApproverOption'] || '-- Select user --'}</option>`
+            if (mine.length) {
+                html += `<optgroup label="${escHtml(t['sampleProdDeptUsersInDept'] || 'Users in this department')}">${mine.map(opt).join('')}</optgroup>`
+            }
+            html += `<optgroup label="${escHtml(t['sampleProdDeptUsersOthers'] || 'Other users')}">${others.map(opt).join('')}</optgroup>`
+            userSelect.innerHTML = html
+
+            const current = dept && sampleProdDeptRoleState.approvers[dept.id]
+            if (current) userSelect.value = current.approverId
+        }
+
+        async function addSampleProdDeptApprover() {
+            const departmentId = document.getElementById('sampleProdDeptSelect').value
+            const approverId = document.getElementById('sampleProdDeptApproverSelect').value
+            if (!departmentId || !approverId) {
+                setStatus('statusSampleProdDeptApprover', 'error', 'error', 'sampleProdDeptApproverSelectError')
+                return
+            }
+            try {
+                setStatus('statusSampleProdDeptApprover', 'info', 'hourglass_empty', 'sampleProdApproverSaving')
+                const res = await fetch('/api/rdproject/roles/sample-dept-approver/set', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ departmentId, approverId })
+                })
+                const data = await res.json()
+                if (res.ok) {
+                    sampleProdDeptRoleState.approvers = data.sampleProdApprovers || {}
+                    renderSampleProdDeptApprovers()
+                    setStatus('statusSampleProdDeptApprover', 'success', 'check_circle', 'sampleProdDeptApproverSetSuccess')
+                } else {
+                    setStatus('statusSampleProdDeptApprover', 'error', 'error', data.error || 'sampleProdApproverSetFailed')
+                }
+            } catch (err) {
+                setStatus('statusSampleProdDeptApprover', 'error', 'error', err.message)
+            }
+        }
+
+        async function removeSampleProdDeptApprover(departmentId) {
+            try {
+                const res = await fetch('/api/rdproject/roles/sample-dept-approver/remove', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ departmentId })
+                })
+                const data = await res.json()
+                if (res.ok) {
+                    sampleProdDeptRoleState.approvers = data.sampleProdApprovers || {}
+                    renderSampleProdDeptApprovers()
+                    setStatus('statusSampleProdDeptApprover', 'success', 'check_circle', 'sampleProdDeptApproverRemoved')
+                } else {
+                    setStatus('statusSampleProdDeptApprover', 'error', 'error', data.error || 'sampleProdApproverSetFailed')
+                }
+            } catch (err) {
+                setStatus('statusSampleProdDeptApprover', 'error', 'error', err.message)
             }
         }
 

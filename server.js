@@ -1317,7 +1317,7 @@ app.get("/user/is-approver", verifyToken, async (req, res) => {
 
     // Check if the user is configured as the Sample Product Approver
     const rolesData = await firebase_get_cached('rd_project_roles', 20000)
-    if (rolesData && rolesData.sampleProdApproverId === userId) {
+    if (isSampleProdApproverUser(rolesData, userId)) {
       isApprover = true
     }
 
@@ -2772,7 +2772,7 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
       const isRDProjectApprover = rolesData && rolesData.approverUserId === userId
 
       // Check if user is Sample Product approver
-      const isSampleProductApprover = rolesData && rolesData.sampleProdApproverId === userId
+      const isSampleProductApprover = isSampleProdApproverUser(rolesData, userId)
 
       // Check if user is Raw Material approver (first or second step)
       const isRawMatFirstApprover = rolesData && rolesData.rawMatFirstApproverId === userId
@@ -5910,6 +5910,127 @@ app.get("/info", (req, res) => {
 // R&D Project Workflow System
 // ──────────────────────────────────────────────
 
+// ── Sample Product Request: per-department approvers ──
+// rd_project_roles.sampleProdApprovers = { [departmentId]: { approverId, approverName, approverUsername, departmentName } }
+// The legacy single approver (sampleProdApproverId) is kept as a fallback for departments with no approver.
+
+// Resolve a user's department (stored as either a name or an id) to a department id
+function resolveDepartmentId(deptValue, allDepartments) {
+  if (!deptValue || !allDepartments || typeof allDepartments !== 'object') return null
+  if (allDepartments[deptValue]) return deptValue
+  for (const [deptId, dept] of Object.entries(allDepartments)) {
+    if (dept && dept.name === deptValue) return deptId
+  }
+  return null
+}
+
+// Pick the Sample Product approver for the requesting user's department
+function getSampleProdApproverForUser(rolesData, user, allDepartments) {
+  if (!rolesData) return { approverId: null, approverName: null }
+  const deptApprovers = rolesData.sampleProdApprovers
+  if (deptApprovers && typeof deptApprovers === 'object') {
+    const deptId = resolveDepartmentId(user && user.department, allDepartments)
+    const entry = deptId ? deptApprovers[deptId] : null
+    if (entry && entry.approverId) {
+      return { approverId: entry.approverId, approverName: entry.approverName || null }
+    }
+  }
+  // Fallback: legacy company-wide approver
+  return {
+    approverId: rolesData.sampleProdApproverId || null,
+    approverName: rolesData.sampleProdApproverName || null
+  }
+}
+
+// Is this user a Sample Product approver (global fallback or for any department)?
+function isSampleProdApproverUser(rolesData, userId) {
+  if (!rolesData || !userId) return false
+  if (rolesData.sampleProdApproverId === userId) return true
+  const deptApprovers = rolesData.sampleProdApprovers
+  if (deptApprovers && typeof deptApprovers === 'object') {
+    return Object.values(deptApprovers).some(e => e && e.approverId === userId)
+  }
+  return false
+}
+
+// Set (or replace) the Sample Product approver for one department
+app.post("/api/rdproject/roles/sample-dept-approver/set", verifyToken, async (req, res) => {
+  try {
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+
+    const { departmentId, approverId } = req.body
+    if (!departmentId || !approverId) {
+      return res.status(400).json({ error: "departmentId and approverId required" })
+    }
+
+    const allDepartments = await firebase_get('departments')
+    const department = allDepartments && allDepartments[departmentId]
+    if (!department) {
+      return res.status(404).json({ error: "Department not found" })
+    }
+
+    const approver = await firebase_get(`users/${approverId}`)
+    if (!approver) {
+      return res.status(404).json({ error: "Approver user not found" })
+    }
+
+    const existingRoles = await firebase_get('rd_project_roles') || {}
+    const rolesData = {
+      ...existingRoles,
+      sampleProdApprovers: {
+        ...(existingRoles.sampleProdApprovers || {}),
+        [departmentId]: {
+          approverId,
+          approverName: `${approver.name} ${approver.surname || ''}`.trim(),
+          approverUsername: approver.username,
+          departmentName: department.name
+        }
+      },
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.userId
+    }
+
+    await firebase_set('rd_project_roles', rolesData)
+    res.json({ status: "Department approver set successfully", sampleProdApprovers: rolesData.sampleProdApprovers })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Remove the Sample Product approver of one department
+app.post("/api/rdproject/roles/sample-dept-approver/remove", verifyToken, async (req, res) => {
+  try {
+    const currentUser = await firebase_get(`users/${req.userId}`)
+    if (!currentUser || currentUser.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" })
+    }
+
+    const { departmentId } = req.body
+    if (!departmentId) {
+      return res.status(400).json({ error: "departmentId required" })
+    }
+
+    const existingRoles = await firebase_get('rd_project_roles') || {}
+    const sampleProdApprovers = { ...(existingRoles.sampleProdApprovers || {}) }
+    delete sampleProdApprovers[departmentId]
+
+    const rolesData = {
+      ...existingRoles,
+      sampleProdApprovers: Object.keys(sampleProdApprovers).length > 0 ? sampleProdApprovers : null,
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.userId
+    }
+
+    await firebase_set('rd_project_roles', rolesData)
+    res.json({ status: "Department approver removed successfully", sampleProdApprovers })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Set R&D Project roles (approver and engineer)
 app.post("/api/rdproject/roles/set", verifyToken, async (req, res) => {
   try {
@@ -5945,6 +6066,7 @@ app.post("/api/rdproject/roles/set", verifyToken, async (req, res) => {
       sampleProdApproverId: sampleProdApproverId || existingRoles.sampleProdApproverId || null,
       sampleProdApproverName: existingRoles.sampleProdApproverName || null,
       sampleProdApproverUsername: existingRoles.sampleProdApproverUsername || null,
+      sampleProdApprovers: existingRoles.sampleProdApprovers || null,
       updatedAt: new Date().toISOString(),
       updatedBy: req.userId
     }
@@ -8716,9 +8838,10 @@ app.post("/api/sample-product-request", verifyToken, async (req, res) => {
     }
 
     // Get admin-configured approver for sample product requests
+    // Approver is specific to the requester's department (falls back to the legacy global approver)
     const rolesData = await firebase_get_cached('rd_project_roles', 20000)
-    const approverUserId = rolesData?.sampleProdApproverId
-    const approverName = rolesData?.sampleProdApproverName
+    const allDepartmentsForSample = await firebase_get_cached('departments', 30000)
+    const { approverId: approverUserId, approverName } = getSampleProdApproverForUser(rolesData, initiatorUser, allDepartmentsForSample)
 
     const senderName = `${initiatorUser.name} ${initiatorUser.surname || ''}`.trim()
     const currentDate = new Date().toISOString()
