@@ -18368,6 +18368,27 @@ function printMemoDetail() {
 
                 .body-content { flex: 1; }
 
+                /* Sample Product Request: compact header/sections so a multi-item list fits on one page */
+                .page.sp-compact { padding-top: 8mm; padding-bottom: 8mm; }
+                .sp-compact .org-logo { height: 84px; }
+                .sp-compact .letterhead { padding-bottom: 10px; margin-bottom: 10px; }
+                .sp-compact .org-name { font-size: 15pt; }
+                .sp-compact .memo-title { font-size: 15.5pt; margin: 6px 0 8px; padding: 0; }
+                .sp-compact .meta-table { font-size: 11pt; margin-bottom: 10px; }
+                .sp-compact .meta-table td { padding: 3px 8px; }
+                .sp-compact .meta-table .value { line-height: 1.45; }
+                .sp-compact .body-content > br { display: none; }
+                .sp-compact .section-label { font-size: 10.5pt; margin-bottom: 4px; padding-bottom: 3px; }
+                .sp-compact .print-content-grid-header { font-size: 12.5pt; margin: 8px 0 4px; padding-bottom: 3px; line-height: 1.7; }
+                .sp-compact .print-content-grid { margin-bottom: 6px; }
+                .sp-compact .print-content-grid-item { font-size: 10.5pt; }
+                .sp-compact .print-content-grid-label { font-size: 9.5pt; }
+                .sp-compact .print-content-grid-value { font-size: 10.5pt; line-height: 1.35; padding: 2px 10px; }
+                .sp-compact .sig-footer { margin-top: 4px; }
+                .sp-compact .sig-name { font-size: 11pt; }
+                .sp-compact .sig-box-label, .sp-compact .sig-date-label { font-size: 9pt; }
+                .sp-compact .sig-content img { max-height: 55px !important; margin: 4px auto !important; }
+
                 /* Petty cash / receipt certificate: half of an A4 sheet (top half) */
                 .page.form-half {
                     max-width: none;
@@ -18537,8 +18558,11 @@ function printMemoDetail() {
                     border-bottom: 1px solid #e4e9f2;
                 }
 
+                .sample-product-print-table thead { display: table-header-group; }
+                .sample-product-print-table tr { page-break-inside: avoid; break-inside: avoid; }
+
                 .sample-product-print-table.compact-level-1 {
-                    font-size: 10.5pt;
+                    font-size: 11pt;
                 }
 
                 .sample-product-print-table.compact-level-1 th,
@@ -18547,25 +18571,25 @@ function printMemoDetail() {
                 }
 
                 .sample-product-print-table.compact-level-2 {
-                    font-size: 10pt;
+                    font-size: 10.5pt;
                 }
 
                 .sample-product-print-table.compact-level-2 th,
                 .sample-product-print-table.compact-level-2 td {
-                    padding: 4px 5px;
+                    padding: 3px 5px;
                 }
 
                 .sample-product-print-table.compact-level-3 {
-                    font-size: 9.6pt;
+                    font-size: 10pt;
                 }
 
                 .sample-product-print-table.compact-level-3 th,
                 .sample-product-print-table.compact-level-3 td {
-                    padding: 4px 4px;
+                    padding: 2px 4px;
                 }
 
                 .sample-product-print-table.compact-level-3 tr {
-                    line-height: 1.1;
+                    line-height: 1.2;
                 }
 
                 /* SIGNATURE FOOTER */
@@ -18703,7 +18727,7 @@ function printMemoDetail() {
             </style>
         </head>
         <body>
-            <div class="page${memo.formType ? ' form-half' : ''}">
+            <div class="page${memo.formType ? ' form-half' : ''}${isSampleProd ? ' sp-compact' : ''}">
                 <div class="body-content">
                     ${memo.formType ? buildFormPrintHTML(memo, { senderSignatureUrl: memo.isCC ? (memo.originalSenderSignatureImageUrl || '') : senderSignatureUrl, approverSignatureUrl, approverNameRaw: memo.approvedByName || memo.rejectedByName || '', approverDate: approverDate || (memo.isCC && memo.approvedAt ? new Date(memo.approvedAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : ''), senderDate: memo.isCC && memo.originalSentAt ? new Date(memo.originalSentAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) : dateStr }) : `
                     <div class="letterhead">
@@ -18725,7 +18749,7 @@ function printMemoDetail() {
                         </tr>
                     </table>
 
-                        ${!isRDProject && !isRawMat ? `<p class="value">${escHtml(memo.type || 'Memorandum')}</p>` : ''}
+                        ${!isRDProject && !isRawMat && !isSampleProd ? `<p class="value">${escHtml(memo.type || 'Memorandum')}</p>` : ''}
 
                         <br>
                             
@@ -18809,7 +18833,7 @@ function printMemoDetail() {
 
                     if (memoContentEl && !memo.formType) {
                         const supportsZoom = 'zoom' in doc.documentElement.style
-                        const MIN_SCALE = 0.65
+                        const MIN_SCALE = isSampleProd ? 0.85 : 0.65
 
                         if (supportsZoom) {
                             // Use zoom so nested elements with their own explicit font sizes
@@ -19541,7 +19565,7 @@ document.addEventListener('click', function (e) {
 
             if (Array.isArray(items) && items.length > 0) {
                 const itemCount = items.length
-                const compactLevel = itemCount <= 1 ? 0 : itemCount <= 3 ? 1 : itemCount <= 6 ? 2 : 3
+                const compactLevel = itemCount <= 1 ? 0 : itemCount <= 3 ? 1 : itemCount <= 8 ? 2 : 3
                 const compactClass = compactLevel > 0 ? `compact-level-${compactLevel}` : ''
 
                 result += `<div class="print-content-grid-header">รายการสินค้า</div>`
