@@ -3743,6 +3743,15 @@
 
                         <!-- ═══ Petty Cash Voucher fields (ใบสำคัญจ่ายเงินสดย่อย) ═══ -->
                         <div id="composeFormPetty" style="display:none;">
+                            <div class="field">
+                                <label data-translate="formCompany">Company</label>
+                                <select id="pcCompany" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit; cursor: pointer; width: 100%;">
+                                        <option value="">— เลือกบริษัท —</option>
+                                        <option value="บริษัท อาร์เอ็มซี กรุ๊ป คอร์ปอเรชั่น จำกัด">บริษัท อาร์เอ็มซี กรุ๊ป คอร์ปอเรชั่น จำกัด</option>
+                                        <option value="บริษัท อาร์ เอ็ม ซี บิลดิ้ง โซลูชั่นส์ จำกัด">บริษัท อาร์ เอ็ม ซี บิลดิ้ง โซลูชั่นส์ จำกัด</option>
+                                        <option value="บริษัท เฟอร์นิกซ์ เฟอร์นิเจอร์ แอนด์ บิลท์อิน โซลูชัน จำกัด">บริษัท เฟอร์นิกซ์ เฟอร์นิเจอร์ แอนด์ บิลท์อิน โซลูชัน จำกัด</option>
+                                    </select>
+                            </div>
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                                 <div class="field">
                                     <label data-translate="formDate">Date</label>
@@ -6071,6 +6080,14 @@
 
                                 <!-- Petty cash voucher -->
                                 <div id="editFormPetty" style="display:none;">
+                                    <div class="field"><label data-translate="formCompany">Company</label>
+                                    <select id="epcCompany" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-family: inherit; cursor: pointer; width: 100%;">
+                                        <option value="">— เลือกบริษัท —</option>
+                                        <option value="บริษัท อาร์เอ็มซี กรุ๊ป คอร์ปอเรชั่น จำกัด">บริษัท อาร์เอ็มซี กรุ๊ป คอร์ปอเรชั่น จำกัด</option>
+                                        <option value="บริษัท อาร์ เอ็ม ซี บิลดิ้ง โซลูชั่นส์ จำกัด">บริษัท อาร์ เอ็ม ซี บิลดิ้ง โซลูชั่นส์ จำกัด</option>
+                                        <option value="บริษัท เฟอร์นิกซ์ เฟอร์นิเจอร์ แอนด์ บิลท์อิน โซลูชัน จำกัด">บริษัท เฟอร์นิกซ์ เฟอร์นิเจอร์ แอนด์ บิลท์อิน โซลูชัน จำกัด</option>
+                                    </select>
+                                    </div>
                                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                                         <div class="field"><label data-translate="formDate">Date</label><input id="epcDate" type="date"></div>
                                         <div class="field"><label data-translate="pcBookDept">Book to department</label><input id="epcDepartment" type="text"></div>
@@ -6655,7 +6672,7 @@
     <script>
         const firebaseApp = firebase.initializeApp({
            databaseURL: 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app'
-            //  databaseURL: 'ttps://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app'
+            //  databaseURL: 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app'
         })
         const database = firebaseApp.database()
 
@@ -11908,7 +11925,7 @@
             const dept = currentUser?.department || ''
             const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v }
             // Petty cash
-            setVal('pcDate', cfTodayISO()); setVal('pcDepartment', dept); setVal('pcPayTo', '')
+            setVal('pcCompany', ''); setVal('pcDate', cfTodayISO()); setVal('pcDepartment', dept); setVal('pcPayTo', '')
             const pcBox = document.getElementById('pcItems')
             if (pcBox) { pcBox.innerHTML = ''; cfAddRow('pc') }
             // Certificate in lieu of receipt
@@ -11956,15 +11973,17 @@
             let formData, lines
 
             if (formType === 'petty_cash') {
+                if (!v('Company')) return { error: 'กรุณาเลือกบริษัท' }
                 if (!v('Date')) return { error: 'กรุณาเลือกวันที่' }
                 if (!v('PayTo')) return { error: 'กรุณากรอกชื่อผู้รับเงิน (จ่ายให้)' }
                 formData = {
-                    date: v('Date'), department: v('Department'), payTo: v('PayTo'),
+                    company: v('Company'), date: v('Date'), department: v('Department'), payTo: v('PayTo'),
                     items: items.map(it => ({ description: it.description, amount: it.amount })),
                     total, totalText
                 }
                 lines = [
                     `ใบสำคัญจ่ายเงินสดย่อย เลขที่ ${docNumber}`,
+                    formData.company,
                     `วันที่: ${cfFormatThaiDate(formData.date)}`,
                     `จ่ายให้: ${formData.payTo}${formData.department ? ` | บันทึกเข้าแผนก: ${formData.department}` : ''}`,
                     '',
@@ -12042,9 +12061,11 @@
                     .fx .bt { width: 24mm; }
                     .fx-fill { display:inline-block; border-bottom: 1px dotted #000; padding: 0 5px; font-weight: 600; min-width: 20mm; text-align:center; }
                     /* petty cash */
-                    .fx-ptop { padding: 2mm 3.5mm; }
-                    .fx-ptitle { font-size: 14.5pt; font-weight: 700; line-height: 1.15; text-align: center; }
-                    .fx-pdate { border: 1px solid #000; margin-top: 1.5mm; padding: 1mm 3mm; width: 62mm; text-align: left; }
+                    .fx-ptop { padding: 2.5mm 3.5mm; }
+                    .fx-ptop-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 6mm; margin-top: 2mm; }
+                    .fx-pcompany { font-weight: 600; font-size: 11.5pt; line-height: 1.3; text-align: left; }
+                    .fx-ptitle { font-size: 14.5pt; font-weight: 700; line-height: 1.15; text-align: center; white-space: nowrap; }
+                    .fx-pdate { text-align: right; white-space: nowrap; }
                     .fx-prow { display:flex; border-top: 1px solid #000; }
                     .fx-prow > div { padding: 1.6mm 3.5mm; }
                     .fx-prow > div:first-child { flex: 0 0 43%; border-right: 1px solid #000; }
@@ -12085,7 +12106,10 @@
                   <div class="fx${items.length > 5 ? ' fx-auto' : ''}">
                     <div class="fx-ptop">
                         <div class="fx-ptitle">ใบสำคัญจ่ายเงินสดย่อย</div>
-                        <div class="fx-pdate">วันที่ : <strong>${escHtml(cfFormatThaiDate(d.date))}</strong></div>
+                        <div class="fx-ptop-row">
+                            <div class="fx-pcompany">${escHtml(d.company || '')}</div>
+                            <div class="fx-pdate">วันที่ : <strong>${escHtml(cfFormatThaiDate(d.date))}</strong></div>
+                        </div>
                     </div>
                     <div class="fx-prow">
                         <div>จ่ายให้ <strong>${escHtml(d.payTo || '')}</strong></div>
@@ -12197,7 +12221,7 @@
             document.getElementById('editFormTitle').textContent = COMPOSE_FORM_META[memo.formType].title
             setVal('editFormDocNumber', memo.docNumber || '')
             if (isPetty) {
-                setVal('epcDate', fd.date); setVal('epcDepartment', fd.department); setVal('epcPayTo', fd.payTo)
+                setVal('epcCompany', fd.company); setVal('epcDate', fd.date); setVal('epcDepartment', fd.department); setVal('epcPayTo', fd.payTo)
                 fillItems('epc')
             } else {
                 setVal('ercCompany', fd.company); setVal('ercDate', fd.date); setVal('ercName', fd.name); setVal('ercPosition', fd.position)
@@ -15777,12 +15801,7 @@
                 }
 
                 // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-                // const firebaseUrl = 'https://cmth-bef8d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-                // const firebaseUrl = 'https://test44-7b87f-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-
-                // const firebaseUrl = 'https://rmcproduction-1cfef-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
                 const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-                // const firebaseUrl = 'https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
                 try {
                     const res = await fetch(firebaseUrl)
@@ -15819,12 +15838,8 @@
                 // Fetch logs from Firebase
                 // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
-                // const firebaseUrl = 'https://cmth-bef8d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-                // const firebaseUrl = 'https://test44-7b87f-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
                 const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-                // const firebaseUrl = 'https://rmcproduction-1cfef-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
-                // const firebaseUrl = 'https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
                 const res = await fetch(firebaseUrl)
                 const logsData = await res.json()
