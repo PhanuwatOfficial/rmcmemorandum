@@ -3,6 +3,14 @@ const line = require("@line/bot-sdk")
 const crypto = require("crypto")
 
 const app = express()
+// Compress responses (index.html is ~1.2 MB raw / ~175 KB gzipped; API JSON compresses ~5-10x).
+// Optional dependency: run `npm i compression`. If it is not installed the server still starts.
+try {
+  const compression = require("compression")
+  app.use(compression())
+} catch (e) {
+  console.warn("compression not installed - responses are NOT gzipped (npm i compression)")
+}
 // Webhook ต้องใช้ raw body สำหรับ signature validation
 // อื่นๆ ใช้ JSON
 app.use((req, res, next) => {
@@ -90,11 +98,21 @@ const client = new line.Client(config)
 
 // Firebase Realtime Database (ใช้ REST API แทน Admin SDK)
 // const FIREBASE_PROJECT_ID = "line-6191d"
-
+// const FIREBASE_PROJECT_ID = "cmth-bef8d" 
+// const FIREBASE_PROJECT_ID = "test44-7b87f" 
+// const FIREBASE_PROJECT_ID = "rmcproduction-1cfef"
+// const FIREBASE_PROJECT_ID = "purchase-846f5"
+// const FIREBASE_PROJECT_ID = "leave-10269"
 const FIREBASE_PROJECT_ID = "keyproject-84461"
 
+// const FIREBASE_DB_URL = "https://import-acd62-default-rtdb.asia-southeast1.firebasedatabase.app"
 // const FIREBASE_DB_URL = "https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app"
+// const FIREBASE_DB_URL = "https://cmth-bef8d-default-rtdb.asia-southeast1.firebasedatabase.app"
+// const FIREBASE_DB_URL = "https://test44-7b87f-default-rtdb.asia-southeast1.firebasedatabase.app"
+// const FIREBASE_DB_URL = "https://rmcproduction-1cfef-default-rtdb.asia-southeast1.firebasedatabase.app"
 
+// const FIREBASE_DB_URL = "https://purchase-846f5-default-rtdb.asia-southeast1.firebasedatabase.app"
+// const FIREBASE_DB_URL = "https://leave-10269-default-rtdb.asia-southeast1.firebasedatabase.app"
 const FIREBASE_DB_URL = "https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app"
 
 
@@ -114,10 +132,12 @@ const FIREBASE_DB_URL = "https://keyproject-84461-default-rtdb.asia-southeast1.f
 // only reads within the TTL window of OTHER requests get served from cache.
 // ──────────────────────────────────────────────
 const firebaseReadCache = new Map() // topLevelPath -> { data, expiresAt, pending }
+const firebaseCacheEpoch = new Map() // topLevelPath -> number, bumped on every write/delete
 
 function invalidateFirebaseCache(path) {
   const topLevel = String(path).split('/')[0]
   firebaseReadCache.delete(topLevel)
+  firebaseCacheEpoch.set(topLevel, (firebaseCacheEpoch.get(topLevel) || 0) + 1)
 }
 
 async function firebase_get_cached(path, ttlMs = 15000) {
@@ -129,7 +149,13 @@ async function firebase_get_cached(path, ttlMs = 15000) {
     if (entry.expiresAt > now) return entry.data
   }
 
+  const epochAtStart = firebaseCacheEpoch.get(path) || 0
   const pending = firebase_get(path).then(data => {
+    // A write happened while this read was in flight: the data may be stale, so don't cache it
+    if ((firebaseCacheEpoch.get(path) || 0) !== epochAtStart) {
+      firebaseReadCache.delete(path)
+      return data
+    }
     firebaseReadCache.set(path, { data, expiresAt: Date.now() + ttlMs, pending: null })
     return data
   }).catch(err => {
@@ -243,7 +269,7 @@ app.post("/register", async (req, res) => {
     const userId = `user_${Date.now()}`
 
     // Check if this is the first user - if so, make them admin
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
     const isFirstUser = !allUsers || Object.keys(allUsers).length === 0
 
     const userData = {
@@ -267,7 +293,7 @@ app.post("/register", async (req, res) => {
     // Send notification to all admin users about the new registration
     if (!isFirstUser) {
       try {
-        const allUsersList = await firebase_get_cached('users', 10000)
+        const allUsersList = await firebase_get_cached('users', 60000)
         if (allUsersList && typeof allUsersList === 'object') {
           for (const [, user] of Object.entries(allUsersList)) {
             if (user.role === 'admin') {
@@ -384,7 +410,7 @@ app.get("/pending-users", verifyToken, async (req, res) => {
     }
 
     // Fetch all users and filter for pending status
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
     const pendingUsers = []
 
     for (const uid in allUsers) {
@@ -935,7 +961,7 @@ app.get("/user/linked-followers-with-pictures", verifyToken, async (req, res) =>
     const followerProfiles = followersData || {}
 
     // Get all users to find who has linked followers
-    const allUsersData = await firebase_get_cached('users', 10000)
+    const allUsersData = await firebase_get_cached('users', 60000)
 
     const linkedFollowers = []
 
@@ -1021,7 +1047,7 @@ app.get("/api/user/:userId", verifyToken, async (req, res) => {
 app.get("/api/memo/:memoId", verifyToken, async (req, res) => {
   try {
     const { memoId } = req.params
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
     let foundMemo = null
 
     // Search for memo across all users' sent_memos
@@ -1085,30 +1111,18 @@ app.get("/next-doc-number", verifyToken, async (req, res) => {
   try {
     const currentYear = new Date().getFullYear().toString().slice(-2) // Get last 2 digits of year
 
-    // Get all users to scan through their sent_memos
-    const allUsersData = await firebase_get_cached('users', 10000)
-
+    // Single cached read of the whole sent_memos node (was: one full download per user on every call)
+    const allSent = await firebase_get_cached('sent_memos', 60000)
     const allMemos = []
-
-    // Scan through each user's sent memos
-    if (allUsersData && typeof allUsersData === 'object') {
-      for (let userId in allUsersData) {
-        try {
-          const sentMemosData = await firebase_get(`sent_memos/${userId}`)
-          if (sentMemosData && typeof sentMemosData === 'object') {
-            const memos = Object.values(sentMemosData)
-            allMemos.push(...memos)
-          }
-        } catch (err) {
-          // User has no memos yet, continue
-          continue
-        }
+    if (allSent && typeof allSent === 'object') {
+      for (const userMemos of Object.values(allSent)) {
+        if (userMemos && typeof userMemos === 'object') allMemos.push(...Object.values(userMemos))
       }
     }
 
     // Filter memos from current year that have a docNumber
     const currentYearMemos = allMemos.filter(memo => {
-      if (!memo.docNumber) return false
+      if (!memo || !memo.docNumber) return false
       const memoYear = memo.docNumber.split('-')[0]
       return memoYear === currentYear
     })
@@ -1150,23 +1164,20 @@ app.get("/next-form-number", verifyToken, async (req, res) => {
 
     const yy = new Date().getFullYear().toString().slice(-2)
     const prefixYear = `${cfg.prefix}${yy}`
-    const allUsersData = await firebase_get_cached('users', 10000)
+
+    // Single cached read of the whole sent_memos node (cache is invalidated on every write)
+    const allSent = await firebase_get_cached('sent_memos', 60000)
 
     let maxNumber = 0
-    if (allUsersData && typeof allUsersData === 'object') {
-      for (const userId in allUsersData) {
-        try {
-          const sentMemosData = await firebase_get(`sent_memos/${userId}`)
-          if (!sentMemosData || typeof sentMemosData !== 'object') continue
-          for (const memo of Object.values(sentMemosData)) {
-            if (!memo || memo.formType !== formType || !memo.docNumber) continue
-            const parts = String(memo.docNumber).split('-')
-            if (parts[0] !== prefixYear) continue
-            const n = parseInt(parts[1]) || 0
-            if (n > maxNumber) maxNumber = n
-          }
-        } catch (err) {
-          continue
+    if (allSent && typeof allSent === 'object') {
+      for (const userMemos of Object.values(allSent)) {
+        if (!userMemos || typeof userMemos !== 'object') continue
+        for (const memo of Object.values(userMemos)) {
+          if (!memo || memo.formType !== formType || !memo.docNumber) continue
+          const parts = String(memo.docNumber).split('-')
+          if (parts[0] !== prefixYear) continue
+          const n = parseInt(parts[1]) || 0
+          if (n > maxNumber) maxNumber = n
         }
       }
     }
@@ -1183,7 +1194,7 @@ app.get("/next-rdproject-number", verifyToken, async (req, res) => {
     const currentYear = new Date().getFullYear().toString().slice(-2) // Get last 2 digits of year
 
     // Get all users to scan through their sent_memos for R&D projects
-    const allUsersData = await firebase_get_cached('users', 10000)
+    const allUsersData = await firebase_get_cached('users', 60000)
 
     const allRDProjects = []
 
@@ -1237,7 +1248,7 @@ app.get("/next-rawmat-number", verifyToken, async (req, res) => {
     const currentYear = new Date().getFullYear().toString().slice(-2) // Get last 2 digits of year
 
     // Get all users to scan through their received_memos for Raw Material Requests
-    const allUsersData = await firebase_get_cached('users', 10000)
+    const allUsersData = await firebase_get_cached('users', 60000)
 
     const allRawMatRequests = []
 
@@ -1433,7 +1444,7 @@ app.get("/departments", async (req, res) => {
 // Get all users (admin and regular users)
 app.get("/admin/users", verifyToken, async (req, res) => {
   try {
-    const allUsersData = await firebase_get_cached('users', 10000)
+    const allUsersData = await firebase_get_cached('users', 60000)
     if (!allUsersData) {
       return res.json({ users: [] })
     }
@@ -1474,7 +1485,7 @@ app.delete("/admin/users/:userId", verifyToken, async (req, res) => {
     }
 
     // Don't allow deleting the only admin
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
     const adminCount = Object.values(allUsers || {}).filter(u => u.role === 'admin').length
     if (userToDelete.role === 'admin' && adminCount <= 1) {
       return res.status(400).json({ error: "Cannot delete the last admin user" })
@@ -1526,7 +1537,7 @@ app.put("/admin/users/:userId/role", verifyToken, async (req, res) => {
 
     // Can't demote the only admin
     if (userToUpdate.role === 'admin' && role === 'user') {
-      const allUsers = await firebase_get_cached('users', 10000)
+      const allUsers = await firebase_get_cached('users', 60000)
       const adminCount = Object.values(allUsers || {}).filter(u => u.role === 'admin').length
       if (adminCount <= 1) {
         return res.status(400).json({ error: "Cannot demote the last admin user" })
@@ -1604,7 +1615,7 @@ app.get("/admin/all-linked-followers", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Admin access required" })
     }
 
-    const allUsersData = await firebase_get_cached('users', 10000)
+    const allUsersData = await firebase_get_cached('users', 60000)
     if (!allUsersData) {
       return res.json({ linkedFollowers: [] })
     }
@@ -2669,7 +2680,7 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
     }
 
     const pendingMemos = []
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
 
     if (!allUsers || typeof allUsers !== 'object') {
       return res.json({ pendingMemos: [], count: 0 })
@@ -2680,7 +2691,7 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
     // If admin, get all pending approval memos without checking approvers
     if (currentUser.role === 'admin') {
       // ✅ Parallel: fetch all sent_memos ทีเดียว
-      const __sentMemosAll = await firebase_get_cached('sent_memos', 10000) || {}
+      const __sentMemosAll = await firebase_get_cached('sent_memos', 60000) || {}
       const allSentMemosArray = senderIds.map(senderId => __sentMemosAll[senderId] || null)
 
       senderIds.forEach((senderId, idx) => {
@@ -2796,7 +2807,7 @@ app.get("/memos/pending-approval", verifyToken, async (req, res) => {
       }
 
       // Get all users' sent_memos to find pending_approval ones (PARALLEL)
-      const __sentMemosAll = await firebase_get_cached('sent_memos', 10000) || {}
+      const __sentMemosAll = await firebase_get_cached('sent_memos', 60000) || {}
       const allSentMemosArray = senderIds.map(senderId => __sentMemosAll[senderId] || null)
 
       // Also check current user's received_memos for R&D project final_approval stage
@@ -2975,7 +2986,7 @@ app.post("/memo/approve/:memoId", verifyToken, async (req, res) => {
     const { notes } = req.body
 
     // Find the memo in sent_memos
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
     let memoData = null
     let memoSenderId = null
 
@@ -3422,7 +3433,7 @@ app.post("/memo/reject/:memoId", verifyToken, async (req, res) => {
     const rejectionReason = reason || "No reason provided"
 
     // Find the memo
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
     let memoData = null
     let memoSenderId = null
 
@@ -3575,7 +3586,7 @@ app.post("/memo/acknowledge/:memoId", verifyToken, async (req, res) => {
 
     if (!receivedMemo) {
       // If not in received_memos, search for it in sent_memos (for linked followers)
-      const allUsers = await firebase_get_cached('users', 10000)
+      const allUsers = await firebase_get_cached('users', 60000)
       if (allUsers && typeof allUsers === 'object') {
         for (let userId in allUsers) {
           const sentMemos = await firebase_get(`sent_memos/${userId}`)
@@ -3886,8 +3897,8 @@ app.get("/user/allowed-tabs", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
 
-    const meUser = await firebase_get(`users/${userId}`)
-    if (meUser && meUser.role === 'admin') {
+    const meRole = await firebase_get(`users/${userId}/role`)
+    if (meRole === 'admin') {
       return res.json({ tabs: ADMIN_ALL_TABS, isCustom: false, isAdminAll: true })
     }
 
@@ -3918,7 +3929,7 @@ app.get("/admin/user-tabs", verifyToken, async (req, res) => {
     }
 
     const allTabAccess = await firebase_get('tabAccess')
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
 
     // Resolve department / sub-department (stored as name or id) to display names for filtering
     const deptNames = (await firebase_get_cached('departments', 30000)) || {}
@@ -4153,7 +4164,7 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
     const currentUser = await firebase_get(`users/${userId}`)
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
 
     let memosArray = []
 
@@ -4162,7 +4173,7 @@ app.get("/sent-memos", verifyToken, async (req, res) => {
       if (allUsers && typeof allUsers === 'object') {
         const userIds = Object.keys(allUsers)
         // ✅ Parallel: fetch all sent_memos ทีเดียว
-        const __sentMemosAll = await firebase_get_cached('sent_memos', 10000) || {}
+        const __sentMemosAll = await firebase_get_cached('sent_memos', 60000) || {}
         const allSentMemosArray = userIds.map(uid => __sentMemosAll[uid] || null)
 
         allSentMemosArray.forEach(sentMemos => {
@@ -4248,7 +4259,7 @@ app.get("/received-memos", verifyToken, async (req, res) => {
 
     // Get current user to access linked followers
     const currentUser = await firebase_get(`users/${userId}`)
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
 
     const receivedMemos = []
     const seenMemoIds = new Set() // Track already added memos to avoid duplicates
@@ -4262,7 +4273,7 @@ app.get("/received-memos", verifyToken, async (req, res) => {
     // If admin, get all memos sent to any follower
     if (currentUser && currentUser.role === 'admin') {
       // ✅ Parallel: fetch all sent_memos ทีเดียว
-      const __sentMemosAll = await firebase_get_cached('sent_memos', 10000) || {}
+      const __sentMemosAll = await firebase_get_cached('sent_memos', 60000) || {}
       const allSentMemosArray = senderIds.map(senderId => __sentMemosAll[senderId] || null)
 
       senderIds.forEach((senderId, idx) => {
@@ -4311,7 +4322,7 @@ app.get("/received-memos", verifyToken, async (req, res) => {
 
       if (linkedFollowerIds.length > 0) {
         // ✅ Parallel: fetch all sent_memos ทีเดียว
-        const __sentMemosAll = await firebase_get_cached('sent_memos', 10000) || {}
+        const __sentMemosAll = await firebase_get_cached('sent_memos', 60000) || {}
         const allSentMemosArray = senderIds.map(senderId => __sentMemosAll[senderId] || null)
 
         senderIds.forEach((senderId, idx) => {
@@ -4362,7 +4373,7 @@ app.get("/received-memos", verifyToken, async (req, res) => {
 
       // ✅ NEW: Include memos where current user has approved or rejected
       // Fetch all sent_memos to find memos where user is in approvalChain or rejected
-      const __sentMemosAll = await firebase_get_cached('sent_memos', 10000) || {}
+      const __sentMemosAll = await firebase_get_cached('sent_memos', 60000) || {}
       const allSentMemosArray = senderIds.map(senderId => __sentMemosAll[senderId] || null)
 
       senderIds.forEach((senderId, idx) => {
@@ -4413,7 +4424,7 @@ app.get("/memo/:memoId", async (req, res) => {
     const memoId = req.params.memoId
 
     // Search in all users' sent_memos and received_memos
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
     if (!allUsers || typeof allUsers !== 'object') {
       return res.status(404).json({ error: 'Memo not found' })
     }
@@ -4471,7 +4482,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
     }
 
     // Find the memo - it could be in any user's sent_memos or received_memos
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
     if (!allUsers || typeof allUsers !== 'object') {
       return res.status(404).json({ error: 'Memo not found' })
     }
@@ -4525,7 +4536,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
 
     // Check for duplicate docNumber if it's being changed
     if (docNumber !== oldDocNumber) {
-      const allUsers = await firebase_get_cached('users', 10000)
+      const allUsers = await firebase_get_cached('users', 60000)
       if (allUsers && typeof allUsers === 'object') {
         for (const [uid, userObj] of Object.entries(allUsers)) {
           const sentMemos = await firebase_get(`sent_memos/${uid}`)
@@ -4558,7 +4569,7 @@ app.put("/memo/:memoId", verifyToken, async (req, res) => {
 
     // Update all received_memos with the OLD docNumber to use the NEW docNumber
     if (oldDocNumber) {
-      const allUsers = await firebase_get_cached('users', 10000)
+      const allUsers = await firebase_get_cached('users', 60000)
       if (allUsers && typeof allUsers === 'object') {
         for (const [uid, userObj] of Object.entries(allUsers)) {
           const receivedMemos = await firebase_get(`received_memos/${uid}`)
@@ -4614,7 +4625,7 @@ app.delete("/memo/:memoId", verifyToken, async (req, res) => {
     }
 
     // Find the memo - it could be in any user's sent_memos or received_memos
-    const allUsers = await firebase_get_cached('users', 10000)
+    const allUsers = await firebase_get_cached('users', 60000)
     if (!allUsers || typeof allUsers !== 'object') {
       return res.status(404).json({ error: 'Memo not found' })
     }
@@ -4676,7 +4687,7 @@ app.delete("/memo/:memoId", verifyToken, async (req, res) => {
     if (!isReceivedMemo) {
       const docNumber = memoData?.docNumber
       if (docNumber) {
-        const allUsers = await firebase_get_cached('users', 10000)
+        const allUsers = await firebase_get_cached('users', 60000)
         if (allUsers && typeof allUsers === 'object') {
           for (const [uid, userObj] of Object.entries(allUsers)) {
             const receivedMemos = await firebase_get(`received_memos/${uid}`)
@@ -4752,7 +4763,7 @@ app.post("/memo/:memoId/cc", verifyToken, async (req, res) => {
 
     // If still not found and user is admin, search in all users' sent_memos
     if (!memo && currentUser && currentUser.role === 'admin') {
-      const allUsers = await firebase_get_cached('users', 10000)
+      const allUsers = await firebase_get_cached('users', 60000)
       if (allUsers && typeof allUsers === 'object') {
         for (const userId in allUsers) {
           memo = await firebase_get(`sent_memos/${userId}/${memoId}`)
@@ -5038,7 +5049,19 @@ app.get("/notifications", verifyToken, async (req, res) => {
   try {
     const userId = req.userId
 
-    const notificationsData = await firebase_get(`notifications/${userId}`)
+    // Each notification embeds a full copy of its memo and nothing prunes old ones, so this node grows
+    // forever and used to be downloaded in full on every poll. Fetch only the newest 100 (keys start
+    // with a ms timestamp, so ordering by key == ordering by time).
+    let notificationsData = null
+    try {
+      const notifResp = await fetch(`${FIREBASE_DB_URL}/notifications/${userId}.json?orderBy=%22%24key%22&limitToLast=100`)
+      notificationsData = notifResp.ok ? await notifResp.json() : undefined
+    } catch (e) {
+      notificationsData = undefined
+    }
+    if (notificationsData === undefined || (notificationsData && typeof notificationsData === 'object' && typeof notificationsData.error === 'string')) {
+      notificationsData = await firebase_get(`notifications/${userId}`) // fallback: previous behaviour
+    }
 
     if (!notificationsData || typeof notificationsData !== 'object') {
       return res.json({ notifications: [], count: 0 })
@@ -8357,7 +8380,7 @@ app.post("/api/rdproject/:projectId/approve", verifyToken, async (req, res) => {
 
       // Find the ORIGINAL initiator from original sent_memos
       let originalInitiatorUserId = projectData.initiatorUserId
-      const allUsers = await firebase_get_cached('users', 10000)
+      const allUsers = await firebase_get_cached('users', 60000)
       if (allUsers && typeof allUsers === 'object') {
         for (const [userId, userObj] of Object.entries(allUsers)) {
           const sentMemos = await firebase_get(`sent_memos/${userId}`)
@@ -8777,7 +8800,7 @@ app.post("/api/rdproject/:projectId/approve", verifyToken, async (req, res) => {
 app.get("/next-sample-prod-number", verifyToken, async (req, res) => {
   try {
     const currentYear = new Date().getFullYear().toString().slice(-2)
-    const allUsersData = await firebase_get_cached('users', 10000)
+    const allUsersData = await firebase_get_cached('users', 60000)
     const allRequests = []
 
     if (allUsersData && typeof allUsersData === 'object') {

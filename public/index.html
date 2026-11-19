@@ -6702,7 +6702,7 @@
                 if (tabAccessPollTimer) return
                 tabAccessPollTimer = setInterval(() => {
                     if (document.visibilityState === 'visible') void applyTabAccessRestrictions()
-                }, 8000)
+                }, 30000)
             }
             try {
                 tabAccessRef = database.ref('tabAccess/' + userId)
