@@ -6671,8 +6671,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
         const firebaseApp = firebase.initializeApp({
-           databaseURL: 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app'
-            //  databaseURL: 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app'
+        //    databaseURL: 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app'
+             databaseURL: 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app'
         })
         const database = firebaseApp.database()
 
@@ -15802,8 +15802,8 @@
                     viewAllBtn.style.display = (currentUser && currentUser.role === 'admin') ? '' : 'none'
                 }
 
-                // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
-                const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                // const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
                 try {
                     const res = await fetch(firebaseUrl)
@@ -15838,9 +15838,9 @@
         async function loadLogs(filterByCurrentUser = false) {
             try {
                 // Fetch logs from Firebase
-                // const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                const firebaseUrl = 'https://line-6191d-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
-                const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
+                // const firebaseUrl = 'https://keyproject-84461-default-rtdb.asia-southeast1.firebasedatabase.app/logs.json'
 
 
                 const res = await fetch(firebaseUrl)
